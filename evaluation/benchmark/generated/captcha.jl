@@ -59,66 +59,66 @@ function captcha(ctx::AbstractGenerateRecordStateContext, captcha_img::Vector{Fl
 end
 
 function captcha_N_69(ctx::AbstractFactorResampleContext, captcha_img::Vector{Float64}, _s_::State)
-    _s_.N_letters = sample_resample(ctx, _s_, 69, "N", Poisson(7))
-    _s_.font = sample_read(ctx, _s_, 81, "font", DiscreteUniform(1, 4))
+    _s_.N_letters = resample(ctx, _s_, 69, "N", Poisson(7))
+    _s_.font = read(ctx, _s_, 81, "font")
     _s_.image = zeros((200 * 50))
     _s_.i = 1
     while (_s_.i <= _s_.N_letters)
-        _s_.fontsize = sample_dependency(ctx, _s_, 117, ("fontsize_" * string(_s_.i)), DiscreteUniform(38, 44))
-        _s_.kerning = sample_dependency(ctx, _s_, 135, ("kerning_" * string(_s_.i)), DiscreteUniform(-2, 2))
-        _s_.letter = sample_dependency(ctx, _s_, 153, ("letter_" * string(_s_.i)), DiscreteUniform(1, 26))
-        _s_.noisy_letter_image = sample_dependency(ctx, _s_, 171, ("letter_image_" * string(_s_.i)), MvNormal(vec(render_letter(_s_.letter, _s_.font, _s_.fontsize, _s_.kerning)), 0.1))
+        _s_.fontsize = score(ctx, _s_, 117, ("fontsize_" * string(_s_.i)), DiscreteUniform(38, 44))
+        _s_.kerning = score(ctx, _s_, 135, ("kerning_" * string(_s_.i)), DiscreteUniform(-2, 2))
+        _s_.letter = score(ctx, _s_, 153, ("letter_" * string(_s_.i)), DiscreteUniform(1, 26))
+        _s_.noisy_letter_image = score(ctx, _s_, 171, ("letter_image_" * string(_s_.i)), MvNormal(vec(render_letter(_s_.letter, _s_.font, _s_.fontsize, _s_.kerning)), 0.1))
         _s_.image = (_s_.image + _s_.noisy_letter_image)
         _s_.i = (_s_.i + 1)
     end
-    sample_dependency(ctx, _s_, 210, "image", MvNormal(_s_.image, 1.0), observed = captcha_img)
+    score(ctx, _s_, 210, "image", MvNormal(_s_.image, 1.0), observed = captcha_img)
 end
 
 function captcha_font_81(ctx::AbstractFactorResampleContext, captcha_img::Vector{Float64}, _s_::State)
-    _s_.font = sample_resample(ctx, _s_, 81, "font", DiscreteUniform(1, 4))
+    _s_.font = resample(ctx, _s_, 81, "font", DiscreteUniform(1, 4))
     _s_.image = zeros((200 * 50))
     _s_.i = 1
     while (_s_.i <= _s_.N_letters)
-        _s_.fontsize = sample_read(ctx, _s_, 117, ("fontsize_" * string(_s_.i)), DiscreteUniform(38, 44))
-        _s_.kerning = sample_read(ctx, _s_, 135, ("kerning_" * string(_s_.i)), DiscreteUniform(-2, 2))
-        _s_.letter = sample_read(ctx, _s_, 153, ("letter_" * string(_s_.i)), DiscreteUniform(1, 26))
-        _s_.noisy_letter_image = sample_dependency(ctx, _s_, 171, ("letter_image_" * string(_s_.i)), MvNormal(vec(render_letter(_s_.letter, _s_.font, _s_.fontsize, _s_.kerning)), 0.1))
+        _s_.fontsize = read(ctx, _s_, 117, ("fontsize_" * string(_s_.i)))
+        _s_.kerning = read(ctx, _s_, 135, ("kerning_" * string(_s_.i)))
+        _s_.letter = read(ctx, _s_, 153, ("letter_" * string(_s_.i)))
+        _s_.noisy_letter_image = score(ctx, _s_, 171, ("letter_image_" * string(_s_.i)), MvNormal(vec(render_letter(_s_.letter, _s_.font, _s_.fontsize, _s_.kerning)), 0.1))
         _s_.image = (_s_.image + _s_.noisy_letter_image)
         _s_.i = (_s_.i + 1)
     end
 end
 
 function captcha_fontsize__117(ctx::AbstractFactorResampleContext, captcha_img::Vector{Float64}, _s_::State)
-    _s_.fontsize = sample_resample(ctx, _s_, 117, ("fontsize_" * string(_s_.i)), DiscreteUniform(38, 44))
-    _s_.kerning = sample_read(ctx, _s_, 135, ("kerning_" * string(_s_.i)), DiscreteUniform(-2, 2))
-    _s_.letter = sample_read(ctx, _s_, 153, ("letter_" * string(_s_.i)), DiscreteUniform(1, 26))
-    _s_.noisy_letter_image = sample_dependency(ctx, _s_, 171, ("letter_image_" * string(_s_.i)), MvNormal(vec(render_letter(_s_.letter, _s_.font, _s_.fontsize, _s_.kerning)), 0.1))
+    _s_.fontsize = resample(ctx, _s_, 117, ("fontsize_" * string(_s_.i)), DiscreteUniform(38, 44))
+    _s_.kerning = read(ctx, _s_, 135, ("kerning_" * string(_s_.i)))
+    _s_.letter = read(ctx, _s_, 153, ("letter_" * string(_s_.i)))
+    _s_.noisy_letter_image = score(ctx, _s_, 171, ("letter_image_" * string(_s_.i)), MvNormal(vec(render_letter(_s_.letter, _s_.font, _s_.fontsize, _s_.kerning)), 0.1))
 end
 
 function captcha_kerning__135(ctx::AbstractFactorResampleContext, captcha_img::Vector{Float64}, _s_::State)
-    _s_.kerning = sample_resample(ctx, _s_, 135, ("kerning_" * string(_s_.i)), DiscreteUniform(-2, 2))
-    _s_.letter = sample_read(ctx, _s_, 153, ("letter_" * string(_s_.i)), DiscreteUniform(1, 26))
-    _s_.noisy_letter_image = sample_dependency(ctx, _s_, 171, ("letter_image_" * string(_s_.i)), MvNormal(vec(render_letter(_s_.letter, _s_.font, _s_.fontsize, _s_.kerning)), 0.1))
+    _s_.kerning = resample(ctx, _s_, 135, ("kerning_" * string(_s_.i)), DiscreteUniform(-2, 2))
+    _s_.letter = read(ctx, _s_, 153, ("letter_" * string(_s_.i)))
+    _s_.noisy_letter_image = score(ctx, _s_, 171, ("letter_image_" * string(_s_.i)), MvNormal(vec(render_letter(_s_.letter, _s_.font, _s_.fontsize, _s_.kerning)), 0.1))
 end
 
 function captcha_letter__153(ctx::AbstractFactorResampleContext, captcha_img::Vector{Float64}, _s_::State)
-    _s_.letter = sample_resample(ctx, _s_, 153, ("letter_" * string(_s_.i)), DiscreteUniform(1, 26))
-    _s_.noisy_letter_image = sample_dependency(ctx, _s_, 171, ("letter_image_" * string(_s_.i)), MvNormal(vec(render_letter(_s_.letter, _s_.font, _s_.fontsize, _s_.kerning)), 0.1))
+    _s_.letter = resample(ctx, _s_, 153, ("letter_" * string(_s_.i)), DiscreteUniform(1, 26))
+    _s_.noisy_letter_image = score(ctx, _s_, 171, ("letter_image_" * string(_s_.i)), MvNormal(vec(render_letter(_s_.letter, _s_.font, _s_.fontsize, _s_.kerning)), 0.1))
 end
 
 function captcha_letter_image__171(ctx::AbstractFactorResampleContext, captcha_img::Vector{Float64}, _s_::State)
-    _s_.noisy_letter_image = sample_resample(ctx, _s_, 171, ("letter_image_" * string(_s_.i)), MvNormal(vec(render_letter(_s_.letter, _s_.font, _s_.fontsize, _s_.kerning)), 0.1))
+    _s_.noisy_letter_image = resample(ctx, _s_, 171, ("letter_image_" * string(_s_.i)), MvNormal(vec(render_letter(_s_.letter, _s_.font, _s_.fontsize, _s_.kerning)), 0.1))
     _s_.image = (_s_.image + _s_.noisy_letter_image)
     _s_.i = (_s_.i + 1)
     while (_s_.i <= _s_.N_letters)
-        _s_.fontsize = sample_read(ctx, _s_, 117, ("fontsize_" * string(_s_.i)), DiscreteUniform(38, 44))
-        _s_.kerning = sample_read(ctx, _s_, 135, ("kerning_" * string(_s_.i)), DiscreteUniform(-2, 2))
-        _s_.letter = sample_read(ctx, _s_, 153, ("letter_" * string(_s_.i)), DiscreteUniform(1, 26))
-        _s_.noisy_letter_image = sample_read(ctx, _s_, 171, ("letter_image_" * string(_s_.i)), MvNormal(vec(render_letter(_s_.letter, _s_.font, _s_.fontsize, _s_.kerning)), 0.1))
+        _s_.fontsize = read(ctx, _s_, 117, ("fontsize_" * string(_s_.i)))
+        _s_.kerning = read(ctx, _s_, 135, ("kerning_" * string(_s_.i)))
+        _s_.letter = read(ctx, _s_, 153, ("letter_" * string(_s_.i)))
+        _s_.noisy_letter_image = read(ctx, _s_, 171, ("letter_image_" * string(_s_.i)))
         _s_.image = (_s_.image + _s_.noisy_letter_image)
         _s_.i = (_s_.i + 1)
     end
-    sample_dependency(ctx, _s_, 210, "image", MvNormal(_s_.image, 1.0), observed = captcha_img)
+    score(ctx, _s_, 210, "image", MvNormal(_s_.image, 1.0), observed = captcha_img)
 end
 
 function captcha_factor(ctx::AbstractFactorResampleContext, captcha_img::Vector{Float64}, _s_::State, _addr_::String)

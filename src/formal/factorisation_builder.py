@@ -89,11 +89,12 @@ class FactorFunctionWriter():
                     assert value_sexpr[1] == ["Identifier", "sample"]
                     if current == self.samplenode and not self.wrote_first:
                         self.wrote_first = True
-                        value_sexpr[1] = ["Identifier", "sample_resample"]
+                        value_sexpr[1] = ["Identifier", "resample"]
                     elif current in self.deps:
-                        value_sexpr[1] = ["Identifier", "sample_dependency"]
+                        value_sexpr[1] = ["Identifier", "score"]
                     else:
-                        value_sexpr[1] = ["Identifier", "sample_read"]
+                        value_sexpr[1] = ["Identifier", "read"]
+                        del value_sexpr[6] # remove distribution
                 else:
                     value_sexpr =  inject_state_rec(value_sexpr, self.state_var, self.var_names, None)
 
@@ -120,9 +121,10 @@ class FactorFunctionWriter():
                     assert value_sexpr[0] == "call"
                     assert value_sexpr[1] == ["Identifier", "sample"]
                     if current in self.deps:
-                        value_sexpr[1] = ["Identifier", "sample_dependency"]
+                        value_sexpr[1] = ["Identifier", "score"]
                     else:
-                        value_sexpr[1] = ["Identifier", "sample_read"]
+                        value_sexpr[1] = ["Identifier", "read"]
+                        del value_sexpr[6] # remove distribution
                 else:
                     value_sexpr =  inject_state_rec(value_sexpr, self.state_var, self.var_names, None)
 

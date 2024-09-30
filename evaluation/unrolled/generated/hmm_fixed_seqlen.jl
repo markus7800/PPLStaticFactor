@@ -51,67 +51,67 @@ function hmm(ctx::AbstractGenerateRecordStateContext, ys::Vector{Float64}, _s_::
 end
 
 function hmm_initial_state_43(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.current = sample_resample(ctx, _s_, 43, "initial_state", Categorical([0.33, 0.33, 0.34]))
-    _s_.current = sample_dependency(ctx, _s_, 59, ("state_" * string(1)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    _s_.current = resample(ctx, _s_, 43, "initial_state", Categorical([0.33, 0.33, 0.34]))
+    _s_.current = score(ctx, _s_, 59, ("state_" * string(1)), Categorical(get_row(_s_.transition_probs, _s_.current)))
 end
 
 function hmm_state__139(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.current = sample_resample(ctx, _s_, 139, ("state_" * string(3)), Categorical(get_row(_s_.transition_probs, _s_.current)))
-    sample_dependency(ctx, _s_, 157, ("obs_" * string(3)), Normal(_s_.current, 1), observed = get_n(ys, 3))
-    _s_.current = sample_dependency(ctx, _s_, 179, ("state_" * string(4)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    _s_.current = resample(ctx, _s_, 139, ("state_" * string(3)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    score(ctx, _s_, 157, ("obs_" * string(3)), Normal(_s_.current, 1), observed = get_n(ys, 3))
+    _s_.current = score(ctx, _s_, 179, ("state_" * string(4)), Categorical(get_row(_s_.transition_probs, _s_.current)))
 end
 
 function hmm_state__179(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.current = sample_resample(ctx, _s_, 179, ("state_" * string(4)), Categorical(get_row(_s_.transition_probs, _s_.current)))
-    sample_dependency(ctx, _s_, 197, ("obs_" * string(4)), Normal(_s_.current, 1), observed = get_n(ys, 4))
-    _s_.current = sample_dependency(ctx, _s_, 219, ("state_" * string(5)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    _s_.current = resample(ctx, _s_, 179, ("state_" * string(4)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    score(ctx, _s_, 197, ("obs_" * string(4)), Normal(_s_.current, 1), observed = get_n(ys, 4))
+    _s_.current = score(ctx, _s_, 219, ("state_" * string(5)), Categorical(get_row(_s_.transition_probs, _s_.current)))
 end
 
 function hmm_state__219(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.current = sample_resample(ctx, _s_, 219, ("state_" * string(5)), Categorical(get_row(_s_.transition_probs, _s_.current)))
-    sample_dependency(ctx, _s_, 237, ("obs_" * string(5)), Normal(_s_.current, 1), observed = get_n(ys, 5))
-    _s_.current = sample_dependency(ctx, _s_, 259, ("state_" * string(6)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    _s_.current = resample(ctx, _s_, 219, ("state_" * string(5)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    score(ctx, _s_, 237, ("obs_" * string(5)), Normal(_s_.current, 1), observed = get_n(ys, 5))
+    _s_.current = score(ctx, _s_, 259, ("state_" * string(6)), Categorical(get_row(_s_.transition_probs, _s_.current)))
 end
 
 function hmm_state__259(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.current = sample_resample(ctx, _s_, 259, ("state_" * string(6)), Categorical(get_row(_s_.transition_probs, _s_.current)))
-    sample_dependency(ctx, _s_, 277, ("obs_" * string(6)), Normal(_s_.current, 1), observed = get_n(ys, 6))
-    _s_.current = sample_dependency(ctx, _s_, 299, ("state_" * string(7)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    _s_.current = resample(ctx, _s_, 259, ("state_" * string(6)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    score(ctx, _s_, 277, ("obs_" * string(6)), Normal(_s_.current, 1), observed = get_n(ys, 6))
+    _s_.current = score(ctx, _s_, 299, ("state_" * string(7)), Categorical(get_row(_s_.transition_probs, _s_.current)))
 end
 
 function hmm_state__299(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.current = sample_resample(ctx, _s_, 299, ("state_" * string(7)), Categorical(get_row(_s_.transition_probs, _s_.current)))
-    sample_dependency(ctx, _s_, 317, ("obs_" * string(7)), Normal(_s_.current, 1), observed = get_n(ys, 7))
-    _s_.current = sample_dependency(ctx, _s_, 339, ("state_" * string(8)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    _s_.current = resample(ctx, _s_, 299, ("state_" * string(7)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    score(ctx, _s_, 317, ("obs_" * string(7)), Normal(_s_.current, 1), observed = get_n(ys, 7))
+    _s_.current = score(ctx, _s_, 339, ("state_" * string(8)), Categorical(get_row(_s_.transition_probs, _s_.current)))
 end
 
 function hmm_state__339(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.current = sample_resample(ctx, _s_, 339, ("state_" * string(8)), Categorical(get_row(_s_.transition_probs, _s_.current)))
-    sample_dependency(ctx, _s_, 357, ("obs_" * string(8)), Normal(_s_.current, 1), observed = get_n(ys, 8))
-    _s_.current = sample_dependency(ctx, _s_, 379, ("state_" * string(9)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    _s_.current = resample(ctx, _s_, 339, ("state_" * string(8)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    score(ctx, _s_, 357, ("obs_" * string(8)), Normal(_s_.current, 1), observed = get_n(ys, 8))
+    _s_.current = score(ctx, _s_, 379, ("state_" * string(9)), Categorical(get_row(_s_.transition_probs, _s_.current)))
 end
 
 function hmm_state__379(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.current = sample_resample(ctx, _s_, 379, ("state_" * string(9)), Categorical(get_row(_s_.transition_probs, _s_.current)))
-    sample_dependency(ctx, _s_, 397, ("obs_" * string(9)), Normal(_s_.current, 1), observed = get_n(ys, 9))
-    _s_.current = sample_dependency(ctx, _s_, 419, ("state_" * string(10)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    _s_.current = resample(ctx, _s_, 379, ("state_" * string(9)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    score(ctx, _s_, 397, ("obs_" * string(9)), Normal(_s_.current, 1), observed = get_n(ys, 9))
+    _s_.current = score(ctx, _s_, 419, ("state_" * string(10)), Categorical(get_row(_s_.transition_probs, _s_.current)))
 end
 
 function hmm_state__419(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.current = sample_resample(ctx, _s_, 419, ("state_" * string(10)), Categorical(get_row(_s_.transition_probs, _s_.current)))
-    sample_dependency(ctx, _s_, 437, ("obs_" * string(10)), Normal(_s_.current, 1), observed = get_n(ys, 10))
+    _s_.current = resample(ctx, _s_, 419, ("state_" * string(10)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    score(ctx, _s_, 437, ("obs_" * string(10)), Normal(_s_.current, 1), observed = get_n(ys, 10))
 end
 
 function hmm_state__59(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.current = sample_resample(ctx, _s_, 59, ("state_" * string(1)), Categorical(get_row(_s_.transition_probs, _s_.current)))
-    sample_dependency(ctx, _s_, 77, ("obs_" * string(1)), Normal(_s_.current, 1), observed = get_n(ys, 1))
-    _s_.current = sample_dependency(ctx, _s_, 99, ("state_" * string(2)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    _s_.current = resample(ctx, _s_, 59, ("state_" * string(1)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    score(ctx, _s_, 77, ("obs_" * string(1)), Normal(_s_.current, 1), observed = get_n(ys, 1))
+    _s_.current = score(ctx, _s_, 99, ("state_" * string(2)), Categorical(get_row(_s_.transition_probs, _s_.current)))
 end
 
 function hmm_state__99(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.current = sample_resample(ctx, _s_, 99, ("state_" * string(2)), Categorical(get_row(_s_.transition_probs, _s_.current)))
-    sample_dependency(ctx, _s_, 117, ("obs_" * string(2)), Normal(_s_.current, 1), observed = get_n(ys, 2))
-    _s_.current = sample_dependency(ctx, _s_, 139, ("state_" * string(3)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    _s_.current = resample(ctx, _s_, 99, ("state_" * string(2)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    score(ctx, _s_, 117, ("obs_" * string(2)), Normal(_s_.current, 1), observed = get_n(ys, 2))
+    _s_.current = score(ctx, _s_, 139, ("state_" * string(3)), Categorical(get_row(_s_.transition_probs, _s_.current)))
 end
 
 function hmm_factor(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State, _addr_::String)

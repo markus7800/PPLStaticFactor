@@ -49,25 +49,25 @@ function marsaglia(ctx::AbstractGenerateRecordStateContext, _s_::State)
 end
 
 function marsaglia_x__45(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.x = sample_resample(ctx, _s_, 45, ("x_" * string(_s_.i)), Uniform(-1.0, 1.0))
-    _s_.y = sample_dependency(ctx, _s_, 61, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
+    _s_.x = resample(ctx, _s_, 45, ("x_" * string(_s_.i)), Uniform(-1.0, 1.0))
+    _s_.y = score(ctx, _s_, 61, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
     _s_.s = ((_s_.x ^ 2) + (_s_.y ^ 2))
     _s_.i = (_s_.i + 1)
     while (_s_.s > 1)
-        _s_.x = sample_dependency(ctx, _s_, 45, ("x_" * string(_s_.i)), Uniform(-1.0, 1.0))
-        _s_.y = sample_dependency(ctx, _s_, 61, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
+        _s_.x = score(ctx, _s_, 45, ("x_" * string(_s_.i)), Uniform(-1.0, 1.0))
+        _s_.y = score(ctx, _s_, 61, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
         _s_.s = ((_s_.x ^ 2) + (_s_.y ^ 2))
         _s_.i = (_s_.i + 1)
     end
 end
 
 function marsaglia_y__61(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.y = sample_resample(ctx, _s_, 61, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
+    _s_.y = resample(ctx, _s_, 61, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
     _s_.s = ((_s_.x ^ 2) + (_s_.y ^ 2))
     _s_.i = (_s_.i + 1)
     while (_s_.s > 1)
-        _s_.x = sample_dependency(ctx, _s_, 45, ("x_" * string(_s_.i)), Uniform(-1.0, 1.0))
-        _s_.y = sample_dependency(ctx, _s_, 61, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
+        _s_.x = score(ctx, _s_, 45, ("x_" * string(_s_.i)), Uniform(-1.0, 1.0))
+        _s_.y = score(ctx, _s_, 61, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
         _s_.s = ((_s_.x ^ 2) + (_s_.y ^ 2))
         _s_.i = (_s_.i + 1)
     end

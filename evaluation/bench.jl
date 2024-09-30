@@ -1,3 +1,4 @@
+using Printf
 
 include(ARGS[1] * "/generated/" * ARGS[2])
 if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm_fixed_seqlen", "lda_fixed_numtopic")
@@ -64,6 +65,7 @@ function runbench(N::Int, verbose::Bool)
 
     @assert (updated_lps_1 ≈ updated_lps_2)
 
+    handwritten_time = NaN
     if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm_fixed_seqlen", "lda_fixed_numtopic")
         Random.seed!(0)
         updated_lps_3 = Vector{Float64}(undef, N)
@@ -82,6 +84,15 @@ function runbench(N::Int, verbose::Bool)
 
         verbose && println("Handwritten time $(round(handwritten_time*10^6, sigdigits=3)) μs ($(round(handwritten_time / standard_time, sigdigits=2)))")
         @assert (updated_lps_1 ≈ updated_lps_3)
+    end
+
+    if verbose
+        print("& $(round(standard_time*10^6, digits=2)) & $(round(factored_time*10^6, digits=2)) ($(round(factored_time / standard_time, digits=2)))")
+        if isnan(handwritten_time)
+            println(" & - \\\\")
+        else
+            println(" & $(round(handwritten_time*10^6, digits=2)) ($(round(handwritten_time / standard_time, digits=2))) \\\\")
+        end
     end
 
 end

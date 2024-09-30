@@ -83,7 +83,7 @@ function aircraft(ctx::AbstractGenerateRecordStateContext, _s_::State)
 end
 
 function aircraft_blip__123(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.blip = sample_resample(ctx, _s_, 123, ("blip_" * string(_s_.i) * "_" * string(_s_.j)), Normal(_s_.position, 1.0))
+    _s_.blip = resample(ctx, _s_, 123, ("blip_" * string(_s_.i) * "_" * string(_s_.j)), Normal(_s_.position, 1.0))
     if (_s_.total_num_blibs == 1)
         _s_.blip_1 = _s_.blip
     end
@@ -96,7 +96,7 @@ function aircraft_blip__123(ctx::AbstractFactorResampleContext, _s_::State)
     _s_.j = (_s_.j + 1)
     while (_s_.j <= _s_.num_blips)
         _s_.total_num_blibs = (_s_.total_num_blibs + 1)
-        _s_.blip = sample_read(ctx, _s_, 123, ("blip_" * string(_s_.i) * "_" * string(_s_.j)), Normal(_s_.position, 1.0))
+        _s_.blip = read(ctx, _s_, 123, ("blip_" * string(_s_.i) * "_" * string(_s_.j)))
         if (_s_.total_num_blibs == 1)
             _s_.blip_1 = _s_.blip
         end
@@ -110,12 +110,12 @@ function aircraft_blip__123(ctx::AbstractFactorResampleContext, _s_::State)
     end
     _s_.i = (_s_.i + 1)
     while (_s_.i <= _s_.num_aircraft)
-        _s_.position = sample_read(ctx, _s_, 68, ("pos_" * string(_s_.i)), Normal(2.0, 5.0))
-        _s_.num_blips = sample_read(ctx, _s_, 86, ("num_blips_" * string(_s_.i)), Categorical([0.1, 0.4, 0.5]))
+        _s_.position = read(ctx, _s_, 68, ("pos_" * string(_s_.i)))
+        _s_.num_blips = read(ctx, _s_, 86, ("num_blips_" * string(_s_.i)))
         _s_.j = 1
         while (_s_.j <= _s_.num_blips)
             _s_.total_num_blibs = (_s_.total_num_blibs + 1)
-            _s_.blip = sample_read(ctx, _s_, 123, ("blip_" * string(_s_.i) * "_" * string(_s_.j)), Normal(_s_.position, 1.0))
+            _s_.blip = read(ctx, _s_, 123, ("blip_" * string(_s_.i) * "_" * string(_s_.j)))
             if (_s_.total_num_blibs == 1)
                 _s_.blip_1 = _s_.blip
             end
@@ -129,14 +129,14 @@ function aircraft_blip__123(ctx::AbstractFactorResampleContext, _s_::State)
         end
         _s_.i = (_s_.i + 1)
     end
-    sample_read(ctx, _s_, 185, "observed_num_blips", Normal(_s_.total_num_blibs, 1), observed = 3)
-    sample_dependency(ctx, _s_, 199, "observed_blip_2", Normal(_s_.blip_1, 1), observed = 1.0)
-    sample_dependency(ctx, _s_, 213, "observed_blip_2", Normal(_s_.blip_2, 1), observed = 2.0)
-    sample_dependency(ctx, _s_, 227, "observed_blip_3", Normal(_s_.blip_3, 1), observed = 3.0)
+    read(ctx, _s_, 185, "observed_num_blips", observed = 3)
+    score(ctx, _s_, 199, "observed_blip_2", Normal(_s_.blip_1, 1), observed = 1.0)
+    score(ctx, _s_, 213, "observed_blip_2", Normal(_s_.blip_2, 1), observed = 2.0)
+    score(ctx, _s_, 227, "observed_blip_3", Normal(_s_.blip_3, 1), observed = 3.0)
 end
 
 function aircraft_num_aircraft_19(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.num_aircraft = sample_resample(ctx, _s_, 19, "num_aircraft", Poisson(5))
+    _s_.num_aircraft = resample(ctx, _s_, 19, "num_aircraft", Poisson(5))
     _s_.num_aircraft = (_s_.num_aircraft + 1)
     _s_.total_num_blibs = 0
     _s_.blip_1 = 0.0
@@ -144,12 +144,12 @@ function aircraft_num_aircraft_19(ctx::AbstractFactorResampleContext, _s_::State
     _s_.blip_3 = 0.0
     _s_.i = 1
     while (_s_.i <= _s_.num_aircraft)
-        _s_.position = sample_dependency(ctx, _s_, 68, ("pos_" * string(_s_.i)), Normal(2.0, 5.0))
-        _s_.num_blips = sample_dependency(ctx, _s_, 86, ("num_blips_" * string(_s_.i)), Categorical([0.1, 0.4, 0.5]))
+        _s_.position = score(ctx, _s_, 68, ("pos_" * string(_s_.i)), Normal(2.0, 5.0))
+        _s_.num_blips = score(ctx, _s_, 86, ("num_blips_" * string(_s_.i)), Categorical([0.1, 0.4, 0.5]))
         _s_.j = 1
         while (_s_.j <= _s_.num_blips)
             _s_.total_num_blibs = (_s_.total_num_blibs + 1)
-            _s_.blip = sample_dependency(ctx, _s_, 123, ("blip_" * string(_s_.i) * "_" * string(_s_.j)), Normal(_s_.position, 1.0))
+            _s_.blip = score(ctx, _s_, 123, ("blip_" * string(_s_.i) * "_" * string(_s_.j)), Normal(_s_.position, 1.0))
             if (_s_.total_num_blibs == 1)
                 _s_.blip_1 = _s_.blip
             end
@@ -163,18 +163,18 @@ function aircraft_num_aircraft_19(ctx::AbstractFactorResampleContext, _s_::State
         end
         _s_.i = (_s_.i + 1)
     end
-    sample_dependency(ctx, _s_, 185, "observed_num_blips", Normal(_s_.total_num_blibs, 1), observed = 3)
-    sample_dependency(ctx, _s_, 199, "observed_blip_2", Normal(_s_.blip_1, 1), observed = 1.0)
-    sample_dependency(ctx, _s_, 213, "observed_blip_2", Normal(_s_.blip_2, 1), observed = 2.0)
-    sample_dependency(ctx, _s_, 227, "observed_blip_3", Normal(_s_.blip_3, 1), observed = 3.0)
+    score(ctx, _s_, 185, "observed_num_blips", Normal(_s_.total_num_blibs, 1), observed = 3)
+    score(ctx, _s_, 199, "observed_blip_2", Normal(_s_.blip_1, 1), observed = 1.0)
+    score(ctx, _s_, 213, "observed_blip_2", Normal(_s_.blip_2, 1), observed = 2.0)
+    score(ctx, _s_, 227, "observed_blip_3", Normal(_s_.blip_3, 1), observed = 3.0)
 end
 
 function aircraft_num_blips__86(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.num_blips = sample_resample(ctx, _s_, 86, ("num_blips_" * string(_s_.i)), Categorical([0.1, 0.4, 0.5]))
+    _s_.num_blips = resample(ctx, _s_, 86, ("num_blips_" * string(_s_.i)), Categorical([0.1, 0.4, 0.5]))
     _s_.j = 1
     while (_s_.j <= _s_.num_blips)
         _s_.total_num_blibs = (_s_.total_num_blibs + 1)
-        _s_.blip = sample_dependency(ctx, _s_, 123, ("blip_" * string(_s_.i) * "_" * string(_s_.j)), Normal(_s_.position, 1.0))
+        _s_.blip = score(ctx, _s_, 123, ("blip_" * string(_s_.i) * "_" * string(_s_.j)), Normal(_s_.position, 1.0))
         if (_s_.total_num_blibs == 1)
             _s_.blip_1 = _s_.blip
         end
@@ -188,12 +188,12 @@ function aircraft_num_blips__86(ctx::AbstractFactorResampleContext, _s_::State)
     end
     _s_.i = (_s_.i + 1)
     while (_s_.i <= _s_.num_aircraft)
-        _s_.position = sample_dependency(ctx, _s_, 68, ("pos_" * string(_s_.i)), Normal(2.0, 5.0))
-        _s_.num_blips = sample_dependency(ctx, _s_, 86, ("num_blips_" * string(_s_.i)), Categorical([0.1, 0.4, 0.5]))
+        _s_.position = score(ctx, _s_, 68, ("pos_" * string(_s_.i)), Normal(2.0, 5.0))
+        _s_.num_blips = score(ctx, _s_, 86, ("num_blips_" * string(_s_.i)), Categorical([0.1, 0.4, 0.5]))
         _s_.j = 1
         while (_s_.j <= _s_.num_blips)
             _s_.total_num_blibs = (_s_.total_num_blibs + 1)
-            _s_.blip = sample_dependency(ctx, _s_, 123, ("blip_" * string(_s_.i) * "_" * string(_s_.j)), Normal(_s_.position, 1.0))
+            _s_.blip = score(ctx, _s_, 123, ("blip_" * string(_s_.i) * "_" * string(_s_.j)), Normal(_s_.position, 1.0))
             if (_s_.total_num_blibs == 1)
                 _s_.blip_1 = _s_.blip
             end
@@ -207,19 +207,19 @@ function aircraft_num_blips__86(ctx::AbstractFactorResampleContext, _s_::State)
         end
         _s_.i = (_s_.i + 1)
     end
-    sample_dependency(ctx, _s_, 185, "observed_num_blips", Normal(_s_.total_num_blibs, 1), observed = 3)
-    sample_dependency(ctx, _s_, 199, "observed_blip_2", Normal(_s_.blip_1, 1), observed = 1.0)
-    sample_dependency(ctx, _s_, 213, "observed_blip_2", Normal(_s_.blip_2, 1), observed = 2.0)
-    sample_dependency(ctx, _s_, 227, "observed_blip_3", Normal(_s_.blip_3, 1), observed = 3.0)
+    score(ctx, _s_, 185, "observed_num_blips", Normal(_s_.total_num_blibs, 1), observed = 3)
+    score(ctx, _s_, 199, "observed_blip_2", Normal(_s_.blip_1, 1), observed = 1.0)
+    score(ctx, _s_, 213, "observed_blip_2", Normal(_s_.blip_2, 1), observed = 2.0)
+    score(ctx, _s_, 227, "observed_blip_3", Normal(_s_.blip_3, 1), observed = 3.0)
 end
 
 function aircraft_pos__68(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.position = sample_resample(ctx, _s_, 68, ("pos_" * string(_s_.i)), Normal(2.0, 5.0))
-    _s_.num_blips = sample_read(ctx, _s_, 86, ("num_blips_" * string(_s_.i)), Categorical([0.1, 0.4, 0.5]))
+    _s_.position = resample(ctx, _s_, 68, ("pos_" * string(_s_.i)), Normal(2.0, 5.0))
+    _s_.num_blips = read(ctx, _s_, 86, ("num_blips_" * string(_s_.i)))
     _s_.j = 1
     while (_s_.j <= _s_.num_blips)
         _s_.total_num_blibs = (_s_.total_num_blibs + 1)
-        _s_.blip = sample_dependency(ctx, _s_, 123, ("blip_" * string(_s_.i) * "_" * string(_s_.j)), Normal(_s_.position, 1.0))
+        _s_.blip = score(ctx, _s_, 123, ("blip_" * string(_s_.i) * "_" * string(_s_.j)), Normal(_s_.position, 1.0))
         if (_s_.total_num_blibs == 1)
             _s_.blip_1 = _s_.blip
         end

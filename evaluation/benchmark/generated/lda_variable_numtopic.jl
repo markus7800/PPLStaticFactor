@@ -66,78 +66,78 @@ function lda(ctx::AbstractGenerateRecordStateContext, M::Int, N::Int, V::Int, w:
 end
 
 function lda_K_38(ctx::AbstractFactorResampleContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State)
-    _s_.K = sample_resample(ctx, _s_, 38, "K", Poisson(2))
+    _s_.K = resample(ctx, _s_, 38, "K", Poisson(2))
     _s_.K = (_s_.K + 1)
     _s_.thetas = Vector{Vector{Float64}}()
     _s_.i = 1
     while (_s_.i <= M)
-        _s_.theta = sample_dependency(ctx, _s_, 81, ("theta_" * string(_s_.i)), Dirichlet(fill((1 / _s_.K), _s_.K)))
+        _s_.theta = score(ctx, _s_, 81, ("theta_" * string(_s_.i)), Dirichlet(fill((1 / _s_.K), _s_.K)))
         _s_.thetas = append(_s_.thetas, _s_.theta)
         _s_.i = (_s_.i + 1)
     end
     _s_.phis = Vector{Vector{Float64}}()
     _s_.i = 1
     while (_s_.i <= _s_.K)
-        _s_.phi = sample_dependency(ctx, _s_, 141, ("phi_" * string(_s_.i)), Dirichlet(fill((1 / V), V)))
+        _s_.phi = score(ctx, _s_, 141, ("phi_" * string(_s_.i)), Dirichlet(fill((1 / V), V)))
         _s_.phis = append(_s_.phis, _s_.phi)
         _s_.i = (_s_.i + 1)
     end
     _s_.n = 1
     while (_s_.n <= N)
-        z = sample_dependency(ctx, _s_, 189, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
+        z = score(ctx, _s_, 189, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
         z = min(length(_s_.phis), z)
-        sample_dependency(ctx, _s_, 216, ("w_" * string(_s_.n)), Categorical(_s_.phis[z]), observed = w[_s_.n])
+        score(ctx, _s_, 216, ("w_" * string(_s_.n)), Categorical(_s_.phis[z]), observed = w[_s_.n])
         _s_.n = (_s_.n + 1)
     end
 end
 
 function lda_phi__141(ctx::AbstractFactorResampleContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State)
-    _s_.phi = sample_resample(ctx, _s_, 141, ("phi_" * string(_s_.i)), Dirichlet(fill((1 / V), V)))
+    _s_.phi = resample(ctx, _s_, 141, ("phi_" * string(_s_.i)), Dirichlet(fill((1 / V), V)))
     _s_.phis = append(_s_.phis, _s_.phi)
     _s_.i = (_s_.i + 1)
     while (_s_.i <= _s_.K)
-        _s_.phi = sample_read(ctx, _s_, 141, ("phi_" * string(_s_.i)), Dirichlet(fill((1 / V), V)))
+        _s_.phi = read(ctx, _s_, 141, ("phi_" * string(_s_.i)))
         _s_.phis = append(_s_.phis, _s_.phi)
         _s_.i = (_s_.i + 1)
     end
     _s_.n = 1
     while (_s_.n <= N)
-        z = sample_read(ctx, _s_, 189, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
+        z = read(ctx, _s_, 189, ("z_" * string(_s_.n)))
         z = min(length(_s_.phis), z)
-        sample_dependency(ctx, _s_, 216, ("w_" * string(_s_.n)), Categorical(_s_.phis[z]), observed = w[_s_.n])
+        score(ctx, _s_, 216, ("w_" * string(_s_.n)), Categorical(_s_.phis[z]), observed = w[_s_.n])
         _s_.n = (_s_.n + 1)
     end
 end
 
 function lda_theta__81(ctx::AbstractFactorResampleContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State)
-    _s_.theta = sample_resample(ctx, _s_, 81, ("theta_" * string(_s_.i)), Dirichlet(fill((1 / _s_.K), _s_.K)))
+    _s_.theta = resample(ctx, _s_, 81, ("theta_" * string(_s_.i)), Dirichlet(fill((1 / _s_.K), _s_.K)))
     _s_.thetas = append(_s_.thetas, _s_.theta)
     _s_.i = (_s_.i + 1)
     while (_s_.i <= M)
-        _s_.theta = sample_read(ctx, _s_, 81, ("theta_" * string(_s_.i)), Dirichlet(fill((1 / _s_.K), _s_.K)))
+        _s_.theta = read(ctx, _s_, 81, ("theta_" * string(_s_.i)))
         _s_.thetas = append(_s_.thetas, _s_.theta)
         _s_.i = (_s_.i + 1)
     end
     _s_.phis = Vector{Vector{Float64}}()
     _s_.i = 1
     while (_s_.i <= _s_.K)
-        _s_.phi = sample_read(ctx, _s_, 141, ("phi_" * string(_s_.i)), Dirichlet(fill((1 / V), V)))
+        _s_.phi = read(ctx, _s_, 141, ("phi_" * string(_s_.i)))
         _s_.phis = append(_s_.phis, _s_.phi)
         _s_.i = (_s_.i + 1)
     end
     _s_.n = 1
     while (_s_.n <= N)
-        z = sample_dependency(ctx, _s_, 189, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
+        z = score(ctx, _s_, 189, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
         z = min(length(_s_.phis), z)
-        sample_read(ctx, _s_, 216, ("w_" * string(_s_.n)), Categorical(_s_.phis[z]), observed = w[_s_.n])
+        read(ctx, _s_, 216, ("w_" * string(_s_.n)), observed = w[_s_.n])
         _s_.n = (_s_.n + 1)
     end
 end
 
 function lda_z__189(ctx::AbstractFactorResampleContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State)
-    z = sample_resample(ctx, _s_, 189, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
+    z = resample(ctx, _s_, 189, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
     z = min(length(_s_.phis), z)
-    sample_dependency(ctx, _s_, 216, ("w_" * string(_s_.n)), Categorical(_s_.phis[z]), observed = w[_s_.n])
+    score(ctx, _s_, 216, ("w_" * string(_s_.n)), Categorical(_s_.phis[z]), observed = w[_s_.n])
 end
 
 function lda_factor(ctx::AbstractFactorResampleContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State, _addr_::String)

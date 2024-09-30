@@ -89,96 +89,96 @@ function gmm(ctx::AbstractGenerateRecordStateContext, ys::Vector{Float64}, _s_::
 end
 
 function gmm_mu__111(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.mu = sample_resample(ctx, _s_, 111, ("mu_" * string(_s_.k)), Normal(_s_.ξ, (1 / sqrt(_s_.κ))))
-    _s_.var = sample_read(ctx, _s_, 134, ("var_" * string(_s_.k)), InverseGamma(_s_.α, _s_.β))
+    _s_.mu = resample(ctx, _s_, 111, ("mu_" * string(_s_.k)), Normal(_s_.ξ, (1 / sqrt(_s_.κ))))
+    _s_.var = read(ctx, _s_, 134, ("var_" * string(_s_.k)))
     _s_.means = vcat(_s_.means, _s_.mu)
     _s_.vars = vcat(_s_.vars, _s_.var)
     _s_.k = (_s_.k + 1)
     while (_s_.k <= _s_.num_clusters)
-        _s_.mu = sample_read(ctx, _s_, 111, ("mu_" * string(_s_.k)), Normal(_s_.ξ, (1 / sqrt(_s_.κ))))
-        _s_.var = sample_read(ctx, _s_, 134, ("var_" * string(_s_.k)), InverseGamma(_s_.α, _s_.β))
+        _s_.mu = read(ctx, _s_, 111, ("mu_" * string(_s_.k)))
+        _s_.var = read(ctx, _s_, 134, ("var_" * string(_s_.k)))
         _s_.means = vcat(_s_.means, _s_.mu)
         _s_.vars = vcat(_s_.vars, _s_.var)
         _s_.k = (_s_.k + 1)
     end
     _s_.i = 1
     while (_s_.i <= length(ys))
-        _s_.z = sample_read(ctx, _s_, 183, ("z_" * string(_s_.i)), Categorical(_s_.w))
+        _s_.z = read(ctx, _s_, 183, ("z_" * string(_s_.i)))
         _s_.z = min(_s_.z, length(_s_.means))
-        sample_dependency(ctx, _s_, 208, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
+        score(ctx, _s_, 208, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
         _s_.i = (_s_.i + 1)
     end
 end
 
 function gmm_num_clusters_49(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.num_clusters = sample_resample(ctx, _s_, 49, "num_clusters", Poisson(3.0))
+    _s_.num_clusters = resample(ctx, _s_, 49, "num_clusters", Poisson(3.0))
     _s_.num_clusters = (_s_.num_clusters + 1)
-    _s_.w = sample_dependency(ctx, _s_, 67, "w", Dirichlet(fill(_s_.δ, _s_.num_clusters)))
+    _s_.w = score(ctx, _s_, 67, "w", Dirichlet(fill(_s_.δ, _s_.num_clusters)))
     _s_.k = 1
     _s_.means = Float64[]
     _s_.vars = Float64[]
     while (_s_.k <= _s_.num_clusters)
-        _s_.mu = sample_dependency(ctx, _s_, 111, ("mu_" * string(_s_.k)), Normal(_s_.ξ, (1 / sqrt(_s_.κ))))
-        _s_.var = sample_dependency(ctx, _s_, 134, ("var_" * string(_s_.k)), InverseGamma(_s_.α, _s_.β))
+        _s_.mu = score(ctx, _s_, 111, ("mu_" * string(_s_.k)), Normal(_s_.ξ, (1 / sqrt(_s_.κ))))
+        _s_.var = score(ctx, _s_, 134, ("var_" * string(_s_.k)), InverseGamma(_s_.α, _s_.β))
         _s_.means = vcat(_s_.means, _s_.mu)
         _s_.vars = vcat(_s_.vars, _s_.var)
         _s_.k = (_s_.k + 1)
     end
     _s_.i = 1
     while (_s_.i <= length(ys))
-        _s_.z = sample_dependency(ctx, _s_, 183, ("z_" * string(_s_.i)), Categorical(_s_.w))
+        _s_.z = score(ctx, _s_, 183, ("z_" * string(_s_.i)), Categorical(_s_.w))
         _s_.z = min(_s_.z, length(_s_.means))
-        sample_dependency(ctx, _s_, 208, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
+        score(ctx, _s_, 208, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
         _s_.i = (_s_.i + 1)
     end
 end
 
 function gmm_var__134(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.var = sample_resample(ctx, _s_, 134, ("var_" * string(_s_.k)), InverseGamma(_s_.α, _s_.β))
+    _s_.var = resample(ctx, _s_, 134, ("var_" * string(_s_.k)), InverseGamma(_s_.α, _s_.β))
     _s_.means = vcat(_s_.means, _s_.mu)
     _s_.vars = vcat(_s_.vars, _s_.var)
     _s_.k = (_s_.k + 1)
     while (_s_.k <= _s_.num_clusters)
-        _s_.mu = sample_read(ctx, _s_, 111, ("mu_" * string(_s_.k)), Normal(_s_.ξ, (1 / sqrt(_s_.κ))))
-        _s_.var = sample_read(ctx, _s_, 134, ("var_" * string(_s_.k)), InverseGamma(_s_.α, _s_.β))
+        _s_.mu = read(ctx, _s_, 111, ("mu_" * string(_s_.k)))
+        _s_.var = read(ctx, _s_, 134, ("var_" * string(_s_.k)))
         _s_.means = vcat(_s_.means, _s_.mu)
         _s_.vars = vcat(_s_.vars, _s_.var)
         _s_.k = (_s_.k + 1)
     end
     _s_.i = 1
     while (_s_.i <= length(ys))
-        _s_.z = sample_read(ctx, _s_, 183, ("z_" * string(_s_.i)), Categorical(_s_.w))
+        _s_.z = read(ctx, _s_, 183, ("z_" * string(_s_.i)))
         _s_.z = min(_s_.z, length(_s_.means))
-        sample_dependency(ctx, _s_, 208, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
+        score(ctx, _s_, 208, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
         _s_.i = (_s_.i + 1)
     end
 end
 
 function gmm_w_67(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.w = sample_resample(ctx, _s_, 67, "w", Dirichlet(fill(_s_.δ, _s_.num_clusters)))
+    _s_.w = resample(ctx, _s_, 67, "w", Dirichlet(fill(_s_.δ, _s_.num_clusters)))
     _s_.k = 1
     _s_.means = Float64[]
     _s_.vars = Float64[]
     while (_s_.k <= _s_.num_clusters)
-        _s_.mu = sample_read(ctx, _s_, 111, ("mu_" * string(_s_.k)), Normal(_s_.ξ, (1 / sqrt(_s_.κ))))
-        _s_.var = sample_read(ctx, _s_, 134, ("var_" * string(_s_.k)), InverseGamma(_s_.α, _s_.β))
+        _s_.mu = read(ctx, _s_, 111, ("mu_" * string(_s_.k)))
+        _s_.var = read(ctx, _s_, 134, ("var_" * string(_s_.k)))
         _s_.means = vcat(_s_.means, _s_.mu)
         _s_.vars = vcat(_s_.vars, _s_.var)
         _s_.k = (_s_.k + 1)
     end
     _s_.i = 1
     while (_s_.i <= length(ys))
-        _s_.z = sample_dependency(ctx, _s_, 183, ("z_" * string(_s_.i)), Categorical(_s_.w))
+        _s_.z = score(ctx, _s_, 183, ("z_" * string(_s_.i)), Categorical(_s_.w))
         _s_.z = min(_s_.z, length(_s_.means))
-        sample_read(ctx, _s_, 208, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
+        read(ctx, _s_, 208, ("y_" * string(_s_.i)), observed = get_n(ys, _s_.i))
         _s_.i = (_s_.i + 1)
     end
 end
 
 function gmm_z__183(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.z = sample_resample(ctx, _s_, 183, ("z_" * string(_s_.i)), Categorical(_s_.w))
+    _s_.z = resample(ctx, _s_, 183, ("z_" * string(_s_.i)), Categorical(_s_.w))
     _s_.z = min(_s_.z, length(_s_.means))
-    sample_dependency(ctx, _s_, 208, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
+    score(ctx, _s_, 208, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
 end
 
 function gmm_factor(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State, _addr_::String)

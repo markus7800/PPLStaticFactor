@@ -43,22 +43,22 @@ function hmm(ctx::AbstractGenerateRecordStateContext, ys::Vector{Float64}, _s_::
 end
 
 function hmm_initial_state_50(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.current = sample_resample(ctx, _s_, 50, "initial_state", Categorical([0.33, 0.33, 0.34]))
+    _s_.current = resample(ctx, _s_, 50, "initial_state", Categorical([0.33, 0.33, 0.34]))
     _s_.i = 1
     while (_s_.i <= _s_.seqlen)
-        _s_.current = sample_dependency(ctx, _s_, 76, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))
-        sample_read(ctx, _s_, 94, ("obs_" * string(_s_.i)), Normal(_s_.current, 1), observed = get_n(ys, _s_.i))
+        _s_.current = score(ctx, _s_, 76, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+        read(ctx, _s_, 94, ("obs_" * string(_s_.i)), observed = get_n(ys, _s_.i))
         _s_.i = (_s_.i + 1)
     end
 end
 
 function hmm_state__76(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.current = sample_resample(ctx, _s_, 76, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))
-    sample_dependency(ctx, _s_, 94, ("obs_" * string(_s_.i)), Normal(_s_.current, 1), observed = get_n(ys, _s_.i))
+    _s_.current = resample(ctx, _s_, 76, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    score(ctx, _s_, 94, ("obs_" * string(_s_.i)), Normal(_s_.current, 1), observed = get_n(ys, _s_.i))
     _s_.i = (_s_.i + 1)
     while (_s_.i <= _s_.seqlen)
-        _s_.current = sample_dependency(ctx, _s_, 76, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))
-        sample_dependency(ctx, _s_, 94, ("obs_" * string(_s_.i)), Normal(_s_.current, 1), observed = get_n(ys, _s_.i))
+        _s_.current = score(ctx, _s_, 76, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+        score(ctx, _s_, 94, ("obs_" * string(_s_.i)), Normal(_s_.current, 1), observed = get_n(ys, _s_.i))
         _s_.i = (_s_.i + 1)
     end
 end

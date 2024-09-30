@@ -45,31 +45,31 @@ function pedestrian(ctx::AbstractGenerateRecordStateContext, _s_::State)
 end
 
 function pedestrian_start_19(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.start = sample_resample(ctx, _s_, 19, "start", Uniform(0.0, 1.0))
+    _s_.start = resample(ctx, _s_, 19, "start", Uniform(0.0, 1.0))
     _s_.position = _s_.start
     _s_.distance = 0
     _s_.i = 1
     while ((_s_.position > 0) && (_s_.distance < 10))
-        step = sample_dependency(ctx, _s_, 58, ("step_" * string(_s_.i)), Uniform(-1.0, 1.0))
+        step = score(ctx, _s_, 58, ("step_" * string(_s_.i)), Uniform(-1.0, 1.0))
         _s_.position = (_s_.position + step)
         _s_.distance = (_s_.distance + abs(step))
         _s_.i = (_s_.i + 1)
     end
-    sample_dependency(ctx, _s_, 94, "final_distance", Normal(_s_.distance, 0.1), observed = 1.1)
+    score(ctx, _s_, 94, "final_distance", Normal(_s_.distance, 0.1), observed = 1.1)
 end
 
 function pedestrian_step__58(ctx::AbstractFactorResampleContext, _s_::State)
-    step = sample_resample(ctx, _s_, 58, ("step_" * string(_s_.i)), Uniform(-1.0, 1.0))
+    step = resample(ctx, _s_, 58, ("step_" * string(_s_.i)), Uniform(-1.0, 1.0))
     _s_.position = (_s_.position + step)
     _s_.distance = (_s_.distance + abs(step))
     _s_.i = (_s_.i + 1)
     while ((_s_.position > 0) && (_s_.distance < 10))
-        step = sample_dependency(ctx, _s_, 58, ("step_" * string(_s_.i)), Uniform(-1.0, 1.0))
+        step = score(ctx, _s_, 58, ("step_" * string(_s_.i)), Uniform(-1.0, 1.0))
         _s_.position = (_s_.position + step)
         _s_.distance = (_s_.distance + abs(step))
         _s_.i = (_s_.i + 1)
     end
-    sample_dependency(ctx, _s_, 94, "final_distance", Normal(_s_.distance, 0.1), observed = 1.1)
+    score(ctx, _s_, 94, "final_distance", Normal(_s_.distance, 0.1), observed = 1.1)
 end
 
 function pedestrian_factor(ctx::AbstractFactorResampleContext, _s_::State, _addr_::String)

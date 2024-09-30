@@ -143,7 +143,7 @@ mutable struct AddFactorResampleContext <: AbstractFactorResampleContext
     end
 end
 
-function sample_resample(ctx::AddFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+function resample(ctx::AddFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     value = rand(distribution)
     # ctx.trace[address] = (value, copy(s))
     ctx.logprob += logpdf(distribution, value)
@@ -151,7 +151,7 @@ function sample_resample(ctx::AddFactorResampleContext, s::AbstractState, node_i
     return value
 end
 
-function sample_dependency(ctx::AddFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+function score(ctx::AddFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     if !isnothing(observed)
         value = observed
     elseif haskey(ctx.trace, address)
@@ -166,7 +166,7 @@ function sample_dependency(ctx::AddFactorResampleContext, s::AbstractState, node
     return value
 end
 
-function sample_read(ctx::AddFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+function read(ctx::AddFactorResampleContext, s::AbstractState, node_id::Int, address::String; observed=nothing)
     if !isnothing(observed)
         value = observed
     else
@@ -185,14 +185,14 @@ mutable struct SubstractFactorResampleContext <: AbstractFactorResampleContext
     end
 end
 
-function sample_resample(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+function resample(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     value, _ = ctx.trace[address]
     ctx.logprob -= logpdf(distribution, value)
     DEBUG_INFO_2 && println("SubstractFactorResampleContext: resample $address with $value")
     return value
 end
 
-function sample_dependency(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+function score(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     if !isnothing(observed)
         value = observed
     else
@@ -204,7 +204,7 @@ function sample_dependency(ctx::SubstractFactorResampleContext, s::AbstractState
     return value
 end
 
-function sample_read(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+function read(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::Int, address::String; observed=nothing)
     if !isnothing(observed)
         value = observed
     else

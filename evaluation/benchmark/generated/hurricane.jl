@@ -53,60 +53,60 @@ function hurricane(ctx::AbstractGenerateRecordStateContext, _s_::State)
 end
 
 function hurricane_D0_158(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.damage_0 = sample_resample(ctx, _s_, 158, "D0", Bernoulli((_s_.prep_0 == 1) ? 0.2 : 0.8))
+    _s_.damage_0 = resample(ctx, _s_, 158, "D0", Bernoulli((_s_.prep_0 == 1) ? 0.2 : 0.8))
 end
 
 function hurricane_D0_67(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.damage_0 = sample_resample(ctx, _s_, 67, "D0", Bernoulli((_s_.prep_0 == 1) ? 0.2 : 0.8))
-    _s_.prep_1 = sample_dependency(ctx, _s_, 83, "P1", Bernoulli((_s_.damage_0 == 1) ? 0.75 : 0.5))
+    _s_.damage_0 = resample(ctx, _s_, 67, "D0", Bernoulli((_s_.prep_0 == 1) ? 0.2 : 0.8))
+    _s_.prep_1 = score(ctx, _s_, 83, "P1", Bernoulli((_s_.damage_0 == 1) ? 0.75 : 0.5))
 end
 
 function hurricane_D1_126(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.damage_1 = sample_resample(ctx, _s_, 126, "D1", Bernoulli((_s_.prep_1 == 1) ? 0.2 : 0.8))
-    _s_.prep_0 = sample_dependency(ctx, _s_, 142, "P0", Bernoulli((_s_.damage_1 == 1) ? 0.75 : 0.5))
+    _s_.damage_1 = resample(ctx, _s_, 126, "D1", Bernoulli((_s_.prep_1 == 1) ? 0.2 : 0.8))
+    _s_.prep_0 = score(ctx, _s_, 142, "P0", Bernoulli((_s_.damage_1 == 1) ? 0.75 : 0.5))
 end
 
 function hurricane_D1_99(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.damage_1 = sample_resample(ctx, _s_, 99, "D1", Bernoulli((_s_.prep_1 == 1) ? 0.2 : 0.8))
+    _s_.damage_1 = resample(ctx, _s_, 99, "D1", Bernoulli((_s_.prep_1 == 1) ? 0.2 : 0.8))
 end
 
 function hurricane_F_19(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.first_city_ixs = sample_resample(ctx, _s_, 19, "F", Bernoulli(0.5))
+    _s_.first_city_ixs = resample(ctx, _s_, 19, "F", Bernoulli(0.5))
     _s_.prep_0 = 0
     _s_.damage_0 = 0
     _s_.prep_1 = 0
     _s_.damage_1 = 0
     if (_s_.first_city_ixs == 0)
-        _s_.prep_0 = sample_dependency(ctx, _s_, 57, "P0", Bernoulli(0.5))
-        _s_.damage_0 = sample_dependency(ctx, _s_, 67, "D0", Bernoulli((_s_.prep_0 == 1) ? 0.2 : 0.8))
-        _s_.prep_1 = sample_dependency(ctx, _s_, 83, "P1", Bernoulli((_s_.damage_0 == 1) ? 0.75 : 0.5))
-        _s_.damage_1 = sample_dependency(ctx, _s_, 99, "D1", Bernoulli((_s_.prep_1 == 1) ? 0.2 : 0.8))
+        _s_.prep_0 = score(ctx, _s_, 57, "P0", Bernoulli(0.5))
+        _s_.damage_0 = score(ctx, _s_, 67, "D0", Bernoulli((_s_.prep_0 == 1) ? 0.2 : 0.8))
+        _s_.prep_1 = score(ctx, _s_, 83, "P1", Bernoulli((_s_.damage_0 == 1) ? 0.75 : 0.5))
+        _s_.damage_1 = score(ctx, _s_, 99, "D1", Bernoulli((_s_.prep_1 == 1) ? 0.2 : 0.8))
     else
-        _s_.prep_1 = sample_dependency(ctx, _s_, 116, "P1", Bernoulli(0.5))
-        _s_.damage_1 = sample_dependency(ctx, _s_, 126, "D1", Bernoulli((_s_.prep_1 == 1) ? 0.2 : 0.8))
-        _s_.prep_0 = sample_dependency(ctx, _s_, 142, "P0", Bernoulli((_s_.damage_1 == 1) ? 0.75 : 0.5))
-        _s_.damage_0 = sample_dependency(ctx, _s_, 158, "D0", Bernoulli((_s_.prep_0 == 1) ? 0.2 : 0.8))
+        _s_.prep_1 = score(ctx, _s_, 116, "P1", Bernoulli(0.5))
+        _s_.damage_1 = score(ctx, _s_, 126, "D1", Bernoulli((_s_.prep_1 == 1) ? 0.2 : 0.8))
+        _s_.prep_0 = score(ctx, _s_, 142, "P0", Bernoulli((_s_.damage_1 == 1) ? 0.75 : 0.5))
+        _s_.damage_0 = score(ctx, _s_, 158, "D0", Bernoulli((_s_.prep_0 == 1) ? 0.2 : 0.8))
     end
 end
 
 function hurricane_P0_142(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.prep_0 = sample_resample(ctx, _s_, 142, "P0", Bernoulli((_s_.damage_1 == 1) ? 0.75 : 0.5))
-    _s_.damage_0 = sample_dependency(ctx, _s_, 158, "D0", Bernoulli((_s_.prep_0 == 1) ? 0.2 : 0.8))
+    _s_.prep_0 = resample(ctx, _s_, 142, "P0", Bernoulli((_s_.damage_1 == 1) ? 0.75 : 0.5))
+    _s_.damage_0 = score(ctx, _s_, 158, "D0", Bernoulli((_s_.prep_0 == 1) ? 0.2 : 0.8))
 end
 
 function hurricane_P0_57(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.prep_0 = sample_resample(ctx, _s_, 57, "P0", Bernoulli(0.5))
-    _s_.damage_0 = sample_dependency(ctx, _s_, 67, "D0", Bernoulli((_s_.prep_0 == 1) ? 0.2 : 0.8))
+    _s_.prep_0 = resample(ctx, _s_, 57, "P0", Bernoulli(0.5))
+    _s_.damage_0 = score(ctx, _s_, 67, "D0", Bernoulli((_s_.prep_0 == 1) ? 0.2 : 0.8))
 end
 
 function hurricane_P1_116(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.prep_1 = sample_resample(ctx, _s_, 116, "P1", Bernoulli(0.5))
-    _s_.damage_1 = sample_dependency(ctx, _s_, 126, "D1", Bernoulli((_s_.prep_1 == 1) ? 0.2 : 0.8))
+    _s_.prep_1 = resample(ctx, _s_, 116, "P1", Bernoulli(0.5))
+    _s_.damage_1 = score(ctx, _s_, 126, "D1", Bernoulli((_s_.prep_1 == 1) ? 0.2 : 0.8))
 end
 
 function hurricane_P1_83(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.prep_1 = sample_resample(ctx, _s_, 83, "P1", Bernoulli((_s_.damage_0 == 1) ? 0.75 : 0.5))
-    _s_.damage_1 = sample_dependency(ctx, _s_, 99, "D1", Bernoulli((_s_.prep_1 == 1) ? 0.2 : 0.8))
+    _s_.prep_1 = resample(ctx, _s_, 83, "P1", Bernoulli((_s_.damage_0 == 1) ? 0.75 : 0.5))
+    _s_.damage_1 = score(ctx, _s_, 99, "D1", Bernoulli((_s_.prep_1 == 1) ? 0.2 : 0.8))
 end
 
 function hurricane_factor(ctx::AbstractFactorResampleContext, _s_::State, _addr_::String)

@@ -38,20 +38,20 @@ function lr(ctx::AbstractGenerateRecordStateContext, xs::Vector{Float64}, ys::Ve
 end
 
 function lr_intercept_42(ctx::AbstractFactorResampleContext, xs::Vector{Float64}, ys::Vector{Float64}, _s_::State)
-    _s_.intercept = sample_resample(ctx, _s_, 42, "intercept", Normal(0.0, 3.0))
+    _s_.intercept = resample(ctx, _s_, 42, "intercept", Normal(0.0, 3.0))
     _s_.i = 1
     while (_s_.i <= length(xs))
-        sample_dependency(ctx, _s_, 68, ("y_" * string(_s_.i)), Normal(((_s_.slope * get_n(xs, _s_.i)) + _s_.intercept), 1.0), observed = get_n(ys, _s_.i))
+        score(ctx, _s_, 68, ("y_" * string(_s_.i)), Normal(((_s_.slope * get_n(xs, _s_.i)) + _s_.intercept), 1.0), observed = get_n(ys, _s_.i))
         _s_.i = (_s_.i + 1)
     end
 end
 
 function lr_slope_29(ctx::AbstractFactorResampleContext, xs::Vector{Float64}, ys::Vector{Float64}, _s_::State)
-    _s_.slope = sample_resample(ctx, _s_, 29, "slope", Normal(0.0, 3.0))
-    _s_.intercept = sample_read(ctx, _s_, 42, "intercept", Normal(0.0, 3.0))
+    _s_.slope = resample(ctx, _s_, 29, "slope", Normal(0.0, 3.0))
+    _s_.intercept = read(ctx, _s_, 42, "intercept")
     _s_.i = 1
     while (_s_.i <= length(xs))
-        sample_dependency(ctx, _s_, 68, ("y_" * string(_s_.i)), Normal(((_s_.slope * get_n(xs, _s_.i)) + _s_.intercept), 1.0), observed = get_n(ys, _s_.i))
+        score(ctx, _s_, 68, ("y_" * string(_s_.i)), Normal(((_s_.slope * get_n(xs, _s_.i)) + _s_.intercept), 1.0), observed = get_n(ys, _s_.i))
         _s_.i = (_s_.i + 1)
     end
 end

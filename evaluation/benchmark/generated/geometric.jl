@@ -35,10 +35,10 @@ function geometric(ctx::AbstractGenerateRecordStateContext, _s_::State)
 end
 
 function geometric_b__38(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.b = sample_resample(ctx, _s_, 38, ("b_" * string(_s_.i)), Bernoulli(0.5))
+    _s_.b = resample(ctx, _s_, 38, ("b_" * string(_s_.i)), Bernoulli(0.5))
     while _s_.b
         _s_.i = (_s_.i + 1)
-        _s_.b = sample_dependency(ctx, _s_, 38, ("b_" * string(_s_.i)), Bernoulli(0.5))
+        _s_.b = score(ctx, _s_, 38, ("b_" * string(_s_.i)), Bernoulli(0.5))
     end
 end
 
