@@ -31,16 +31,16 @@ for i, filename in enumerate(filenames):
     with open("evaluation/benchmark/generated/" + filename, "w") as f:
         f.write(pw.out)
 
-# filenames = [
-#     # "gmm_fixed_numclust.jl",
-#     "hmm_fixed_seqlen.jl",
-#     # "lda_fixed_numtopic.jl",
-#     # "linear_regression.jl",
-# ]
-# for i, filename in enumerate(filenames):
-#     print(i+1, filename)
-#     ir = get_IR_for_formal("examples/formal/unrolled/" + filename, unroll_loops=True)
-#     pw = FactorisationBuilder(filename, ir, True)
-#     pw.write_program()
-#     with open("examples/formal/unrolled/generated/" + filename, "w") as f:
-#         f.write(pw.out)
+filenames = [
+    "gmm_fixed_numclust.jl",
+    "hmm_fixed_seqlen.jl",
+    "lda_fixed_numtopic.jl",
+    "linear_regression.jl",
+]
+for i, filename in enumerate(filenames):
+    print(i+1, filename)
+    ir = get_IR_for_formal("evaluation/unrolled/" + filename, unroll_loops=True)
+    pw = FactorisationBuilder(filename, ir, True)
+    pw.write_program()
+    with open("evaluation/unrolled/generated/" + filename, "w") as f:
+        f.write(pw.out)

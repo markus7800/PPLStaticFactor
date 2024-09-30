@@ -1,10 +1,10 @@
 
-include("benchmark/generated/" * ARGS[1])
+include(ARGS[1] * "/generated/" * ARGS[2])
 if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm_fixed_seqlen", "lda_fixed_numtopic")
-    include("handwritten/"  * ARGS[1])
+    include("handwritten/"  * ARGS[2])
 end
 
-function runtest(N::Int, verbose::Bool)
+function runbench(N::Int, verbose::Bool)
 
     state_traces = Vector{Dict{String,Tuple{SampleType,AbstractState}}}(undef,N)
     traces = Vector{Dict{String,SampleType}}(undef,N)
@@ -111,6 +111,6 @@ name_to_N = Dict{String,Int}(
 )
 N_iter = name_to_N[modelname]
 
-runtest(N_iter, false) # to JIT compile everthing
-runtest(N_iter, true) # this will produce times without compilation
+runbench(N_iter, false) # to JIT compile everthing
+runbench(N_iter, true) # this will produce times without compilation
 
