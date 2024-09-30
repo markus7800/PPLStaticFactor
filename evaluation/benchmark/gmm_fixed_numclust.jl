@@ -1,5 +1,4 @@
-
-include("ppl.jl")
+include("../ppl.jl")
 
 modelname = "gmm_fixed_numclust"
 
@@ -74,8 +73,3 @@ gt_μs = [-20.0, 0.0, 10.0, 30.0]
 gt_σ²s = [3.0, 8.0, 7.0, 1.0]
 
 ys = gt_ys
-# begin
-#     ctx = GenerateContext()
-#     gmm(ctx, gt_ys)
-#     ctx.trace
-# end

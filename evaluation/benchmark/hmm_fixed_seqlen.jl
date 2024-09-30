@@ -1,5 +1,4 @@
-
-include("ppl.jl")
+include("../ppl.jl")
 
 modelname = "hmm_fixed_seqlen"
 
@@ -34,9 +33,3 @@ ys = [
     0.65,
     1.12
 ]
-
-# begin
-#     ctx = GenerateContext()
-#     hmm(ctx, ys)
-#     ctx.trace
-# end

@@ -1,13 +1,9 @@
 # %%
-import sys
-sys.path.append("src/")
 import subprocess
 import sexpdata
 from formal.syntaxnode import *
 from formal.formal_cfg import *
-from utils.bcolors import bcolors
-from pprint import pprint
-from analysis.model_graph import get_graph
+from static.model_graph import get_graph
 
 
 def is_on_path_between_nodes(node: CFGNode, start: CFGNode, end: CFGNode) -> bool:
@@ -42,10 +38,8 @@ def inject_state_rec(sexpr: list, state_var, var_names, node: SampleNode | Facto
     else:
         return [sexpr[0]] + [inject_state_rec(child, state_var, var_names, None) for child in sexpr[1:]]
     
-class FactorProgramWriter():
-    def __init__(self, model: CFG, sample_nodes: List[SampleNode], factor_nodes: List[FactorNode], samplenode: SampleNode, deps: Set[SampleNode|FactorNode], direct_paths: bool) -> None:
-        self.sample_nodes = sample_nodes
-        self.factor_nodes = factor_nodes
+class FactorFunctionWriter():
+    def __init__(self, model: CFG, samplenode: SampleNode, deps: Set[SampleNode|FactorNode], direct_paths: bool) -> None:
         self.direct_paths = direct_paths
         is_on_path = is_on_direct_path_between_nodes if direct_paths else is_on_path_between_nodes
         path_nodes = {
@@ -78,7 +72,7 @@ class FactorProgramWriter():
         self.out = ""
 
 
-    def write_factor_program(self, current: CFGNode, force_write=False, tab=""):
+    def write_factor_function(self, current: CFGNode, force_write=False, tab=""):
         while True:
             if isinstance(current, AbstractAssignNode):
                 target = current.get_target()
@@ -155,7 +149,7 @@ class FactorProgramWriter():
 
                     assert isinstance(branchnode.then, (AbstractAssignNode, ExprNode))
                     while_force_write = self.direct_paths
-                    self.write_factor_program(branchnode.then, while_force_write, tab+"    ")
+                    self.write_factor_function(branchnode.then, while_force_write, tab+"    ")
                     self.out += tab + "end" + "\n"
 
                     self.block_nodes.discard(while_join_startnode)
@@ -180,10 +174,10 @@ class FactorProgramWriter():
                 self.out += tab+"if " + unparse(test_sexpr) + "\n"
 
                 if current.then != branch_joinnode:
-                    self.write_factor_program(current.then, force_write, tab+"    ")
+                    self.write_factor_function(current.then, force_write, tab+"    ")
                 if current.orelse != branch_joinnode:
                     self.out += tab+"else\n"
-                    self.write_factor_program(current.orelse, force_write, tab+"    ")
+                    self.write_factor_function(current.orelse, force_write, tab+"    ")
 
                 self.out += tab + "end" + "\n"
                 
@@ -212,7 +206,7 @@ class SexprToNodeVisitor(NodeVisitor):
 
 
 import operator  
-class ProgramWriter():
+class FactorisationBuilder():
     def __init__(self, filename: str, ir: PPL_IR, direct_paths: bool) -> None:
         model = ir.get_model()
         assert model is not None
@@ -459,8 +453,8 @@ class ProgramWriter():
             # header_prog = tab + f"\n{tab}".join(map(unparse, self.header)) + "\n\n"
             # prog += header_prog
 
-            writer = FactorProgramWriter(self.model, self.sample_nodes, self.factor_nodes, samplenode, deps, self.direct_paths)
-            writer.write_factor_program(samplenode, tab=tab)
+            writer = FactorFunctionWriter(self.model, samplenode, deps, self.direct_paths)
+            writer.write_factor_function(samplenode, tab=tab)
             prog += writer.out
 
             prog += "end\n\n"
@@ -472,51 +466,3 @@ class ProgramWriter():
         self.write_helpers()
 
     
-
-# filename = "lda_variable_numtopic.jl"
-# ir = get_IR_for_formal("examples/formal/" + filename)
-# pw = ProgramWriter(filename, ir, True)
-# pw.write_program()
-# with open("examples/formal/generated/" + filename, "w") as f:
-#     f.write(pw.out)
-# exit()
-
-filenames = [
-    "aircraft.jl", # little bit faster
-    "captcha.jl", # significantly faster
-    "dirichlet_process.jl", # significantly faster
-    "geometric.jl", # significantly slower
-    "gmm_fixed_numclust.jl", # significantly faster
-    "gmm_variable_numclust.jl", # significantly faster
-    "hmm_fixed_seqlen.jl", # significantly slower
-    "hmm_variable_seqlen.jl", # a bit slower
-    "hurricane.jl", # a bit slower
-    "lda_fixed_numtopic.jl", # significantly faster
-    "lda_variable_numtopic.jl", # significantly faster
-    "linear_regression.jl", # significantly slower
-    "marsaglia.jl", # a bit slower
-    "pedestrian.jl", # a bit slower
-    "urn.jl" # significantly faster
-]
-
-for i, filename in enumerate(filenames):
-    print(i+1, filename)
-    ir = get_IR_for_formal("examples/formal/" + filename)
-    pw = ProgramWriter(filename, ir, True)
-    pw.write_program()
-    with open("examples/formal/generated/" + filename, "w") as f:
-        f.write(pw.out)
-
-filenames = [
-    # "gmm_fixed_numclust.jl",
-    "hmm_fixed_seqlen.jl",
-    # "lda_fixed_numtopic.jl",
-    # "linear_regression.jl",
-]
-for i, filename in enumerate(filenames):
-    print(i+1, filename)
-    ir = get_IR_for_formal("examples/formal/unrolled/" + filename, unroll_loops=True)
-    pw = ProgramWriter(filename, ir, True)
-    pw.write_program()
-    with open("examples/formal/unrolled/generated/" + filename, "w") as f:
-        f.write(pw.out)

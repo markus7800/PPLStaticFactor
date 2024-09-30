@@ -1,8 +1,7 @@
 
 import sexpdata
 from typing import Optional, Dict, Tuple, List, Any
-from utils import *
-from ir4ppl.base_cfg import AbstractSyntaxNode
+from static.base_cfg import AbstractSyntaxNode
 
 def sym_to_str(sexpr):
     if isinstance(sexpr, sexpdata.Symbol):

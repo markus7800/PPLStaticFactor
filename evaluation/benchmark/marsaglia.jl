@@ -1,5 +1,4 @@
-
-include("ppl.jl")
+include("../ppl.jl")
 
 modelname = "marsaglia"
 
@@ -17,25 +16,3 @@ modelname = "marsaglia"
     z::Float64 = x * sqrt(-2 * log(s) / s)
     return z
 end
-
-# begin
-#     ctx = GenerateContext()
-#     marsaglia(ctx)
-#     ctx.trace
-# end
-
-# using Plots
-
-# begin
-#     N = 10^6
-#     result = zeros(N)
-#     lp = zeros(N)
-#     for i in 1:N
-#         ctx = GenerateContext()
-#         result[i] = marsaglia(ctx)
-#         lp[i] = ctx.logprob
-#     end
-#     W = exp.(lp) / sum(exp, lp)
-#     histogram(result, weights=W, xlims=(-5,5), normalize=true)
-#     plot!(x -> pdf(Normal(0,1),x))
-# end

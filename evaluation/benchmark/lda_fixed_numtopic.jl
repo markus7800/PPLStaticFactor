@@ -1,4 +1,4 @@
-include("ppl.jl")
+include("../ppl.jl")
 
 modelname = "lda_fixed_numtopic"
 

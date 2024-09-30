@@ -1,5 +1,4 @@
-
-include("ppl.jl")
+include("../ppl.jl")
 
 modelname = "aircraft"
 
@@ -39,14 +38,3 @@ modelname = "aircraft"
     sample(ctx, "observed_blip_2", Normal(blip_2, 1); observed= 2.)
     sample(ctx, "observed_blip_3", Normal(blip_3, 1), observed= 3.)
 end
-
-# using BenchmarkTools
-# begin
-#     Random.seed!(0)
-#     ctx = GenerateContext()
-#     aircraft(ctx)
-#     ctx.trace
-
-#     @btime aircraft(LogJointContext(ctx.trace))
-#     @btime aircraft(EvalContext(ctx.trace))
-# end

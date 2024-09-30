@@ -1,12 +1,12 @@
 from copy import copy
-from ir4ppl.cfg import *
+from static.cfg import *
 
-from ir4ppl.cfg import AssignTarget, Dict, Distribution, Expression, FunctionDefinition, SymbolicExpression, Variable
+from static.cfg import AssignTarget, Dict, Distribution, Expression, FunctionDefinition, Variable
 from formal.syntaxnode import *
 from formal.node_finder import *
-from ir4ppl.ir import PPL_IR
+from static.ir import PPL_IR
 from typing import Any, List
-from ir4ppl.base_cfg import AbstractCFGBuilder
+from static.base_cfg import AbstractCFGBuilder
 from typing import Callable
 from pprint import pprint
 
@@ -23,10 +23,6 @@ class JuliaVariable(Variable):
             return False
     def __hash__(self) -> int:
         return hash(self.syntaxnode)
-    
-    def is_indexed_variable(self) -> bool:
-        # x[i]
-        return False # TODO: this is okay for formal
     
     def __repr__(self) -> str:
         return f"PythonVariable({self.name})"
@@ -46,15 +42,6 @@ class JuliaAssignTarget(AssignTarget):
     def is_equal(self, variable: Variable) -> bool:
         assert isinstance(variable, JuliaVariable)
         return self.name == variable.name
-    
-    def is_indexed_target(self) -> bool:
-        return False # TODO
-    
-    def index_is_equal(self, variable: Variable) -> bool:
-        return False
-        
-    def get_index_expr(self) -> Expression:
-        return EmptyJuliaExpression()
 
     def __repr__(self) -> str:
         return unparse(self.syntaxnode.sexpr)
@@ -77,15 +64,6 @@ class JuliaExpression(Expression):
             lambda node: JuliaVariable(node)) # this also returns variable names for user-defined functions
         return name_finder.visit(self.syntaxnode)
     
-    def get_function_calls(self, fdef: FunctionDefinition) -> List[FunctionCall]:
-        return list() # TODO
-
-    def estimate_value_range(self, variable_mask: Dict[Variable,Interval]) -> Interval:
-        raise NotImplementedError
-
-    def symbolic(self, variable_mask: Dict[Variable,SymbolicExpression]) -> SymbolicExpression:
-        raise NotImplementedError
-    
     def __repr__(self) -> str:
         return unparse(self.syntaxnode.sexpr)
     
@@ -98,12 +76,6 @@ class EmptyJuliaExpression(JuliaExpression):
         return isinstance(value, EmptyJuliaExpression)
     def get_free_variables(self) -> List[Variable]:
         return list()
-    def get_function_calls(self, fdef: FunctionDefinition) -> List[FunctionCall]:
-        return list()
-    def estimate_value_range(self, variable_mask: Dict[Variable,Interval]) -> Interval:
-        raise NotImplementedError
-    def symbolic(self, variable_mask: Dict[Variable, SymbolicExpression]) -> SymbolicExpression:
-        raise NotImplementedError
     def __repr__(self) -> str:
         return "<>"
     

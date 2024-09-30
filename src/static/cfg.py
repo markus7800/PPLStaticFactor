@@ -1,13 +1,8 @@
 from typing import List, Tuple, Dict, Set, Optional
-from analysis.interval_arithmetic import Interval
-from analysis.symbolics import SymbolicExpression
 from typing import Set, Dict, Optional
 from graphviz import Source
 
 class Variable:
-    def is_indexed_variable(self) -> bool:
-        # x[i]
-        raise NotImplementedError
     def __eq__(self, value: object) -> bool:
         raise NotImplementedError
     def __hash__(self) -> int:
@@ -27,25 +22,9 @@ class Expression:
         raise NotImplementedError
     def get_free_variables(self) -> List[Variable]:
         raise NotImplementedError
-    def get_function_calls(self, fdef: FunctionDefinition) -> List['FunctionCall']:
-        raise NotImplementedError
-    def estimate_value_range(self, variable_mask: Dict[Variable,Interval]) -> Interval:
-        raise NotImplementedError
-    def symbolic(self, variable_mask: Dict[Variable,SymbolicExpression]) -> SymbolicExpression:
-        raise NotImplementedError
 
 class AssignTarget:
     def is_equal(self, variable: Variable) -> bool:
-        raise NotImplementedError
-    
-    def is_indexed_target(self) -> bool:
-        # x[i] = ...
-        raise NotImplementedError
-    
-    def index_is_equal(self, variable: Variable) -> bool:
-        raise NotImplementedError
-    
-    def get_index_expr(self) -> Expression:
         raise NotImplementedError
     
 class FunctionCall(Expression):
@@ -185,52 +164,6 @@ def delete_edge(from_node: CFGNode, to_node: CFGNode):
     from_node.children.discard(to_node)
     to_node.parents.discard(from_node)
 
-# from copy import copy
-
-# returns true if startnode is reachable from endnode
-# def _is_reachable(startnode: CFGNode, endnode: CFGNode, path: list[CFGNode]):
-#     if startnode == endnode:
-#         return True
-#     for parent in endnode.parents:
-#         if parent.is_blocked:
-#             continue
-#         is_cycle = any(p == parent for p in path)
-#         if not is_cycle:
-#             new_path = copy(path) if len(endnode.parents) > 1 else path
-#             new_path.append(parent)
-#             if _is_reachable(startnode, parent, new_path):
-#                 return True
-#     return False
-
-# def is_reachable(startnode:CFGNode, endnode: CFGNode):
-#     return _is_reachable(startnode, endnode, [])
-
-# def _is_reachable_2(startnode: CFGNode, endnode: CFGNode, path: list[CFGNode], memo: Dict[BranchNode,bool]):
-#     if startnode == endnode:
-#         return True
-    
-#     if isinstance(endnode, BranchNode) and endnode in memo:
-#         return memo[endnode]
-    
-#     result = False
-#     for parent in endnode.parents:
-#         if parent.is_blocked:
-#             continue
-#         is_cycle = any(p == parent for p in path)
-#         if not is_cycle:
-#             new_path = copy(path) if len(endnode.parents) > 1 else path
-#             new_path.append(parent)
-#             if _is_reachable_2(startnode, parent, new_path, memo):
-#                 result = True
-#                 break
-        
-#     if isinstance(endnode, BranchNode):
-#         memo[endnode] = result
-
-#     return result
-
-# def is_reachable(startnode:CFGNode, endnode: CFGNode):
-#     return _is_reachable_2(startnode, endnode, [], dict())
 
 def _dfs_visit_nodes(node: CFGNode, visited: Set[CFGNode]):
     visited.add(node)
@@ -248,9 +181,6 @@ def is_reachable(startnode: CFGNode, endnode: CFGNode):
     visited = set()
     _dfs_visit_nodes(endnode, visited)
     return startnode in visited
-
-# def is_on_path_between_nodes(node: CFGNode, startnode: CFGNode, endnode: CFGNode):
-#     return is_reachable(startnode, node) and is_reachable(node, endnode)
 
 
 class CFG:

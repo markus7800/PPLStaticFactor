@@ -1,6 +1,6 @@
 
 from collections import deque
-from ir4ppl.ir import * 
+from .ir import * 
 from typing import Deque, Tuple, List
 
 DEBUG_GRAPH = False
@@ -41,9 +41,6 @@ def get_graph(program_ir: PPL_IR):
                     else:
                         queue.append((dep, dep.get_value_expr()))
                         if DEBUG_GRAPH: print("| | | add ", dep.get_value_expr())
-                        if dep.get_target().is_indexed_target():
-                            queue.append((dep, dep.get_target().get_index_expr()))
-                            if DEBUG_GRAPH: print("| | | add ", dep.get_target().get_index_expr())
 
                     marked.add(dep)
             

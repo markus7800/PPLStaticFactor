@@ -1,41 +1,8 @@
 
-if startswith(ARGS[1], "unrolled/")
-    include("unrolled/generated/" * ARGS[1][length("unrolled/"):end])
-else
-    include("generated/" * ARGS[1])
-    if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm_fixed_seqlen", "lda_fixed_numtopic")
-        include("handwritten/"  * ARGS[1])
-    end
+include("benchmark/generated/" * ARGS[1])
+if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm_fixed_seqlen", "lda_fixed_numtopic")
+    include("handwritten/"  * ARGS[1])
 end
-
-function bench(N::Int, verbose::Bool)
-    Random.seed!(0)
-    traces = Vector{Dict{String,SampleType}}(undef, N)
-    res = @timed for i in 1:N
-        ctx = GenerateContext()
-        model(ctx)
-        traces[i] = ctx.trace
-    end
-    verbose && println("GenerateContext: ", res.time / N)
-
-    res = @timed for i in 1:N
-        ctx = GenerateNoRecordStateContext()
-        model(ctx, State())
-        traces[i] = ctx.trace
-    end
-    verbose && println("GenerateNoRecordStateContext: ", res.time / N)
-
-    traces = Vector{Dict{String,Tuple{SampleType,State}}}(undef, N)
-    res = @timed for i in 1:N
-        ctx = GenerateRecordStateContext()
-        model(ctx, State())
-        traces[i] = ctx.trace
-    end
-    verbose && println("GenerateRecordStateContext: ", res.time / N)
-end
-# bench(1000, false)
-# bench(1000, true)
-# exit()
 
 function runtest(N::Int, verbose::Bool)
 
@@ -95,10 +62,6 @@ function runtest(N::Int, verbose::Bool)
     verbose && println("Standard time $(round(standard_time*10^6, sigdigits=3)) μs")
     verbose && println("Factored time $(round(factored_time*10^6, sigdigits=3)) μs ($(round(factored_time / standard_time, sigdigits=2)))")
 
-    # mask = .!(updated_lps_1 .≈ updated_lps_2)
-    # println(updated_lps_1[mask])
-    # println("versus")
-    # println(updated_lps_2[mask])
     @assert (updated_lps_1 ≈ updated_lps_2)
 
     if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm_fixed_seqlen", "lda_fixed_numtopic")
@@ -121,8 +84,6 @@ function runtest(N::Int, verbose::Bool)
         @assert (updated_lps_1 ≈ updated_lps_3)
     end
 
-
-    
 end
 
 # chosen such that every runtest takes 1-2s
@@ -150,6 +111,6 @@ name_to_N = Dict{String,Int}(
 )
 N_iter = name_to_N[modelname]
 
-runtest(N_iter, false)
-runtest(N_iter, true)
+runtest(N_iter, false) # to JIT compile everthing
+runtest(N_iter, true) # this will produce times without compilation
 

@@ -1,4 +1,4 @@
-include("ppl.jl")
+include("../ppl.jl")
 
 modelname = "captcha"
 

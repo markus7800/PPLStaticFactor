@@ -1,5 +1,4 @@
-
-include("ppl.jl")
+include("../ppl.jl")
 
 modelname = "pedestrian"
 
@@ -17,9 +16,3 @@ modelname = "pedestrian"
     end
     sample(ctx, "final_distance", Normal(distance, 0.1), observed=1.1)
 end
-
-# begin
-#     ctx = GenerateContext()
-#     pedestrian(ctx)
-#     ctx.trace
-# end
