@@ -39,11 +39,23 @@ def get_BPs(cfg: CFG, cfgnode: CFGNode) -> Set[BranchNode]:
     bps: Set[BranchNode] = set()
     for branch_node in cfg.nodes:
         if isinstance(branch_node, BranchNode):
-            paths = list(branch_node.children)
-            branch_node.block()
-            if is_reachable(paths[0], cfgnode) ^ is_reachable(paths[1], cfgnode): # xor
-                bps.add(branch_node)
-            branch_node.unblock()
+            # paths = list(branch_node.children)
+            # branch_node.block()
+            # if is_reachable(branch_node.then, cfgnode) ^ is_reachable(branch_node.orelse, cfgnode): # xor
+            #     bps.add(branch_node)
+            # branch_node.unblock()
+
+            if is_reachable(branch_node.then, cfgnode):
+                cfgnode.block()
+                if is_reachable(branch_node.orelse, cfg.endnode):
+                    bps.add(branch_node)
+                cfgnode.unblock()
+                
+            if is_reachable(branch_node.orelse, cfgnode):
+                cfgnode.block()
+                if is_reachable(branch_node.then, cfg.endnode):
+                    bps.add(branch_node)
+                cfgnode.unblock()
 
     return bps
             

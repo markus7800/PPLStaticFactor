@@ -6,6 +6,14 @@ from formal.formal_cfg import get_IR_for_formal
 from formal.factorisation_builder import FactorisationBuilder
 
 
+# filename = "aircraft.jl"
+# ir = get_IR_for_formal("evaluation/benchmark/" + filename)
+# pw = FactorisationBuilder(filename, ir, True)
+# pw.write_program()
+# with open("evaluation/benchmark/generated/" + filename, "w") as f:
+#     f.write(pw.out)
+# exit()
+
 filenames = [
     "aircraft.jl",
     "captcha.jl",
@@ -45,11 +53,3 @@ for i, filename in enumerate(filenames):
     pw.write_program()
     with open("evaluation/unrolled/generated/" + filename, "w") as f:
         f.write(pw.out)
-
-
-filename = "dirichlet_process.jl"
-ir = get_IR_for_formal("evaluation/test/" + filename)
-pw = FactorisationBuilder(filename, ir, True)
-pw.write_program()
-with open("evaluation/test/generated/" + filename, "w") as f:
-    f.write(pw.out)

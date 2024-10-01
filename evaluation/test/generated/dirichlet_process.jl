@@ -107,7 +107,7 @@ function dp_beta__94(ctx::AbstractFactorResampleContext, xs::Vector{Float64}, _s
         _s_.weights = vcat(_s_.weights, (_s_.beta * _s_.cumprod))
         _s_.thetas = vcat(_s_.thetas, _s_.theta)
     end
-    _s_.sigma = score(ctx, _s_, 152, "sigma", InverseGamma(1.0, 1.0))
+    _s_.sigma = read(ctx, _s_, 152, "sigma")
     _s_.j = 1
     while (_s_.j <= length(xs))
         _s_.z = score(ctx, _s_, 178, ("z_" * string(_s_.j)), Categorical((_s_.weights / sum(_s_.weights))))
