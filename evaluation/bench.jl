@@ -2,6 +2,9 @@ using Printf
 
 include(ARGS[1] * "/generated/" * ARGS[2])
 if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm_fixed_seqlen", "lda_fixed_numtopic")
+    include("finite/"  * ARGS[2])
+end
+if modelname in ("gmm_fixed_numclust", "lda_fixed_numtopic")
     include("handwritten/"  * ARGS[2])
 end
 
@@ -60,12 +63,12 @@ function runbench(N::Int, verbose::Bool)
     end
     factored_time = res.time/N
     
-    verbose && println("Standard time $(round(standard_time*10^6, sigdigits=3)) μs")
-    verbose && println("Factored time $(round(factored_time*10^6, sigdigits=3)) μs ($(round(factored_time / standard_time, sigdigits=2)))")
+    verbose && println(@sprintf("Standard time %.3f μs", standard_time*10^6))
+    verbose && println(@sprintf("Factored time %.3f μs (%.2f)", factored_time*10^6, factored_time / standard_time))
 
     @assert (updated_lps_1 ≈ updated_lps_2)
 
-    handwritten_time = NaN
+    finite_time = NaN
     if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm_fixed_seqlen", "lda_fixed_numtopic")
         Random.seed!(0)
         updated_lps_3 = Vector{Float64}(undef, N)
@@ -76,24 +79,61 @@ function runbench(N::Int, verbose::Bool)
             addr = addresses[i]
 
             ctx = ManualResampleContext(trace, addr)
-            manual_factor(ctx)
+            finite_factor(ctx)
 
             updated_lps_3[i] = lp + ctx.logprob
         end
-        handwritten_time = res.time/N
+        finite_time = res.time/N
 
-        verbose && println("Handwritten time $(round(handwritten_time*10^6, sigdigits=3)) μs ($(round(handwritten_time / standard_time, sigdigits=2)))")
+        verbose && println(@sprintf("Finite time %.3f μs (%.2f)", finite_time*10^6, finite_time / standard_time))
         @assert (updated_lps_1 ≈ updated_lps_3)
     end
 
-    if verbose
-        print("& $(round(standard_time*10^6, digits=2)) & $(round(factored_time*10^6, digits=2)) ($(round(factored_time / standard_time, digits=2)))")
-        if isnan(handwritten_time)
-            println(" & - \\\\")
-        else
-            println(" & $(round(handwritten_time*10^6, digits=2)) ($(round(handwritten_time / standard_time, digits=2))) \\\\")
+    custom_time = NaN
+    if modelname in ("gmm_fixed_numclust", "lda_fixed_numtopic")
+        Random.seed!(0)
+        updated_lps_4 = Vector{Float64}(undef, N)
+        res = @timed for i in 1:N
+            trace = traces[i]
+            lp = lps[i]
+
+            addr = addresses[i]
+
+            ctx = ManualResampleContext(trace, addr)
+            custom_factor(ctx)
+
+            updated_lps_4[i] = lp + ctx.logprob
         end
+        custom_time = res.time/N
+
+        verbose && println(@sprintf("Custom time %.3f μs (%.2f)", custom_time*10^6, custom_time / standard_time))
+        @assert (updated_lps_1 ≈ updated_lps_4)
     end
+
+    if verbose
+        f = open("evaluation/results.csv", "a")
+        print(f, modelname, ", ", standard_time*10^6, ", ", factored_time*10^6)
+        if isnan(finite_time)
+            print(f, ", NA")
+        else
+            print(f, ", ", finite_time*10^6)
+        end
+        if isnan(custom_time)
+            println(f, ", NA")
+        else
+            println(f, ", ", custom_time*10^6)
+        end
+        close(f)
+    end
+
+    # if verbose
+    #     print("& $(round(standard_time*10^6, digits=2)) & $(round(factored_time*10^6, digits=2)) ($(round(factored_time / standard_time, digits=2)))")
+    #     if isnan(handwritten_time)
+    #         println(" & - \\\\")
+    #     else
+    #         println(" & $(round(handwritten_time*10^6, digits=2)) ($(round(handwritten_time / standard_time, digits=2))) \\\\")
+    #     end
+    # end
 
 end
 

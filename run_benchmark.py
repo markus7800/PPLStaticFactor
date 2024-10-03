@@ -11,6 +11,9 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+with open("evaluation/results.csv", "w") as f:
+    f.write("model, none, static, finite, custom\n")
+
 filenames = [
     "aircraft.jl",
     "captcha.jl",
@@ -33,6 +36,7 @@ for filename in filenames:
     print(bcolors.HEADER + filename + bcolors.ENDC)
     cmd = ["julia", "--project=.", "evaluation/bench.jl", "benchmark", filename]
     subprocess.run(cmd, capture_output=False)
+exit()
 
 print("\nUnrolled programs:\n")
 

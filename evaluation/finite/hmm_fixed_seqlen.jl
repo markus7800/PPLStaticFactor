@@ -40,6 +40,6 @@ function hmm_manual_factor(ctx::ManualResampleContext, ys::Vector{Float64})
     return ctx.logprob
 end
 
-function manual_factor(ctx::ManualResampleContext)
+function finite_factor(ctx::ManualResampleContext)
     return hmm_manual_factor(ctx, ys)
 end

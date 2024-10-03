@@ -31,6 +31,6 @@ function lr_manual_factor(ctx::ManualResampleContext, xs::Vector{Float64}, ys::V
     return ctx.logprob
 end
 
-function manual_factor(ctx::ManualResampleContext)
+function finite_factor(ctx::ManualResampleContext)
     return lr_manual_factor(ctx, xs, ys)
 end

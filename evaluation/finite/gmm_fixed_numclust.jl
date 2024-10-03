@@ -1,5 +1,5 @@
 
-function gmm_mu_custom(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String)
+function gmm_mu(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String)
     ξ::Float64 = 0.0
     κ::Float64 = 0.01
 
@@ -8,20 +8,20 @@ function gmm_mu_custom(ctx::ManualResampleContext, ys::Vector{Float64}, addr::St
 
     cluster_ix::Int = parse(Int, addr[4:end])
 
+    mu1::Vector{Float64} = [manual_read(ctx, "mu_"*string(z)) for z in 1:4]
+    mu2::Vector{Float64} = [manual_read(ctx, "mu_"*string(z)) for z in 1:4]
+    mu1[cluster_ix] = new_value
+    mu2[cluster_ix] = old_value
+
     for i in 1:length(ys)
         z::Int = manual_read(ctx, "z_" * string(i))
-        # custom optimisation:
-        if cluster_ix != z
-            continue
-        end
         var::Float64 = manual_read(ctx, "var_"*string(z))
-
-        manual_add_logpdf(ctx, "y_" * string(i), Normal(new_value, var), observed=get_n(ys, i))
-        manual_sub_logpdf(ctx, "y_" * string(i), Normal(old_value, var), observed=get_n(ys, i))
+        manual_add_logpdf(ctx, "y_" * string(i), Normal(mu1[z], var), observed=get_n(ys, i))
+        manual_sub_logpdf(ctx, "y_" * string(i), Normal(mu2[z], var), observed=get_n(ys, i))
     end
 end
 
-function gmm_var_custom(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String)
+function gmm_var(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String)
     α::Float64 = 2.0
     β::Float64 = 10.0
     
@@ -29,20 +29,19 @@ function gmm_var_custom(ctx::ManualResampleContext, ys::Vector{Float64}, addr::S
     new_value::Float64 = manual_resample(ctx, addr, InverseGamma(α, β))
 
     cluster_ix::Int = parse(Int, addr[5:end])
+    var1::Vector{Float64} = [manual_read(ctx, "var_"*string(z)) for z in 1:4]
+    var2::Vector{Float64} = [manual_read(ctx, "var_"*string(z)) for z in 1:4]
+    var1[cluster_ix] = new_value
+    var2[cluster_ix] = old_value
 
     for i in 1:length(ys)
         z::Int = manual_read(ctx, "z_" * string(i))
-        # custom optimisation:
-        if cluster_ix != z
-            continue
-        end
         mu::Float64 = manual_read(ctx, "mu_"*string(z))
-
-        manual_add_logpdf(ctx, "y_" * string(i), Normal(mu, new_value), observed=get_n(ys, i))
-        manual_sub_logpdf(ctx, "y_" * string(i), Normal(mu, old_value), observed=get_n(ys, i))
+        manual_add_logpdf(ctx, "y_" * string(i), Normal(mu, var1[z]), observed=get_n(ys, i))
+        manual_sub_logpdf(ctx, "y_" * string(i), Normal(mu, var2[z]), observed=get_n(ys, i))
     end
 end
-function gmm_w_custom(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String)
+function gmm_w(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String)
     δ::Float64 = 5.0
     num_clusters::Int = 4
 
@@ -55,7 +54,7 @@ function gmm_w_custom(ctx::ManualResampleContext, ys::Vector{Float64}, addr::Str
     end
 end
 
-function gmm_z_custom(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String)
+function gmm_z(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String)
     w::Vector{Float64} = manual_read(ctx, "w")
 
     i::Int = parse(Int, addr[3:end])
@@ -72,21 +71,21 @@ function gmm_z_custom(ctx::ManualResampleContext, ys::Vector{Float64}, addr::Str
     manual_sub_logpdf(ctx, "y_" * string(i), Normal(mu, var), observed=get_n(ys, i))
 end
 
-function gmm_manual_factor_custom(ctx::ManualResampleContext, ys::Vector{Float64})
+function gmm_manual_factor(ctx::ManualResampleContext, ys::Vector{Float64})
     if ctx.resample_addr == "w"
-        gmm_w_custom(ctx, ys, ctx.resample_addr)
+        gmm_w(ctx, ys, ctx.resample_addr)
     elseif startswith(ctx.resample_addr, "mu")
-        gmm_mu_custom(ctx, ys, ctx.resample_addr)
+        gmm_mu(ctx, ys, ctx.resample_addr)
     elseif startswith(ctx.resample_addr, "var")
-        gmm_var_custom(ctx, ys, ctx.resample_addr)
+        gmm_var(ctx, ys, ctx.resample_addr)
     elseif startswith(ctx.resample_addr, "z")
-        gmm_z_custom(ctx, ys, ctx.resample_addr)
+        gmm_z(ctx, ys, ctx.resample_addr)
     else
         error("Unknown address $(ctx.resample_addr)")
     end
     return ctx.logprob
 end
 
-function custom_factor(ctx::ManualResampleContext)
-    return gmm_manual_factor_custom(ctx, ys)
+function finite_factor(ctx::ManualResampleContext)
+    return gmm_manual_factor(ctx, ys)
 end
