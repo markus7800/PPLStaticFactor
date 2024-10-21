@@ -1,0 +1,6 @@
+venv/
+src/jl/Manifest.toml
+tmp/
+.vscode/
+**/__pycache__
+**/.DS_Store
