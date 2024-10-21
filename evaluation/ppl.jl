@@ -93,16 +93,9 @@ function sample_record_state(ctx::GenerateNoRecordStateContext, s::AbstractState
     return value
 end
 
-
-
-const DEBUG_INFO_1 = false
-# const DEBUG_INFO_1 = true
-
 mutable struct ResampleContext <: SampleContext
     trace::Dict{String,SampleType}
-    # new_trace::Dict{String,SampleType}
     logprob::Float64
-    # Q::Float64
     resample_addr::String
     function ResampleContext(trace::Dict{String,SampleType}, resample_addr::String)
         return new(trace, 0., resample_addr)
@@ -113,25 +106,16 @@ function sample(ctx::ResampleContext, address::String, distribution::Distributio
     if !isnothing(observed)
         value = observed
     elseif address == ctx.resample_addr
-        old_value = ctx.trace[address]
         value = rand(distribution)
-        DEBUG_INFO_1 && println("ResampleContext: resample $address with $old_value to $value")
-        # ctx.Q = logpdf(distribution, old_value) - logpdf(distribution, new_value)
     elseif haskey(ctx.trace, address)
         value = ctx.trace[address]
-        DEBUG_INFO_1 && println("ResampleContext: reuse $address with $value")
     else
         value = rand(distribution)
-        DEBUG_INFO_1 && println("ResampleContext: sample $address with $value")
     end
 
-    # ctx.new_trace[address] = value
     ctx.logprob += logpdf(distribution, value)
     return value
 end
-
-const DEBUG_INFO_2 = false
-# const DEBUG_INFO_2 = true
 
 abstract type AbstractFactorResampleContext end
 
@@ -145,9 +129,7 @@ end
 
 function resample(ctx::AddFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     value = rand(distribution)
-    # ctx.trace[address] = (value, copy(s))
     ctx.logprob += logpdf(distribution, value)
-    DEBUG_INFO_2 && println("AddFactorResampleContext: resample $address to $value")
     return value
 end
 
@@ -156,11 +138,8 @@ function score(ctx::AddFactorResampleContext, s::AbstractState, node_id::Int, ad
         value = observed
     elseif haskey(ctx.trace, address)
         value, _ = ctx.trace[address]
-        DEBUG_INFO_2 && println("AddFactorResampleContext: reuse $address with $value")
     else
         value = rand(distribution)
-        # ctx.trace[address] = (value, copy(s))
-        DEBUG_INFO_2 && println("AddFactorResampleContext: sample $address with $value")
     end
     ctx.logprob += logpdf(distribution, value)
     return value
@@ -171,7 +150,6 @@ function read(ctx::AddFactorResampleContext, s::AbstractState, node_id::Int, add
         value = observed
     else
         value, _ = ctx.trace[address]
-        DEBUG_INFO_2 && println("AddFactorResampleContext: read $address with $value")
     end
     return value
 end
@@ -188,7 +166,6 @@ end
 function resample(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     value, _ = ctx.trace[address]
     ctx.logprob -= logpdf(distribution, value)
-    DEBUG_INFO_2 && println("SubstractFactorResampleContext: resample $address with $value")
     return value
 end
 
@@ -197,8 +174,6 @@ function score(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::I
         value = observed
     else
         value, _ = ctx.trace[address]
-        # delete!(ctx.trace, address)
-        DEBUG_INFO_2 && println("SubstractFactorResampleContext: substract $address with $value")
     end
     ctx.logprob -= logpdf(distribution, value)
     return value
@@ -209,7 +184,6 @@ function read(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::In
         value = observed
     else
         value, _ = ctx.trace[address]
-        DEBUG_INFO_2 && println("SubstractFactorResampleContext: read $address with $value")
     end
     return value
 end
