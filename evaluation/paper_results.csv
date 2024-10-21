@@ -14,3 +14,4 @@ linear_regression, 3.63377375, 6.94918292, 6.81119, NA
 marsaglia, 0.495474334, 1.198935, NA, NA
 pedestrian, 4.53244209, 3.986355, NA, NA
 urn, 8.94503125, 5.960907090000001, NA, NA
+hmm_fixed_seqlen_unrolled, 4.43761708, 2.26079334, NA, NA

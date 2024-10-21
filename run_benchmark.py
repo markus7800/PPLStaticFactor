@@ -32,19 +32,19 @@ filenames = [
     "urn.jl"
 ]
 
-for filename in filenames:
-    print(bcolors.HEADER + filename + bcolors.ENDC)
-    cmd = ["julia", "--project=.", "evaluation/bench.jl", "benchmark", filename]
-    subprocess.run(cmd, capture_output=False)
-exit()
+# for filename in filenames:
+#     print(bcolors.HEADER + filename + bcolors.ENDC)
+#     cmd = ["julia", "--project=.", "evaluation/bench.jl", "benchmark", filename]
+#     subprocess.run(cmd, capture_output=False)
+# exit()
 
 print("\nUnrolled programs:\n")
 
 filenames = [
-    "gmm_fixed_numclust.jl",
+    # "gmm_fixed_numclust.jl",
     "hmm_fixed_seqlen.jl",
-    "lda_fixed_numtopic.jl",
-    "linear_regression.jl",
+    # "lda_fixed_numtopic.jl",
+    # "linear_regression.jl",
 ]
 for filename in filenames:
     print(bcolors.HEADER + filename + bcolors.ENDC)

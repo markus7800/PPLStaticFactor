@@ -5,7 +5,7 @@ if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm_fixed_seqlen", 
     include("finite/"  * ARGS[2])
 end
 if modelname in ("gmm_fixed_numclust", "lda_fixed_numtopic")
-    include("handwritten/"  * ARGS[2])
+    include("custom/"  * ARGS[2])
 end
 
 function runbench(N::Int, verbose::Bool)
@@ -125,15 +125,6 @@ function runbench(N::Int, verbose::Bool)
         end
         close(f)
     end
-
-    # if verbose
-    #     print("& $(round(standard_time*10^6, digits=2)) & $(round(factored_time*10^6, digits=2)) ($(round(factored_time / standard_time, digits=2)))")
-    #     if isnan(handwritten_time)
-    #         println(" & - \\\\")
-    #     else
-    #         println(" & $(round(handwritten_time*10^6, digits=2)) ($(round(handwritten_time / standard_time, digits=2))) \\\\")
-    #     end
-    # end
 
 end
 

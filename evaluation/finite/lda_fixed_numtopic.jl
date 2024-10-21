@@ -6,6 +6,7 @@ function lda_phi(ctx::ManualResampleContext, M::Int, N::Int, V::Int, w::Vector{I
 
     i = parse(Int, addr[5:end])
 
+    # less read-from-trace operations by reading all phis once
     phi1::Vector{Vector{Float64}} = [manual_read(ctx, "phi_"* string(z))::Vector{Float64} for z in 1:2]
     phi2::Vector{Vector{Float64}} = [manual_read(ctx, "phi_"* string(z))::Vector{Float64}  for z in 1:2]
     phi1[i] = new_value
@@ -27,6 +28,7 @@ function lda_theta(ctx::ManualResampleContext, M::Int, N::Int, V::Int, w::Vector
 
     i = parse(Int, addr[7:end])
 
+    # less read-from-trace operations by reading all thetas once
     theta1::Vector{Vector{Float64}} = [manual_read(ctx, "theta_"* string(d))::Vector{Float64} for d in 1:M]
     theta2::Vector{Vector{Float64}} = [manual_read(ctx, "theta_"* string(d))::Vector{Float64} for d in 1:M]
     theta1[i] = new_value

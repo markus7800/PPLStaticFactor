@@ -12,13 +12,14 @@ row_start = {
     "gmm_variable_numclust": " GMM (variable number of clusters) & $\\infty$",
     "hmm_fixed_seqlen": "HMM (fixed sequence length) & 21",
     "hmm_variable_seqlen": "HMM (variable sequence length) & $\\infty$",
-    "hurricane": "Hurricane & 4",
+    "hurricane": "Hurricane & 5",
     "lda_fixed_numtopic": "LDA (fixed number of topics) & 551",
     "lda_variable_numtopic": "LDA (variable number of topics) & $\\infty$",
     "linear_regression": "Linear regression & 102",
     "marsaglia": "Marsaglia & $\\infty$",
     "pedestrian": "Pedestrian & $\\infty$",
     "urn": "Urn & $\\infty$",
+    "hmm_fixed_seqlen_unrolled": "Unrolled HMM & 21"
 }
 # %%
 for _, row in df.iterrows():
