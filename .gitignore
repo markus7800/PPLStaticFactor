@@ -2,3 +2,4 @@ __pycache__
 .DSStore
 tmp*
 venv
+print_results.py
