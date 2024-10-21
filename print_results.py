@@ -1,8 +1,8 @@
-#%%
+
 import pandas as pd
-# %%
+
 df = pd.read_csv("evaluation/paper_results.csv", sep=", ")
-# %%
+
 row_start = {
     "aircraft": "Aircraft & $\\infty$",
     "captcha": "Captcha & $\\infty$",
@@ -21,7 +21,7 @@ row_start = {
     "urn": "Urn & $\\infty$",
     "hmm_fixed_seqlen_unrolled": "Unrolled HMM & 21"
 }
-# %%
+
 for _, row in df.iterrows():
     print(row_start[row.model], "&", f"{row.none:.3f} & {row.static:.3f} ({row.static/row.none:.2f})", end="")
     if pd.isna(row.finite):
@@ -29,4 +29,4 @@ for _, row in df.iterrows():
     else:
         print(f" & {row.finite:.3f} ({row.finite/row.none:.2f}) \\\\")
 
-# %%
+

@@ -1,6 +1,5 @@
 from typing import List, Tuple, Dict, Set, Optional
 from typing import Set, Dict, Optional
-from graphviz import Source
 
 class Variable:
     def __eq__(self, value: object) -> bool:
@@ -257,7 +256,7 @@ def cfg_dot(cfg: CFG, draw_branch_join_pairs: bool = False):
 def print_cfg_dot(cfg: CFG, draw_branch_join_pairs: bool = False):
     print(cfg_dot(cfg, draw_branch_join_pairs))
 
-def plot_cfg(cfg: CFG, filename: str, draw_branch_join_pairs: bool = False):
-    s = cfg_dot(cfg, draw_branch_join_pairs)
-    source = Source(s, filename=filename, format="pdf", directory="tmp")
-    source.view()
+# def plot_cfg(cfg: CFG, filename: str, draw_branch_join_pairs: bool = False):
+#     s = cfg_dot(cfg, draw_branch_join_pairs)
+#     source = Source(s, filename=filename, format="pdf", directory="tmp")
+#     source.view()

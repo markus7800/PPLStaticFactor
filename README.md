@@ -51,3 +51,10 @@ Generate the sub-programs:
 ```
 python3 generate_factorisation.py
 ```
+
+Run benchmarks:
+```
+python3 run_benchmark.py
+```
+The results are written to `evaluation/results.csv`.
+The results reported in the paper can be found in  `evaluation/paper_results.csv` (measure on a M2 Pro CPU).

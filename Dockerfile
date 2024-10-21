@@ -255,14 +255,14 @@ RUN set -eux; \
 # ----------------------------------------------------------------------------------------------------
 RUN apt-get update; \
 	apt-get install -y tmux; \
-	apt-get install -y vim; \
+	apt-get install -y vim;
 
-WORKDIR /PPLSTATICFACTOR
+WORKDIR /PPLStaticFactor
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt;
 
 COPY Project.toml .
-RUN julia --project=. -e "using Pkg; Pkg.instantiate(); Pkg.precompile()"
+RUN julia --project=. -e "using Pkg; Pkg.instantiate()"
 
 COPY . .

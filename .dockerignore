@@ -1,5 +1,5 @@
 venv/
-src/jl/Manifest.toml
+Manifest.toml
 tmp/
 .vscode/
 **/__pycache__

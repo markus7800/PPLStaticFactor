@@ -36,7 +36,7 @@ for filename in filenames:
     print(bcolors.HEADER + filename + bcolors.ENDC)
     cmd = ["julia", "--project=.", "evaluation/bench.jl", "benchmark", filename]
     subprocess.run(cmd, capture_output=False)
-exit()
+
 
 print("\nUnrolled programs:\n")
 
