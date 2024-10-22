@@ -1,8 +1,10 @@
+# model and data adapted from https://github.com/mugamma/gmm/blob/master/pg.ipynb
+# G. Matheos, A. K. Lew, M. Ghavamizadeh, S. J. Russell, M. F. Cusumano-Towner, and V. K. Mansinghka.
+# Transforming Worlds: Automated Involutive MCMC for Open-Universe Probabilistic Models. (AABI 2021)
+
 include("../ppl.jl")
 
 modelname = "gmm_variable_numclust"
-
-# model and data adapted from https://github.com/mugamma/gmm/blob/master/pg.ipynb
 
 @model function gmm(ctx::SampleContext, ys::Vector{Float64})
     δ::Float64 = 5.0

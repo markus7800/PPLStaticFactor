@@ -1,3 +1,5 @@
+# info: https://en.wikipedia.org/wiki/Hidden_Markov_model
+
 include("../ppl.jl")
 
 modelname = "hmm_variable_seqlen"

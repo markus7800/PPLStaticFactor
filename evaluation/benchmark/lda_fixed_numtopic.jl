@@ -1,8 +1,10 @@
+# https://github.com/stan-dev/example-models/blob/4902ad703332ad0808dab7a7b94bacc1a429940d/misc/cluster/lda/lda.stan
+# commit = 4902ad703332ad0808dab7a7b94bacc1a429940d
+# Blei, D. M., Ng, A. Y., & Jordan, M. I. (2003). Latent dirichlet allocation. Journal of machine Learning research, 3(Jan), 993-1022.
+
 include("../ppl.jl")
 
 modelname = "lda_fixed_numtopic"
-
-# https://github.com/stan-dev/example-models/blob/4902ad703332ad0808dab7a7b94bacc1a429940d/misc/cluster/lda/lda.stan#L4
 
 @model function lda(ctx::SampleContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int})
     K::Int = 2 # num topics

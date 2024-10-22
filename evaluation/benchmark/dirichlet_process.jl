@@ -1,5 +1,7 @@
-include("../ppl.jl")
+# source: https://github.com/fzaiser/nonparametric-hmc/
+# Carol Mak, Fabian Zaiser, Luke Ong. Nonparametric Hamiltonian Monte Carlo. ICML 2021
 
+include("../ppl.jl")
 
 modelname = "dirichlet_process"
 

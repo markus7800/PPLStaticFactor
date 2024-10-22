@@ -1,3 +1,6 @@
+# source: Brian Milch, Bhaskara Marthi, David Sontag, Stuart Russell, Daniel L Ong, and Andrey Kolobov. 2005.
+# Approximate inference for infinite contingent Bayesian networks. In International Workshop on Artificial Intelligence and Statistics. PMLR, 238–245.
+
 include("../ppl.jl")
 
 modelname = "hurricane"

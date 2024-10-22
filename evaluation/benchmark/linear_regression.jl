@@ -1,3 +1,5 @@
+# info: https://en.wikipedia.org/wiki/Bayesian_linear_regression
+
 include("../ppl.jl")
 
 modelname = "linear_regression"
