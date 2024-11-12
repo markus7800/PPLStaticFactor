@@ -12,12 +12,12 @@ def is_on_path_between_nodes(node: CFGNode, start: CFGNode, end: CFGNode) -> boo
     return b1 and b2
 
 def is_on_direct_path_between_nodes(node: CFGNode, start: CFGNode, end: CFGNode) -> bool:
-    # is there a path from start to node to end  such that we do not have to go through start or end?
+    # is there a path from start to node to end  such that we do not have to go through start (or end)?
     start.block()
-    end.block()
+    # end.block()
     b1 = is_reachable(start, node)
     b2 = is_reachable(node, end)
-    end.unblock()
+    # end.unblock()
     start.unblock()
     return b1 and b2
 
@@ -149,7 +149,7 @@ class FactorFunctionWriter():
                     test_sexpr =  inject_state_rec(test_sexpr, self.state_var, self.var_names, None)
                     self.out += tab+"while " + unparse(test_sexpr) + "\n"
 
-                    assert isinstance(branchnode.then, (AbstractAssignNode, ExprNode))
+                    assert isinstance(branchnode.then, (AbstractAssignNode, ExprNode, BranchNode))
                     while_force_write = self.direct_paths
                     self.write_factor_function(branchnode.then, while_force_write, tab+"    ")
                     self.out += tab + "end" + "\n"

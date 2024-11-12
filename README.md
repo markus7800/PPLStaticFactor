@@ -63,4 +63,6 @@ Run benchmarks:
 python3 run_benchmark.py
 ```
 The results are written to `evaluation/results.csv`.
-The results reported in the paper can be found in  `evaluation/paper_results.csv` (measure on a M2 Pro CPU).
+The results reported in the paper can be found in  `evaluation/paper_results.csv` (measured on a M2 Pro CPU).
+
+This script runs the `bench.jl` file which measures the runtime for the factored and non-factored versions of the models and asserts that the computed log-probabilities are correct.

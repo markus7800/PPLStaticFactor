@@ -151,7 +151,7 @@ name_to_N = Dict{String,Int}(
     "lda_fixed_numtopic_unrolled" => 10_000,
     "linear_regression_unrolled" => 100_000,
 )
-N_iter = name_to_N[modelname]
+N_iter = get(name_to_N, modelname, 10_000)
 
 runbench(N_iter, false) # to JIT compile everthing
 runbench(N_iter, true) # this will produce times without compilation
