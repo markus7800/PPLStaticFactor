@@ -1,28 +1,25 @@
-# model and data adapted from https://github.com/mugamma/gmm/blob/master/pg.ipynb
-# G. Matheos, A. K. Lew, M. Ghavamizadeh, S. J. Russell, M. F. Cusumano-Towner, and V. K. Mansinghka.
-# Transforming Worlds: Automated Involutive MCMC for Open-Universe Probabilistic Models. (AABI 2021)
+using Gen
+include("lmh.jl")
 
-include("../ppl.jl")
 
-modelname = "gmm_fixed_numclust"
-
-@model function gmm(ctx::SampleContext, ys::Vector{Float64})
+@gen function gmm()
     δ::Float64 = 5.0
     ξ::Float64 = 0.0
     κ::Float64 = 0.01
     α::Float64 = 2.0
     β::Float64 = 10.0
 
-    num_clusters::Int = 4
+    num_clusters::Int = {:num_clusters} ~ poisson(3.)
+    num_clusters = num_clusters + 1
 
-    w::Vector{Float64} = sample(ctx, "w", Dirichlet(fill(δ,num_clusters)))
+    w::Vector{Float64} = {:w} ~ dirichlet(fill(δ,num_clusters))
 
     k::Int = 1
     means::Vector{Float64} = Float64[]
     vars::Vector{Float64} = Float64[]
     while k <= num_clusters
-        mu::Float64 = sample(ctx, "mu_" * string(k), Normal(ξ, 1/sqrt(κ)))
-        var::Float64 = sample(ctx, "var_" * string(k), InverseGamma(α, β))
+        mu::Float64 = {:mu => k} ~ normal(ξ, 1/sqrt(κ))
+        var::Float64 = {:var => k} ~ inv_gamma(α, β)
         means = vcat(means, mu)
         vars = vcat(vars, var)
         k = k + 1
@@ -30,9 +27,9 @@ modelname = "gmm_fixed_numclust"
 
     i::Int = 1
     while i <= length(ys)
-        z::Int = sample(ctx, "z_" * string(i), Categorical(w))
+        z::Int = {:z => i} ~ categorical(w)
         z = min(z, length(means))
-        sample(ctx, "y_" * string(i), Normal(get_n(means, z), get_n(vars, z)), observed=get_n(ys, i))
+        {:y => i} ~ normal(means[z], vars[z])
         i = i + 1
     end
 
@@ -75,3 +72,13 @@ gt_μs = [-20.0, 0.0, 10.0, 30.0]
 gt_σ²s = [3.0, 8.0, 7.0, 1.0]
 
 ys = gt_ys
+
+
+model = gmm
+args = ()
+observations = choicemap();
+for i in eachindex(gt_ys)
+    observations[:y => i] = gt_ys[i]
+end
+
+lmh(25_000, model, args, observations)
