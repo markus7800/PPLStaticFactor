@@ -9,17 +9,22 @@ if modelname in ("gmm_fixed_numclust", "lda_fixed_numtopic")
 end
 
 include("lmh_standard.jl")
+include("lmh_factorised.jl")
 
 
 function runbench(N::Int, n_iter::Int, verbose::Bool)
 
     Random.seed!(0)
-    updated_lps_1 = Vector{Float64}(undef, N)
-    res = @timed for i in 1:N
-        lmh_standard(n_iter, model)
-        # updated_lps_1[i] = ctx.logprob
-    end
+    res = @timed lmh_standard(n_iter, model)
+
     standard_time = res.time/N
+    verbose && println("\n"^3)
+
+    Random.seed!(0)
+    res = @timed lmh_factorised(n_iter, model, res.value)
+    factored_time = res.time/N
+
+    verbose && println(factored_time / standard_time)
 
     # Random.seed!(0)
     # updated_lps_2 = Vector{Float64}(undef, N)
@@ -133,4 +138,8 @@ N_iter = get(name_to_N, modelname, 10_000)
 
 runbench(1, N_iter, false) # to JIT compile everthing
 runbench(1, N_iter, true) # this will produce times without compilation
+
+
+# runbench(1, 500_000, false)
+# runbench(1, 500_000, true)
 
