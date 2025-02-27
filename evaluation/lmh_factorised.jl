@@ -144,9 +144,11 @@ function lmh_factorised(n_iter::Int, model::Function, ::Val{DEBUG}, gt_traces::V
         end
 
         # randomly pick resample address
-        resample_addr = rand(sort(collect(keys(trace_current)))) # TODO: remove
-        # resample_addr = rand(keys(trace_current))
-        
+        if DEBUG
+            resample_addr = rand(sort(collect(keys(trace_current))))
+        else
+            resample_addr = rand(keys(trace_current))
+        end
         
         forward_ctx = LMHForwardFactorContext(trace_current)
         copy!(state, states_current[resample_addr])

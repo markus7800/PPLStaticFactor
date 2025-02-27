@@ -67,8 +67,11 @@ function lmh_standard(n_iter::Int, model::Function, ::Val{DEBUG}) where DEBUG
         end
 
         # randomly pick resample address
-        resample_addr = rand(sort(collect(keys(trace_current)))) # TODO
-        # resample_addr = rand(keys(trace_current))
+        if DEBUG
+            resample_addr = rand(sort(collect(keys(trace_current))))
+        else
+            resample_addr = rand(keys(trace_current))
+        end
 
         ctx = LMHCtx(trace_current, resample_addr)
 
