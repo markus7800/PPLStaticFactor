@@ -1,6 +1,8 @@
 using Gen
 include("lmh.jl")
 
+modelname = "lda_fixed_numtopic"
+
 append = push!
 
 @gen function lda(M::Int, N::Int, V::Int, doc::Vector{Int})
@@ -46,4 +48,8 @@ for n in eachindex(w)
     observations[:w => n] = w[n]
 end
 
-lmh(10_000, model, args, observations)
+N = name_to_N[modelname]
+acceptance_rate = lmh(10, N ÷ 10, model, args, observations)
+res = @timed lmh(10, N ÷ 10, model, args, observations)
+println(@sprintf("Gen time %.3f μs", res.time / N * 10^6))
+println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))

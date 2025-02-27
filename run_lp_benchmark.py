@@ -34,8 +34,9 @@ filenames = [
 
 for filename in filenames:
     print(bcolors.HEADER + filename + bcolors.ENDC)
-    cmd = ["julia", "--project=.", "evaluation/bench.jl", "benchmark", filename]
+    cmd = ["julia", "--project=.", "evaluation/bench_lp.jl", "benchmark", filename]
     subprocess.run(cmd, capture_output=False)
+    print()
 
 
 print("\nUnrolled programs:\n")
@@ -48,5 +49,6 @@ filenames = [
 ]
 for filename in filenames:
     print(bcolors.HEADER + filename + bcolors.ENDC)
-    cmd = ["julia", "--project=.", "evaluation/bench.jl", "unrolled", filename]
+    cmd = ["julia", "--project=.", "evaluation/bench_lp.jl", "unrolled", filename]
     subprocess.run(cmd, capture_output=False)
+    print()

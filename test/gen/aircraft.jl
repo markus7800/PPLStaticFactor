@@ -1,6 +1,8 @@
 using Gen
 include("lmh.jl")
 
+modelname = "aircraft"
+
 @gen function aircraft()
     num_aircraft ~ poisson(5)
     num_aircraft = num_aircraft + 1
@@ -47,4 +49,8 @@ observations[:observed_blip_1] = 1.
 observations[:observed_blip_2] = 2.
 observations[:observed_blip_3] = 3.
 
-lmh(75_000, model, args, observations)
+N = name_to_N[modelname]
+acceptance_rate = lmh(10, N ÷ 10, model, args, observations)
+res = @timed lmh(10, N ÷ 10, model, args, observations)
+println(@sprintf("Gen time %.3f μs", res.time / N * 10^6))
+println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))

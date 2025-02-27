@@ -2,6 +2,8 @@ using Gen
 include("lmh.jl")
 using LinearAlgebra: I
 
+modelname = "captcha"
+
 function render_letter(letter::Int, font::Int, fontsize::Int, kerning::Int)
     # mock heavy computation
     t0 = time_ns()
@@ -36,4 +38,8 @@ observations = choicemap();
 
 observations[:image] = captcha_img
 
-lmh(1_000, model, args, observations)
+N = name_to_N[modelname]
+acceptance_rate = lmh(10, N ÷ 10, model, args, observations)
+res = @timed lmh(10, N ÷ 10, model, args, observations)
+println(@sprintf("Gen time %.3f μs", res.time / N * 10^6))
+println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))

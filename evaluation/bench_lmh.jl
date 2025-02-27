@@ -72,7 +72,6 @@ function runbench(N::Int, n_iter::Int, proposers::Dict{String, Distribution}, ve
     
     verbose && println(@sprintf("Standard time %.3f μs", standard_time*10^6))
     verbose && println(@sprintf("Factored time %.3f μs (%.2f)", factored_time*10^6, factored_time / standard_time))
-    verbose && println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
 
 
     finite_time = NaN
@@ -93,6 +92,8 @@ function runbench(N::Int, n_iter::Int, proposers::Dict{String, Distribution}, ve
         verbose && println(@sprintf("Custom time %.3f μs (%.2f)", custom_time*10^6, custom_time / standard_time))
     end
 
+    verbose && println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+    
     if verbose
         f = open("evaluation/results.csv", "a")
         print(f, modelname, ", ", acceptance_rate, ", ", standard_time*10^6, ", ", factored_time*10^6)

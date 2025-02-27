@@ -1,6 +1,7 @@
 using Gen
 include("lmh.jl")
 
+modelname = "urn"
 
 struct Dirac <: Gen.Distribution{Int} end
 const dirac = Dirac()
@@ -42,27 +43,8 @@ args = (K,)
 observations = choicemap()
 observations[:n_black] = 5
 
-function lmh_custom(n_iter::Int, model, args, observations)
-    Random.seed!(0)
-
-    trace, lp = generate(model, args, observations)
-    # println(trace)
-
-    n_accepted = 0
-    for i in 1:n_iter
-        resample_address1 = rand(setdiff(get_addresses(trace.trie), get_addresses(observations)))
-        resample_address2 = rand(setdiff(get_addresses(trace.trie), get_addresses(observations)))
-        # println(resample_address)
-        new_trace, accept = mh(trace, select(resample_address1, resample_address2), observations=observations, check=true)
-        accept = accept && (rand() < get_length(trace.trie) / get_length(new_trace.trie))
-
-        if accept
-            trace = new_trace
-            n_accepted += 1
-        end
-    end  
-    println(n_accepted / n_iter)
-end
-
-lmh(100_000, model, args, observations)
-lmh_custom(100_000, model, args, observations)
+N = name_to_N[modelname]
+acceptance_rate = lmh(10, N ÷ 10, model, args, observations)
+res = @timed lmh(10, N ÷ 10, model, args, observations)
+println(@sprintf("Gen time %.3f μs", res.time / N * 10^6))
+println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))

@@ -1,6 +1,7 @@
 using Gen
 include("lmh.jl")
 
+modelname = "hurricane"
 
 @gen function hurricane()
     first_city_ixs::Bool = {:F} ~ bernoulli(0.5)
@@ -25,4 +26,8 @@ model = hurricane
 args = ()
 observations = choicemap();
 
-lmh(1_000_000, model, args, observations)
+N = name_to_N[modelname]
+acceptance_rate = lmh(10, N ÷ 10, model, args, observations)
+res = @timed lmh(10, N ÷ 10, model, args, observations)
+println(@sprintf("Gen time %.3f μs", res.time / N * 10^6))
+println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))

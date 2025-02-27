@@ -1,6 +1,8 @@
 using Gen
 include("lmh.jl")
 
+modelname = "pedestrian"
+
 @gen function pedestrian()
     start::Float64 = {:start} ~ uniform_continuous(0.,1.)
     position::Float64 = start
@@ -20,4 +22,8 @@ args = ()
 observations = choicemap()
 observations[:final_distance] = 1.1
 
-lmh(100_000, model, args, observations)
+N = name_to_N[modelname]
+acceptance_rate = lmh(10, N ÷ 10, model, args, observations)
+res = @timed lmh(10, N ÷ 10, model, args, observations)
+println(@sprintf("Gen time %.3f μs", res.time / N * 10^6))
+println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))

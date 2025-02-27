@@ -34,21 +34,6 @@ filenames = [
 
 for filename in filenames:
     print(bcolors.HEADER + filename + bcolors.ENDC)
-    cmd = ["julia", "--project=.", "evaluation/bench_lmh.jl", "benchmark", filename]
-    subprocess.run(cmd, capture_output=False)
-    print()
-
-
-print("\nUnrolled programs:\n")
-
-filenames = [
-    # "gmm_fixed_numclust.jl",
-    "hmm_fixed_seqlen.jl",
-    # "lda_fixed_numtopic.jl",
-    # "linear_regression.jl",
-]
-for filename in filenames:
-    print(bcolors.HEADER + filename + bcolors.ENDC)
-    cmd = ["julia", "--project=.", "evaluation/bench_lmh.jl", "unrolled", filename]
+    cmd = ["julia", "--project=./test", "test/gen/" + filename]
     subprocess.run(cmd, capture_output=False)
     print()
