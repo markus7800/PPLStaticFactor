@@ -19,7 +19,7 @@ function get_length(trie::Union{Gen.Trie,Gen.DynamicChoiceMap})
 end
 
 
-function lmh(N::Int, n_iter::Int, model, args, observations)
+function lmh(N::Int, n_iter::Int, model, args, observations; check::Bool=false)
     Random.seed!(0)
 
     n_accepted = 0
@@ -28,9 +28,9 @@ function lmh(N::Int, n_iter::Int, model, args, observations)
         # println(trace)
 
         for i in 1:n_iter
-            resample_address = rand(setdiff(get_addresses(trace.trie), get_addresses(observations))) # this could probably be optimised
+            resample_address = rand(setdiff(get_addresses(trace.trie), get_addresses(observations)))
             # println(resample_address)
-            new_trace, accept = mh(trace, select(resample_address), observations=observations, check=true)
+            new_trace, accept = mh(trace, select(resample_address), observations=observations, check=check)
             accept = accept && (rand() < get_length(trace.trie) / get_length(new_trace.trie))
 
             if accept
