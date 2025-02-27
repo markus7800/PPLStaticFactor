@@ -1,6 +1,6 @@
 # include("ppl.jl")
 
-mutable struct LMHCtx <: AbstractSampleRecordStateContext
+mutable struct LMHCtx <: SampleContext
     trace_current::Dict{String,SampleType}
     trace_proposed::Dict{String,SampleType}
     logprob_proposed::Float64
@@ -13,8 +13,7 @@ mutable struct LMHCtx <: AbstractSampleRecordStateContext
     end
 end
 
-# function sample(ctx::LMHCtx, address::String, distribution::Distribution; observed::Union{Nothing,SampleType}=nothing)
-function sample_record_state(ctx::LMHCtx, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+function sample(ctx::LMHCtx, address::String, distribution::Distribution; observed::Union{Nothing,SampleType}=nothing)
 
     if !isnothing(observed)
         ctx.logprob_proposed += logpdf(distribution, observed)
@@ -41,7 +40,6 @@ function sample_record_state(ctx::LMHCtx, s::State, node_id::Int, address::Strin
     ctx.logprob_proposed += lp
     ctx.Q_proposed[address] = lp
 
-    s.node_id = node_id
     return value
 end
 
@@ -50,7 +48,7 @@ function lmh_standard(n_iter::Int, model::Function, proposers::Dict{String, Dist
 
     # init
     ctx = LMHCtx(Dict{String,SampleType}(), "", proposers)
-    retval_current = model(ctx, State())
+    retval_current = model(ctx)
     trace_current = ctx.trace_proposed
     logprob_current = ctx.logprob_proposed
     Q_current = ctx.Q_proposed
@@ -76,7 +74,7 @@ function lmh_standard(n_iter::Int, model::Function, proposers::Dict{String, Dist
         ctx = LMHCtx(trace_current, resample_addr, proposers)
 
         # run model with sampler
-        retval_proposed = model(ctx, State())
+        retval_proposed = model(ctx)
         trace_proposed = ctx.trace_proposed
         logprob_proposed = ctx.logprob_proposed
         Q_proposed = ctx.Q_proposed

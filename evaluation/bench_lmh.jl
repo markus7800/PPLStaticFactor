@@ -1,5 +1,7 @@
 using Printf
 
+# ARGS = ["benchmark", "lda_variable_numtopic.jl"]
+
 include(ARGS[1] * "/generated/" * ARGS[2])
 if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm_fixed_seqlen", "lda_fixed_numtopic")
     include("finite/"  * ARGS[2])
