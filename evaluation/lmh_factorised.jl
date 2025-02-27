@@ -11,8 +11,8 @@ mutable struct LMHForwardFactorContext <: AbstractFactorResampleContext
     Q_resample_addr::Float64
     add_diff::Dict{String,State}
     update_diff::Dict{String,State}
-    function LMHForwardFactorContext(trace_current::Dict{String,SampleType}, logprob::Float64)
-        return new(trace_current, Dict{String,SampleType}(), logprob, 0., 0., Dict{String,State}(), Dict{String,State}())
+    function LMHForwardFactorContext(trace_current::Dict{String,SampleType})
+        return new(trace_current, Dict{String,SampleType}(), 0., 0., 0., Dict{String,State}(), Dict{String,State}())
     end
 end
 
@@ -80,26 +80,26 @@ mutable struct LMHBackwardFactorContext <: AbstractFactorResampleContext
     logprob::Float64
     Q_current::Float64
     sub_diff::Set{String}
-    function LMHBackwardFactorContext(trace_current::Dict{String,SampleType}, logprob::Float64, trace_proposed::Dict{String,SampleType})
-        return new(trace_current, trace_proposed, logprob, 0., Set{String}())
+    function LMHBackwardFactorContext(trace_current::Dict{String,SampleType}, trace_proposed::Dict{String,SampleType})
+        return new(trace_current, trace_proposed, 0., 0., Set{String}())
     end
 end
 
 function resample(ctx::LMHBackwardFactorContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     value = ctx.trace_current[address]
-    ctx.logprob -= logpdf(distribution, value)
+    ctx.logprob += logpdf(distribution, value)
     return value
 end
 
 function score(ctx::LMHBackwardFactorContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     if !isnothing(observed)
-        ctx.logprob -= logpdf(distribution, observed)
+        ctx.logprob += logpdf(distribution, observed)
         return observed
     end
 
     value = ctx.trace_current[address]
     lp = logpdf(distribution, value)
-    ctx.logprob -= lp
+    ctx.logprob += lp
 
     if !haskey(ctx.trace_proposed, address)
         ctx.Q_current += lp
@@ -148,18 +148,15 @@ function lmh_factorised(n_iter::Int, model::Function, ::Val{DEBUG}, gt_traces::V
         # resample_addr = rand(keys(trace_current))
         
         
-        log_prob_diff = 0.
-
-        forward_ctx = LMHForwardFactorContext(trace_current, log_prob_diff)
+        forward_ctx = LMHForwardFactorContext(trace_current)
         copy!(state, states_current[resample_addr])
         factor(forward_ctx, state, resample_addr)
 
-        log_prob_diff = forward_ctx.logprob
-        backward_ctx = LMHBackwardFactorContext(trace_current, log_prob_diff, forward_ctx.trace_proposed)
+        backward_ctx = LMHBackwardFactorContext(trace_current, forward_ctx.trace_proposed)
         copy!(state, states_current[resample_addr])
         factor(backward_ctx, state, resample_addr)
 
-        log_prob_diff = backward_ctx.logprob
+        log_prob_diff = forward_ctx.logprob - backward_ctx.logprob
 
         trace_proposed_length = length(trace_current) + length(forward_ctx.add_diff) - length(backward_ctx.sub_diff)
         log_α = log_prob_diff + forward_ctx.Q_resample_addr  + backward_ctx.Q_current - forward_ctx.Q_proposed + log(length(trace_current)) - log(trace_proposed_length)
