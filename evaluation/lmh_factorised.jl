@@ -9,11 +9,10 @@ mutable struct LMHForwardFactorContext <: AbstractFactorResampleContext
     logprob::Float64
     Q_proposed::Float64
     Q_resample_addr::Float64
-    add_diff::Dict{String,State}
-    update_diff::Dict{String,State}
+    add_diff::Set{String}
     proposers::Dict{String, Distribution}
     function LMHForwardFactorContext(trace_current::Dict{String,SampleType}, proposers::Dict{String, Distribution})
-        return new(trace_current, Dict{String,SampleType}(), 0., 0., 0., Dict{String,State}(), Dict{String,State}(), proposers)
+        return new(trace_current, Dict{String,SampleType}(), 0., 0., 0., Set{String}(), proposers)
     end
 end
 
@@ -40,18 +39,12 @@ function score(ctx::LMHForwardFactorContext, s::State, node_id::Int, address::St
     if haskey(ctx.trace_current, address)
         value = ctx.trace_current[address]
         lp = logpdf(distribution, value)
-        state = copy(s)
-        state.node_id = node_id
-        ctx.update_diff[address] = state
 
     else
         value = rand(distribution)
         lp = logpdf(distribution, value)
         ctx.Q_proposed += lp
-        state = copy(s)
-        state.node_id = node_id
-        ctx.add_diff[address] = state
-
+        push!(ctx.add_diff, address)
     end
 
     ctx.logprob += lp
@@ -64,9 +57,6 @@ function read(ctx::LMHForwardFactorContext, s::State, node_id::Int, address::Str
         value = observed
     else
         value = ctx.trace_current[address]
-        state = copy(s)
-        state.node_id = node_id
-        ctx.update_diff[address] = state
     end
     return value
 end
@@ -116,6 +106,49 @@ function read(ctx::LMHBackwardFactorContext, s::State, node_id::Int, address::St
     end
     return value
 end
+
+struct LMHUpdateStatesContext <: AbstractFactorResampleContext
+    trace::Dict{String,SampleType}
+    states::Dict{String,State}
+    add_diff::Set{String}
+end
+
+
+function resample(ctx::LMHUpdateStatesContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+    value = ctx.trace[address]
+    return value
+end
+
+function score(ctx::LMHUpdateStatesContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+    if !isnothing(observed)
+        return observed
+    end
+    if address in ctx.add_diff
+        # add state
+        state = copy(s)
+        state.node_id = node_id
+        ctx.states[address] = state
+    else
+        # update state
+        copy!(ctx.states[address], s)
+        ctx.states[address].node_id = node_id
+    end
+    value = ctx.trace[address]
+    return value
+end
+
+function read(ctx::LMHUpdateStatesContext, s::State, node_id::Int, address::String; observed=nothing)
+    if !isnothing(observed)
+        value = observed
+    else
+        # update state
+        copy!(ctx.states[address], s)
+        ctx.states[address].node_id = node_id
+        value = ctx.trace[address]
+    end
+    return value
+end
+
 
 
 function lmh_factorised(n_iter::Int, model::Function, proposers::Dict{String, Distribution}, ::Val{DEBUG}, gt_traces::Vector{Dict{String, SampleType}}, gt_log_αs::Vector{Float64}) where DEBUG
@@ -174,14 +207,15 @@ function lmh_factorised(n_iter::Int, model::Function, proposers::Dict{String, Di
                 delete!(trace_current, addr)
                 delete!(states_current, addr)
             end
-            for (addr, state) in forward_ctx.add_diff
+            for addr in forward_ctx.add_diff
                 trace_current[addr] = forward_ctx.trace_proposed[addr]
-                states_current[addr] = state
             end
-            for (addr, state) in forward_ctx.update_diff
-                states_current[addr] = state
-            end 
             trace_current[resample_addr] = forward_ctx.trace_proposed[resample_addr]
+
+            update_ctx = LMHUpdateStatesContext(trace_current, states_current, forward_ctx.add_diff)
+            copy!(state, states_current[resample_addr])
+            factor(update_ctx, state, resample_addr)
+
 
             logprob_current = logprob_current + log_prob_diff
             n_accepted += 1
