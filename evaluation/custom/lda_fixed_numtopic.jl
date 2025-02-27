@@ -1,6 +1,6 @@
 
 
-function lda_phi_custom(ctx::ManualResampleContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, addr::String)
+function lda_phi_custom(ctx::AbstractManualResampleContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, addr::String)
 
     old_value::Vector{Float64} = manual_read(ctx, addr)
     new_value::Vector{Float64} = manual_resample(ctx, addr, Dirichlet(fill(1/V,V)))
@@ -19,7 +19,7 @@ function lda_phi_custom(ctx::ManualResampleContext, M::Int, N::Int, V::Int, w::V
 end
 
 
-function lda_theta_custom(ctx::ManualResampleContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, addr::String)
+function lda_theta_custom(ctx::AbstractManualResampleContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, addr::String)
     K::Int = 2 # num topics
 
     old_value::Vector{Float64} = manual_read(ctx, addr)
@@ -37,7 +37,7 @@ function lda_theta_custom(ctx::ManualResampleContext, M::Int, N::Int, V::Int, w:
     end
 end
 
-function lda_z_custom(ctx::ManualResampleContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, addr::String)
+function lda_z_custom(ctx::AbstractManualResampleContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, addr::String)
     n = parse(Int, addr[3:end])
     theta::Vector{Float64} = manual_read(ctx, "theta_" * string(doc[n]))
     old_value::Int = manual_read(ctx, addr)
@@ -49,7 +49,7 @@ function lda_z_custom(ctx::ManualResampleContext, M::Int, N::Int, V::Int, w::Vec
     manual_sub_logpdf(ctx, "w_" * string(n), Categorical(phi), observed=w[n])
 end
 
-function lda_manual_factor_custom(ctx::ManualResampleContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int})
+function lda_manual_factor_custom(ctx::AbstractManualResampleContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int})
     if startswith(ctx.resample_addr, "phi")
         lda_phi_custom(ctx, M, N, V, w, doc, ctx.resample_addr)
     elseif startswith(ctx.resample_addr, "theta")
@@ -59,9 +59,8 @@ function lda_manual_factor_custom(ctx::ManualResampleContext, M::Int, N::Int, V:
     else
         error("Unknown address $(ctx.resample_addr)")
     end
-    return ctx.logprob
 end
 
-function custom_factor(ctx::ManualResampleContext)
-    return lda_manual_factor_custom(ctx, M, N, V, w, doc)
+function custom_factor(ctx::AbstractManualResampleContext)
+    lda_manual_factor_custom(ctx, M, N, V, w, doc)
 end

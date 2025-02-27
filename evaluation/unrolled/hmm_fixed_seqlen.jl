@@ -2,6 +2,7 @@
 include("../ppl.jl")
 
 modelname = "hmm_fixed_seqlen_unrolled"
+proposers = Dict{String, Distribution}()
 
 @model function hmm(ctx::SampleContext, ys::Vector{Float64})
 

@@ -119,7 +119,6 @@ end
 
 
 function lmh_factorised(n_iter::Int, model::Function, proposers::Dict{String, Distribution}, ::Val{DEBUG}, gt_traces::Vector{Dict{String, SampleType}}, gt_log_αs::Vector{Float64}) where DEBUG
-    generate_ctx = GenerateContext()
     generate_ctx = GenerateRecordStateContext()
     model(generate_ctx, State())
 
@@ -188,5 +187,7 @@ function lmh_factorised(n_iter::Int, model::Function, proposers::Dict{String, Di
         end
     end
 
-    return n_accepted / n_iter
+    acceptance_rate = n_accepted / n_iter
+
+    return acceptance_rate
 end

@@ -1,6 +1,6 @@
 
 
-function lr_intercept(ctx::ManualResampleContext, xs::Vector{Float64}, ys::Vector{Float64})
+function lr_intercept(ctx::AbstractManualResampleContext, xs::Vector{Float64}, ys::Vector{Float64})
     old_value::Float64 = manual_read(ctx, "intercept")
     new_value::Float64 = manual_resample(ctx, "intercept", Normal(0.0, 3.0))
     slope::Float64 = manual_read(ctx, "slope")
@@ -11,7 +11,7 @@ function lr_intercept(ctx::ManualResampleContext, xs::Vector{Float64}, ys::Vecto
     end
 end
 
-function lr_slope(ctx::ManualResampleContext, xs::Vector{Float64}, ys::Vector{Float64})
+function lr_slope(ctx::AbstractManualResampleContext, xs::Vector{Float64}, ys::Vector{Float64})
     old_value::Float64 = manual_read(ctx, "slope")
     new_value::Float64 = manual_resample(ctx, "slope", Normal(0.0, 3.0))
     intercept::Float64 = manual_read(ctx, "intercept")
@@ -22,15 +22,14 @@ function lr_slope(ctx::ManualResampleContext, xs::Vector{Float64}, ys::Vector{Fl
     end
 end
 
-function lr_manual_factor(ctx::ManualResampleContext, xs::Vector{Float64}, ys::Vector{Float64})
+function lr_manual_factor(ctx::AbstractManualResampleContext, xs::Vector{Float64}, ys::Vector{Float64})
     if ctx.resample_addr == "slope"
         lr_slope(ctx, xs, ys)
     else
         lr_intercept(ctx, xs, ys)
     end
-    return ctx.logprob
 end
 
-function finite_factor(ctx::ManualResampleContext)
-    return lr_manual_factor(ctx, xs, ys)
+function finite_factor(ctx::AbstractManualResampleContext)
+    lr_manual_factor(ctx, xs, ys)
 end

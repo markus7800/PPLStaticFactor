@@ -12,7 +12,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 with open("evaluation/results.csv", "w") as f:
-    f.write("model, none, static, finite, custom\n")
+    f.write("model, acceptancerate, none, static, finite, custom\n")
 
 filenames = [
     "aircraft.jl",
@@ -38,15 +38,15 @@ for filename in filenames:
     subprocess.run(cmd, capture_output=False)
 
 
-# print("\nUnrolled programs:\n")
+print("\nUnrolled programs:\n")
 
-# filenames = [
-#     # "gmm_fixed_numclust.jl",
-#     "hmm_fixed_seqlen.jl",
-#     # "lda_fixed_numtopic.jl",
-#     # "linear_regression.jl",
-# ]
-# for filename in filenames:
-#     print(bcolors.HEADER + filename + bcolors.ENDC)
-#     cmd = ["julia", "--project=.", "evaluation/bench.jl", "unrolled", filename]
-#     subprocess.run(cmd, capture_output=False)
+filenames = [
+    # "gmm_fixed_numclust.jl",
+    "hmm_fixed_seqlen.jl",
+    # "lda_fixed_numtopic.jl",
+    # "linear_regression.jl",
+]
+for filename in filenames:
+    print(bcolors.HEADER + filename + bcolors.ENDC)
+    cmd = ["julia", "--project=.", "evaluation/bench_lmh.jl", "unrolled", filename]
+    subprocess.run(cmd, capture_output=False)

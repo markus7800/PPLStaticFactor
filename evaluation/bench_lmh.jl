@@ -12,8 +12,10 @@ end
 
 include("lmh_standard.jl")
 include("lmh_factorised.jl")
+include("lmh_finite.jl")
 
 function test_correctness(N::Int, n_iter::Int, proposers::Dict{String, Distribution})
+    print("Test correctness: ")
 
     gt_result = Tuple{Float64, Vector{Dict{String, SampleType}}, Vector{Float64}}[]
     Random.seed!(0)
@@ -27,6 +29,25 @@ function test_correctness(N::Int, n_iter::Int, proposers::Dict{String, Distribut
         gt_acceptance_rate, gt_traces, gt_log_αs = gt_result[i]
         acceptance_rate = lmh_factorised(n_iter, model, proposers, Val(true), gt_traces, gt_log_αs)
         @assert acceptance_rate == gt_acceptance_rate # this is a redundant check because we check traces anyways
+    end
+
+
+    if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm_fixed_seqlen", "lda_fixed_numtopic")
+        Random.seed!(0)
+        for i in 1:N
+            gt_acceptance_rate, gt_traces, gt_log_αs = gt_result[i]
+            acceptance_rate = lmh_finite(n_iter, model, proposers, Val(true), Val(finite_factor), gt_traces, gt_log_αs)
+            @assert acceptance_rate == gt_acceptance_rate # this is a redundant check because we check traces anyways
+        end
+    end
+
+    if modelname in ("gmm_fixed_numclust", "lda_fixed_numtopic")
+        Random.seed!(0)
+        for i in 1:N
+            gt_acceptance_rate, gt_traces, gt_log_αs = gt_result[i]
+            acceptance_rate = lmh_finite(n_iter, model, proposers, Val(true), Val(custom_factor), gt_traces, gt_log_αs)
+            @assert acceptance_rate == gt_acceptance_rate # this is a redundant check because we check traces anyways
+        end
     end
 
     println("OK.")
@@ -53,88 +74,40 @@ function runbench(N::Int, n_iter::Int, proposers::Dict{String, Distribution}, ve
     verbose && println(@sprintf("Factored time %.3f μs (%.2f)", factored_time*10^6, factored_time / standard_time))
     verbose && println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
 
-    # Random.seed!(0)
-    # updated_lps_2 = Vector{Float64}(undef, N)
-    # state = State()
-    # res = @timed for i in 1:N
-    #     trace = state_traces[i]
-    #     lp = lps[i]
 
-    #     addr = addresses[i]
+    finite_time = NaN
+    if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm_fixed_seqlen", "lda_fixed_numtopic")
+        res = @timed for _ in 1:N
+            lmh_finite(n_iter, model, proposers, Val(false), Val(finite_factor), Dict{String, SampleType}[], Float64[])
+        end
+        finite_time = res.time/(N*n_iter)
+        verbose && println(@sprintf("Finite time %.3f μs (%.2f)", finite_time*10^6, finite_time / standard_time))
+    end
 
-    #     ctx = SubstractFactorResampleContext(trace, lp)
-    #     copy!(state, trace[addr][2])
-    #     factor(ctx, state, addr)
-    #     ctx = AddFactorResampleContext(trace, ctx.logprob)
-    #     copy!(state, trace[addr][2])
-    #     factor(ctx, state, addr)
+    custom_time = NaN
+    if modelname in ("gmm_fixed_numclust", "lda_fixed_numtopic")
+        res = @timed for _ in 1:N
+            lmh_finite(n_iter, model, proposers, Val(false), Val(custom_factor), Dict{String, SampleType}[], Float64[])
+        end
+        custom_time = res.time/(N*n_iter)
+        verbose && println(@sprintf("Custom time %.3f μs (%.2f)", custom_time*10^6, custom_time / standard_time))
+    end
 
-    #     updated_lps_2[i] = isnan(ctx.logprob) ? -Inf : ctx.logprob
-    # end
-    # factored_time = res.time/N
-    
-    # verbose && println(@sprintf("Standard time %.3f μs", standard_time*10^6))
-    # verbose && println(@sprintf("Factored time %.3f μs (%.2f)", factored_time*10^6, factored_time / standard_time))
-
-    # @assert (updated_lps_1 ≈ updated_lps_2)
-
-    # finite_time = NaN
-    # if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm_fixed_seqlen", "lda_fixed_numtopic")
-    #     Random.seed!(0)
-    #     updated_lps_3 = Vector{Float64}(undef, N)
-    #     res = @timed for i in 1:N
-    #         trace = traces[i]
-    #         lp = lps[i]
-
-    #         addr = addresses[i]
-
-    #         ctx = ManualResampleContext(trace, addr)
-    #         finite_factor(ctx)
-
-    #         updated_lps_3[i] = lp + ctx.logprob
-    #     end
-    #     finite_time = res.time/N
-
-    #     verbose && println(@sprintf("Finite time %.3f μs (%.2f)", finite_time*10^6, finite_time / standard_time))
-    #     @assert (updated_lps_1 ≈ updated_lps_3)
-    # end
-
-    # custom_time = NaN
-    # if modelname in ("gmm_fixed_numclust", "lda_fixed_numtopic")
-    #     Random.seed!(0)
-    #     updated_lps_4 = Vector{Float64}(undef, N)
-    #     res = @timed for i in 1:N
-    #         trace = traces[i]
-    #         lp = lps[i]
-
-    #         addr = addresses[i]
-
-    #         ctx = ManualResampleContext(trace, addr)
-    #         custom_factor(ctx)
-
-    #         updated_lps_4[i] = lp + ctx.logprob
-    #     end
-    #     custom_time = res.time/N
-
-    #     verbose && println(@sprintf("Custom time %.3f μs (%.2f)", custom_time*10^6, custom_time / standard_time))
-    #     @assert (updated_lps_1 ≈ updated_lps_4)
-    # end
-
-    # if verbose
-    #     f = open("evaluation/results.csv", "a")
-    #     print(f, modelname, ", ", standard_time*10^6, ", ", factored_time*10^6)
-    #     if isnan(finite_time)
-    #         print(f, ", NA")
-    #     else
-    #         print(f, ", ", finite_time*10^6)
-    #     end
-    #     if isnan(custom_time)
-    #         println(f, ", NA")
-    #     else
-    #         println(f, ", ", custom_time*10^6)
-    #     end
-    #     close(f)
-    # end
+    if verbose
+        f = open("evaluation/results.csv", "a")
+        print(f, modelname, ", ", acceptance_rate, ", ", standard_time*10^6, ", ", factored_time*10^6)
+        if isnan(finite_time)
+            print(f, ", NA")
+        else
+            print(f, ", ", finite_time*10^6)
+        end
+        if isnan(custom_time)
+            println(f, ", NA")
+        else
+            println(f, ", ", custom_time*10^6)
+        end
+        close(f)
+    end
 
 end
 

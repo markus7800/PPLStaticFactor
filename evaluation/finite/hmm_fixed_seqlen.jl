@@ -1,5 +1,5 @@
 
-function hmm_initial_state(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String)
+function hmm_initial_state(ctx::AbstractManualResampleContext, ys::Vector{Float64}, addr::String)
     seqlen::Int = length(ys)
     transition_probs::Matrix{Float64} = [0.1 0.2 0.7; 0.1 0.8 0.1; 0.3 0.3 0.4]
 
@@ -10,7 +10,7 @@ function hmm_initial_state(ctx::ManualResampleContext, ys::Vector{Float64}, addr
     manual_sub_logpdf(ctx, "state_1", Categorical(get_row(transition_probs, old_value)))
 end
 
-function hmm_state(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String)
+function hmm_state(ctx::AbstractManualResampleContext, ys::Vector{Float64}, addr::String)
     seqlen::Int = length(ys)
     transition_probs::Matrix{Float64} = [0.1 0.2 0.7; 0.1 0.8 0.1; 0.3 0.3 0.4]
 
@@ -29,7 +29,7 @@ function hmm_state(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String
     end
 end
 
-function hmm_manual_factor(ctx::ManualResampleContext, ys::Vector{Float64})
+function hmm_manual_factor(ctx::AbstractManualResampleContext, ys::Vector{Float64})
     if ctx.resample_addr == "initial_state"
         hmm_initial_state(ctx, ys, ctx.resample_addr)
     elseif startswith(ctx.resample_addr, "state")
@@ -37,9 +37,8 @@ function hmm_manual_factor(ctx::ManualResampleContext, ys::Vector{Float64})
     else
         error("Unknown address $(ctx.resample_addr)")
     end
-    return ctx.logprob
 end
 
-function finite_factor(ctx::ManualResampleContext)
-    return hmm_manual_factor(ctx, ys)
+function finite_factor(ctx::AbstractManualResampleContext)
+    hmm_manual_factor(ctx, ys)
 end

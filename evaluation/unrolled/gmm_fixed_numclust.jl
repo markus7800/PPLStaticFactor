@@ -2,6 +2,7 @@
 include("../ppl.jl")
 
 modelname = "hmm_fixed_seqlen_unrolled"
+proposers = Dict{String, Distribution}()
 
 # model and data adapted from https://github.com/mugamma/gmm/blob/master/pg.ipynb
 

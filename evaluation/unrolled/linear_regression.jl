@@ -2,6 +2,7 @@
 include("../ppl.jl")
 
 modelname = "hmm_fixed_seqlen_unrolled"
+proposers = Dict{String, Distribution}("slope" => Normal(2.,0.25), "intercept" => Normal(-1.,0.25))
 
 @model function lr(ctx::SampleContext, xs::Vector{Float64}, ys::Vector{Float64})
     slope::Float64 = sample(ctx, "slope", Normal(0.,3.))

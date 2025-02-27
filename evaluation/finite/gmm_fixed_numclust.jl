@@ -1,5 +1,5 @@
 
-function gmm_mu(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String)
+function gmm_mu(ctx::AbstractManualResampleContext, ys::Vector{Float64}, addr::String)
     ξ::Float64 = 0.0
     κ::Float64 = 0.01
 
@@ -21,7 +21,7 @@ function gmm_mu(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String)
     end
 end
 
-function gmm_var(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String)
+function gmm_var(ctx::AbstractManualResampleContext, ys::Vector{Float64}, addr::String)
     α::Float64 = 2.0
     β::Float64 = 10.0
     
@@ -41,7 +41,7 @@ function gmm_var(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String)
         manual_sub_logpdf(ctx, "y_" * string(i), Normal(mu, var2[z]), observed=get_n(ys, i))
     end
 end
-function gmm_w(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String)
+function gmm_w(ctx::AbstractManualResampleContext, ys::Vector{Float64}, addr::String)
     δ::Float64 = 5.0
     num_clusters::Int = 4
 
@@ -54,7 +54,7 @@ function gmm_w(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String)
     end
 end
 
-function gmm_z(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String)
+function gmm_z(ctx::AbstractManualResampleContext, ys::Vector{Float64}, addr::String)
     w::Vector{Float64} = manual_read(ctx, "w")
 
     i::Int = parse(Int, addr[3:end])
@@ -71,7 +71,7 @@ function gmm_z(ctx::ManualResampleContext, ys::Vector{Float64}, addr::String)
     manual_sub_logpdf(ctx, "y_" * string(i), Normal(mu, var), observed=get_n(ys, i))
 end
 
-function gmm_manual_factor(ctx::ManualResampleContext, ys::Vector{Float64})
+function gmm_manual_factor(ctx::AbstractManualResampleContext, ys::Vector{Float64})
     if ctx.resample_addr == "w"
         gmm_w(ctx, ys, ctx.resample_addr)
     elseif startswith(ctx.resample_addr, "mu")
@@ -83,9 +83,8 @@ function gmm_manual_factor(ctx::ManualResampleContext, ys::Vector{Float64})
     else
         error("Unknown address $(ctx.resample_addr)")
     end
-    return ctx.logprob
 end
 
-function finite_factor(ctx::ManualResampleContext)
-    return gmm_manual_factor(ctx, ys)
+function finite_factor(ctx::AbstractManualResampleContext)
+    gmm_manual_factor(ctx, ys)
 end
