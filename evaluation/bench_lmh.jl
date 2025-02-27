@@ -20,8 +20,9 @@ function runbench(N::Int, n_iter::Int, verbose::Bool)
     standard_time = res.time/N
     verbose && println("\n"^3)
 
+    traces, states, log_αs = res.value
     Random.seed!(0)
-    res = @timed lmh_factorised(n_iter, model, res.value)
+    res = @timed lmh_factorised(n_iter, model, traces, states, log_αs)
     factored_time = res.time/N
 
     verbose && println(factored_time / standard_time)
@@ -137,7 +138,7 @@ name_to_N = Dict{String,Int}(
 N_iter = get(name_to_N, modelname, 10_000)
 
 runbench(1, N_iter, false) # to JIT compile everthing
-runbench(1, N_iter, true) # this will produce times without compilation
+# runbench(1, N_iter, true) # this will produce times without compilation
 
 
 # runbench(1, 500_000, false)

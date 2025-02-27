@@ -268,6 +268,16 @@ class FactorisationBuilder():
         s += tab + f"return dst\n"
         s += "end\n\n"
         s += f"Base.copy({self.state_var}::State) = Base.copy!(State(), {self.state_var})\n\n"
+        # self.out += s
+
+        s += f"function distance(other::State, {self.state_var}::State)\n"
+        s += tab + f"d = 0.\n"
+        for m in self.state_members:
+            var = m.name # unparse(m.syntaxnode[1].sexpr)
+            s += tab + f"d = max(d, other.{var} isa Vector ? maximum(abs, other.{var} .- {self.state_var}.{var}) : abs(other.{var} - {self.state_var}.{var}))\n"
+        s += tab + f"return d\n"
+        s += "end\n\n"
+        s += f"Base.copy({self.state_var}::State) = Base.copy!(State(), {self.state_var})\n\n"
         self.out += s
 
         header = []
@@ -308,7 +318,7 @@ class FactorisationBuilder():
         signature = model_sexpr[1]
         assert signature[0] == "call"
         assert signature[2] == ["::-i", ["Identifier", "ctx"], ["Identifier", "SampleContext"]]
-        signature[2][2][1] = "AbstractGenerateRecordStateContext"
+        signature[2][2][1] = "AbstractSampleRecordStateContext"
         signature.append(['::-i', ['Identifier', self.state_var], ['Identifier', 'State']])
         # pprint(model_sexpr)
 
@@ -396,7 +406,7 @@ class FactorisationBuilder():
         prog += "    return " + unparse(signature) + "\n"
         prog += "end\n\n"
 
-        prog += f"function model(ctx::AbstractGenerateRecordStateContext, {self.state_var}::State)\n"
+        prog += f"function model(ctx::AbstractSampleRecordStateContext, {self.state_var}::State)\n"
         signature = deepcopy(self.model_function.syntaxnode.sexpr[1])
         signature.append(['Identifier', self.state_var])
         for i in range(2, len(signature)):

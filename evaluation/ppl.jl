@@ -51,9 +51,12 @@ end
 
 
 abstract type AbstractState end
-abstract type AbstractGenerateRecordStateContext end
+abstract type AbstractSampleRecordStateContext end
+function sample_record_state(ctx::AbstractSampleRecordStateContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+    error("Not implemented!")
+end
 
-mutable struct GenerateRecordStateContext <: AbstractGenerateRecordStateContext
+mutable struct GenerateRecordStateContext <: AbstractSampleRecordStateContext
     trace::Dict{String,Tuple{SampleType,AbstractState}}
     logprob::Float64
     function GenerateRecordStateContext()
@@ -74,7 +77,7 @@ function sample_record_state(ctx::GenerateRecordStateContext, s::AbstractState, 
     return value
 end
 
-mutable struct GenerateNoRecordStateContext <: AbstractGenerateRecordStateContext
+mutable struct GenerateNoRecordStateContext <: AbstractSampleRecordStateContext
     trace::Dict{String,SampleType}
     logprob::Float64
     function GenerateNoRecordStateContext()

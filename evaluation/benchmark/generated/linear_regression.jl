@@ -27,7 +27,17 @@ end
 
 Base.copy(_s_::State) = Base.copy!(State(), _s_)
 
-function lr(ctx::AbstractGenerateRecordStateContext, xs::Vector{Float64}, ys::Vector{Float64}, _s_::State)
+function distance(other::State, _s_::State)
+    d = 0.
+    d = max(d, other.i isa Vector ? maximum(abs, other.i .- _s_.i) : abs(other.i - _s_.i))
+    d = max(d, other.intercept isa Vector ? maximum(abs, other.intercept .- _s_.intercept) : abs(other.intercept - _s_.intercept))
+    d = max(d, other.slope isa Vector ? maximum(abs, other.slope .- _s_.slope) : abs(other.slope - _s_.slope))
+    return d
+end
+
+Base.copy(_s_::State) = Base.copy!(State(), _s_)
+
+function lr(ctx::AbstractSampleRecordStateContext, xs::Vector{Float64}, ys::Vector{Float64}, _s_::State)
     _s_.slope::Float64 = sample_record_state(ctx, _s_, 29, "slope", Normal(0.0, 3.0))
     _s_.intercept::Float64 = sample_record_state(ctx, _s_, 42, "intercept", Normal(0.0, 3.0))
     _s_.i::Int = 1
@@ -70,7 +80,7 @@ function model(ctx::SampleContext)
     return lr(ctx, xs, ys)
 end
 
-function model(ctx::AbstractGenerateRecordStateContext, _s_::State)
+function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return lr(ctx, xs, ys, _s_)
 end
 

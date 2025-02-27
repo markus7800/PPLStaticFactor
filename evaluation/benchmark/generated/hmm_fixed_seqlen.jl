@@ -30,7 +30,18 @@ end
 
 Base.copy(_s_::State) = Base.copy!(State(), _s_)
 
-function hmm(ctx::AbstractGenerateRecordStateContext, ys::Vector{Float64}, _s_::State)
+function distance(other::State, _s_::State)
+    d = 0.
+    d = max(d, other.current isa Vector ? maximum(abs, other.current .- _s_.current) : abs(other.current - _s_.current))
+    d = max(d, other.i isa Vector ? maximum(abs, other.i .- _s_.i) : abs(other.i - _s_.i))
+    d = max(d, other.seqlen isa Vector ? maximum(abs, other.seqlen .- _s_.seqlen) : abs(other.seqlen - _s_.seqlen))
+    d = max(d, other.transition_probs isa Vector ? maximum(abs, other.transition_probs .- _s_.transition_probs) : abs(other.transition_probs - _s_.transition_probs))
+    return d
+end
+
+Base.copy(_s_::State) = Base.copy!(State(), _s_)
+
+function hmm(ctx::AbstractSampleRecordStateContext, ys::Vector{Float64}, _s_::State)
     _s_.seqlen::Int = length(ys)
     _s_.transition_probs::Matrix{Float64} = [0.1 0.2 0.7; 0.1 0.8 0.1; 0.3 0.3 0.4]
     _s_.current::Int = sample_record_state(ctx, _s_, 50, "initial_state", Categorical([0.33, 0.33, 0.34]))
@@ -77,7 +88,7 @@ function model(ctx::SampleContext)
     return hmm(ctx, ys)
 end
 
-function model(ctx::AbstractGenerateRecordStateContext, _s_::State)
+function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return hmm(ctx, ys, _s_)
 end
 

@@ -33,7 +33,19 @@ end
 
 Base.copy(_s_::State) = Base.copy!(State(), _s_)
 
-function marsaglia(ctx::AbstractGenerateRecordStateContext, _s_::State)
+function distance(other::State, _s_::State)
+    d = 0.
+    d = max(d, other.i isa Vector ? maximum(abs, other.i .- _s_.i) : abs(other.i - _s_.i))
+    d = max(d, other.s isa Vector ? maximum(abs, other.s .- _s_.s) : abs(other.s - _s_.s))
+    d = max(d, other.x isa Vector ? maximum(abs, other.x .- _s_.x) : abs(other.x - _s_.x))
+    d = max(d, other.y isa Vector ? maximum(abs, other.y .- _s_.y) : abs(other.y - _s_.y))
+    d = max(d, other.z isa Vector ? maximum(abs, other.z .- _s_.z) : abs(other.z - _s_.z))
+    return d
+end
+
+Base.copy(_s_::State) = Base.copy!(State(), _s_)
+
+function marsaglia(ctx::AbstractSampleRecordStateContext, _s_::State)
     _s_.s::Float64 = Inf
     _s_.x::Float64 = 0.0
     _s_.y::Float64 = 0.0
@@ -87,7 +99,7 @@ function model(ctx::SampleContext)
     return marsaglia(ctx)
 end
 
-function model(ctx::AbstractGenerateRecordStateContext, _s_::State)
+function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return marsaglia(ctx, _s_)
 end
 

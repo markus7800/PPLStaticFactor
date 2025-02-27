@@ -48,7 +48,24 @@ end
 
 Base.copy(_s_::State) = Base.copy!(State(), _s_)
 
-function dp(ctx::AbstractGenerateRecordStateContext, xs::Vector{Float64}, _s_::State)
+function distance(other::State, _s_::State)
+    d = 0.
+    d = max(d, other.alpha isa Vector ? maximum(abs, other.alpha .- _s_.alpha) : abs(other.alpha - _s_.alpha))
+    d = max(d, other.beta isa Vector ? maximum(abs, other.beta .- _s_.beta) : abs(other.beta - _s_.beta))
+    d = max(d, other.cumprod isa Vector ? maximum(abs, other.cumprod .- _s_.cumprod) : abs(other.cumprod - _s_.cumprod))
+    d = max(d, other.i isa Vector ? maximum(abs, other.i .- _s_.i) : abs(other.i - _s_.i))
+    d = max(d, other.j isa Vector ? maximum(abs, other.j .- _s_.j) : abs(other.j - _s_.j))
+    d = max(d, other.stick isa Vector ? maximum(abs, other.stick .- _s_.stick) : abs(other.stick - _s_.stick))
+    d = max(d, other.theta isa Vector ? maximum(abs, other.theta .- _s_.theta) : abs(other.theta - _s_.theta))
+    d = max(d, other.thetas isa Vector ? maximum(abs, other.thetas .- _s_.thetas) : abs(other.thetas - _s_.thetas))
+    d = max(d, other.weights isa Vector ? maximum(abs, other.weights .- _s_.weights) : abs(other.weights - _s_.weights))
+    d = max(d, other.z isa Vector ? maximum(abs, other.z .- _s_.z) : abs(other.z - _s_.z))
+    return d
+end
+
+Base.copy(_s_::State) = Base.copy!(State(), _s_)
+
+function dp(ctx::AbstractSampleRecordStateContext, xs::Vector{Float64}, _s_::State)
     _s_.alpha::Float64 = 5.0
     _s_.stick::Float64 = 1.0
     _s_.beta::Float64 = 0.0
@@ -144,7 +161,7 @@ function model(ctx::SampleContext)
     return dp(ctx, xs)
 end
 
-function model(ctx::AbstractGenerateRecordStateContext, _s_::State)
+function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return dp(ctx, xs, _s_)
 end
 

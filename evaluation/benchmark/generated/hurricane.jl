@@ -33,7 +33,19 @@ end
 
 Base.copy(_s_::State) = Base.copy!(State(), _s_)
 
-function hurricane(ctx::AbstractGenerateRecordStateContext, _s_::State)
+function distance(other::State, _s_::State)
+    d = 0.
+    d = max(d, other.damage_0 isa Vector ? maximum(abs, other.damage_0 .- _s_.damage_0) : abs(other.damage_0 - _s_.damage_0))
+    d = max(d, other.damage_1 isa Vector ? maximum(abs, other.damage_1 .- _s_.damage_1) : abs(other.damage_1 - _s_.damage_1))
+    d = max(d, other.first_city_ixs isa Vector ? maximum(abs, other.first_city_ixs .- _s_.first_city_ixs) : abs(other.first_city_ixs - _s_.first_city_ixs))
+    d = max(d, other.prep_0 isa Vector ? maximum(abs, other.prep_0 .- _s_.prep_0) : abs(other.prep_0 - _s_.prep_0))
+    d = max(d, other.prep_1 isa Vector ? maximum(abs, other.prep_1 .- _s_.prep_1) : abs(other.prep_1 - _s_.prep_1))
+    return d
+end
+
+Base.copy(_s_::State) = Base.copy!(State(), _s_)
+
+function hurricane(ctx::AbstractSampleRecordStateContext, _s_::State)
     _s_.first_city_ixs::Bool = sample_record_state(ctx, _s_, 19, "F", Bernoulli(0.5))
     _s_.prep_0::Bool = 0
     _s_.damage_0::Bool = 0
@@ -144,7 +156,7 @@ function model(ctx::SampleContext)
     return hurricane(ctx)
 end
 
-function model(ctx::AbstractGenerateRecordStateContext, _s_::State)
+function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return hurricane(ctx, _s_)
 end
 

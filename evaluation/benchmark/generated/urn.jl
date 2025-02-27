@@ -39,7 +39,21 @@ end
 
 Base.copy(_s_::State) = Base.copy!(State(), _s_)
 
-function urn(ctx::AbstractGenerateRecordStateContext, K::Int, _s_::State)
+function distance(other::State, _s_::State)
+    d = 0.
+    d = max(d, other.N isa Vector ? maximum(abs, other.N .- _s_.N) : abs(other.N - _s_.N))
+    d = max(d, other.ball isa Vector ? maximum(abs, other.ball .- _s_.ball) : abs(other.ball - _s_.ball))
+    d = max(d, other.ball_ix isa Vector ? maximum(abs, other.ball_ix .- _s_.ball_ix) : abs(other.ball_ix - _s_.ball_ix))
+    d = max(d, other.balls isa Vector ? maximum(abs, other.balls .- _s_.balls) : abs(other.balls - _s_.balls))
+    d = max(d, other.i isa Vector ? maximum(abs, other.i .- _s_.i) : abs(other.i - _s_.i))
+    d = max(d, other.k isa Vector ? maximum(abs, other.k .- _s_.k) : abs(other.k - _s_.k))
+    d = max(d, other.n_black isa Vector ? maximum(abs, other.n_black .- _s_.n_black) : abs(other.n_black - _s_.n_black))
+    return d
+end
+
+Base.copy(_s_::State) = Base.copy!(State(), _s_)
+
+function urn(ctx::AbstractSampleRecordStateContext, K::Int, _s_::State)
     _s_.N::Int = sample_record_state(ctx, _s_, 22, "N", Poisson(6))
     _s_.balls::Vector{Int} = Int[]
     _s_.i::Int = 1
@@ -131,7 +145,7 @@ function model(ctx::SampleContext)
     return urn(ctx, K)
 end
 
-function model(ctx::AbstractGenerateRecordStateContext, _s_::State)
+function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return urn(ctx, K, _s_)
 end
 

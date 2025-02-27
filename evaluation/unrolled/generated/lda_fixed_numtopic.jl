@@ -33,7 +33,19 @@ end
 
 Base.copy(_s_::State) = Base.copy!(State(), _s_)
 
-function lda(ctx::AbstractGenerateRecordStateContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State)
+function distance(other::State, _s_::State)
+    d = 0.
+    d = max(d, other.K isa Vector ? maximum(abs, other.K .- _s_.K) : abs(other.K - _s_.K))
+    d = max(d, other.phi isa Vector ? maximum(abs, other.phi .- _s_.phi) : abs(other.phi - _s_.phi))
+    d = max(d, other.phis isa Vector ? maximum(abs, other.phis .- _s_.phis) : abs(other.phis - _s_.phis))
+    d = max(d, other.theta isa Vector ? maximum(abs, other.theta .- _s_.theta) : abs(other.theta - _s_.theta))
+    d = max(d, other.thetas isa Vector ? maximum(abs, other.thetas .- _s_.thetas) : abs(other.thetas - _s_.thetas))
+    return d
+end
+
+Base.copy(_s_::State) = Base.copy!(State(), _s_)
+
+function lda(ctx::AbstractSampleRecordStateContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State)
     _s_.K::Int = 2
     _s_.thetas::Vector{Vector{Float64}} = Vector{Vector{Float64}}()
     _s_.theta::Vector{Float64} = Float64[]
@@ -494,7 +506,7 @@ function model(ctx::SampleContext)
     return lda(ctx, M, N, V, w, doc)
 end
 
-function model(ctx::AbstractGenerateRecordStateContext, _s_::State)
+function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return lda(ctx, M, N, V, w, doc, _s_)
 end
 

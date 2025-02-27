@@ -2,21 +2,25 @@
 
 LMH_STANDARD_DEBUG = false
 
-mutable struct LMHCtx <: SampleContext
+mutable struct LMHCtx <: AbstractSampleRecordStateContext
     trace_current::Dict{String,SampleType}
     trace_proposed::Dict{String,SampleType}
+    state_proposed::Dict{String, State}
     logprob_proposed::Float64
     Q_proposed::Dict{String,Float64}
     resample_addr::String
     Q_resample_addr::Float64
     function LMHCtx(trace_current::Dict{String,SampleType}, resample_addr::String)
-        return new(trace_current, Dict{String,SampleType}(), 0., Dict{String,Float64}(), resample_addr, 0.)
+        return new(trace_current, Dict{String,SampleType}(), Dict{String, State}(), 0., Dict{String,Float64}(), resample_addr, 0.)
     end
 end
 
-function sample(ctx::LMHCtx, address::String, distribution::Distribution; observed::Union{Nothing,SampleType}=nothing)
+# function sample(ctx::LMHCtx, address::String, distribution::Distribution; observed::Union{Nothing,SampleType}=nothing)
+function sample_record_state(ctx::LMHCtx, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+
     if !isnothing(observed)
         ctx.logprob_proposed += logpdf(distribution, observed)
+        LMH_STANDARD_DEBUG && println("  +Score: ", address, " ", logpdf(distribution, observed))
         return observed
     end
 
@@ -29,7 +33,7 @@ function sample(ctx::LMHCtx, address::String, distribution::Distribution; observ
 
         ctx.Q_resample_addr = logpdf(backward_proposer, old_value) - logpdf(forward_proposer, value)
 
-        LMH_STANDARD_DEBUG && println("  Resample: ", address, " ", value)
+        LMH_STANDARD_DEBUG && println("  Resample: ", address, " ", old_value, " => ", value)
     elseif haskey(ctx.trace_current, address)
         value = ctx.trace_current[address]
         LMH_STANDARD_DEBUG && println("  Reuse: ", address, " ", value)
@@ -43,6 +47,8 @@ function sample(ctx::LMHCtx, address::String, distribution::Distribution; observ
     ctx.logprob_proposed += lp
     ctx.Q_proposed[address] = lp
 
+    s.node_id = node_id
+    ctx.state_proposed[address] = copy(s)
     return value
 end
 
@@ -51,16 +57,23 @@ function lmh_standard(n_iter::Int, model::Function)
 
     # init
     ctx = LMHCtx(Dict{String,SampleType}(), "")
-    retval_current = model(ctx)
+    retval_current = model(ctx, State())
     trace_current = ctx.trace_proposed
+    state_current = ctx.state_proposed
     logprob_current = ctx.logprob_proposed
     Q_current = ctx.Q_proposed
 
     n_accepted = 0
     log_αs = Vector{Float64}(undef, n_iter)
+    traces = Dict{String, SampleType}[]
+    states = Dict{String, State}[]
 
+    global LMH_STANDARD_DEBUG = false
     for i in 1:n_iter
+        # LMH_STANDARD_DEBUG = i == 10
         LMH_STANDARD_DEBUG && println("$i. ", trace_current)
+        push!(traces, trace_current)
+        push!(states, state_current)
 
         # randomly pick resample address
         resample_addr = rand(sort(collect(keys(trace_current)))) # TODO: remove
@@ -69,8 +82,9 @@ function lmh_standard(n_iter::Int, model::Function)
         ctx = LMHCtx(trace_current, resample_addr)
 
         # run model with sampler
-        retval_proposed = model(ctx)
+        retval_proposed = model(ctx, State())
         trace_proposed = ctx.trace_proposed
+        state_proposed = ctx.state_proposed
         logprob_proposed = ctx.logprob_proposed
         Q_proposed = ctx.Q_proposed
         Q_resample_addr = ctx.Q_resample_addr
@@ -110,6 +124,7 @@ function lmh_standard(n_iter::Int, model::Function)
         # accept or reject
         if log(rand()) < log_α
             trace_current = trace_proposed
+            state_current = state_proposed
             logprob_current = logprob_proposed
             Q_current = Q_proposed
             retval_current = retval_proposed
@@ -125,5 +140,5 @@ function lmh_standard(n_iter::Int, model::Function)
     # println([mean(retvals .== r) for r in 0:10])
 
     println(n_accepted / n_iter)
-    return log_αs
+    return traces, states, log_αs
 end
