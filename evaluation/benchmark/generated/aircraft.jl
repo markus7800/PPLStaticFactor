@@ -48,23 +48,6 @@ end
 
 Base.copy(_s_::State) = Base.copy!(State(), _s_)
 
-function distance(other::State, _s_::State)
-    d = 0.
-    d = max(d, other.blip isa Vector ? maximum(abs, other.blip .- _s_.blip) : abs(other.blip - _s_.blip))
-    d = max(d, other.blip_1 isa Vector ? maximum(abs, other.blip_1 .- _s_.blip_1) : abs(other.blip_1 - _s_.blip_1))
-    d = max(d, other.blip_2 isa Vector ? maximum(abs, other.blip_2 .- _s_.blip_2) : abs(other.blip_2 - _s_.blip_2))
-    d = max(d, other.blip_3 isa Vector ? maximum(abs, other.blip_3 .- _s_.blip_3) : abs(other.blip_3 - _s_.blip_3))
-    d = max(d, other.i isa Vector ? maximum(abs, other.i .- _s_.i) : abs(other.i - _s_.i))
-    d = max(d, other.j isa Vector ? maximum(abs, other.j .- _s_.j) : abs(other.j - _s_.j))
-    d = max(d, other.num_aircraft isa Vector ? maximum(abs, other.num_aircraft .- _s_.num_aircraft) : abs(other.num_aircraft - _s_.num_aircraft))
-    d = max(d, other.num_blips isa Vector ? maximum(abs, other.num_blips .- _s_.num_blips) : abs(other.num_blips - _s_.num_blips))
-    d = max(d, other.position isa Vector ? maximum(abs, other.position .- _s_.position) : abs(other.position - _s_.position))
-    d = max(d, other.total_num_blibs isa Vector ? maximum(abs, other.total_num_blibs .- _s_.total_num_blibs) : abs(other.total_num_blibs - _s_.total_num_blibs))
-    return d
-end
-
-Base.copy(_s_::State) = Base.copy!(State(), _s_)
-
 function aircraft(ctx::AbstractSampleRecordStateContext, _s_::State)
     _s_.num_aircraft::Int = sample_record_state(ctx, _s_, 19, "num_aircraft", Poisson(5))
     _s_.num_aircraft = (_s_.num_aircraft + 1)

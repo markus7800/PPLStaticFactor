@@ -51,24 +51,6 @@ end
 
 Base.copy(_s_::State) = Base.copy!(State(), _s_)
 
-function distance(other::State, _s_::State)
-    d = 0.
-    d = max(d, other.means isa Vector ? maximum(abs, other.means .- _s_.means) : abs(other.means - _s_.means))
-    d = max(d, other.mu isa Vector ? maximum(abs, other.mu .- _s_.mu) : abs(other.mu - _s_.mu))
-    d = max(d, other.var isa Vector ? maximum(abs, other.var .- _s_.var) : abs(other.var - _s_.var))
-    d = max(d, other.vars isa Vector ? maximum(abs, other.vars .- _s_.vars) : abs(other.vars - _s_.vars))
-    d = max(d, other.w isa Vector ? maximum(abs, other.w .- _s_.w) : abs(other.w - _s_.w))
-    d = max(d, other.z isa Vector ? maximum(abs, other.z .- _s_.z) : abs(other.z - _s_.z))
-    d = max(d, other.α isa Vector ? maximum(abs, other.α .- _s_.α) : abs(other.α - _s_.α))
-    d = max(d, other.β isa Vector ? maximum(abs, other.β .- _s_.β) : abs(other.β - _s_.β))
-    d = max(d, other.δ isa Vector ? maximum(abs, other.δ .- _s_.δ) : abs(other.δ - _s_.δ))
-    d = max(d, other.κ isa Vector ? maximum(abs, other.κ .- _s_.κ) : abs(other.κ - _s_.κ))
-    d = max(d, other.ξ isa Vector ? maximum(abs, other.ξ .- _s_.ξ) : abs(other.ξ - _s_.ξ))
-    return d
-end
-
-Base.copy(_s_::State) = Base.copy!(State(), _s_)
-
 function gmm(ctx::AbstractSampleRecordStateContext, ys::Vector{Float64}, _s_::State)
     _s_.δ::Float64 = 5.0
     _s_.ξ::Float64 = 0.0

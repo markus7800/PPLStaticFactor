@@ -268,16 +268,6 @@ class FactorisationBuilder():
         s += tab + f"return dst\n"
         s += "end\n\n"
         s += f"Base.copy({self.state_var}::State) = Base.copy!(State(), {self.state_var})\n\n"
-        # self.out += s
-
-        s += f"function distance(other::State, {self.state_var}::State)\n"
-        s += tab + f"d = 0.\n"
-        for m in self.state_members:
-            var = m.name # unparse(m.syntaxnode[1].sexpr)
-            s += tab + f"d = max(d, other.{var} isa Vector ? maximum(abs, other.{var} .- {self.state_var}.{var}) : abs(other.{var} - {self.state_var}.{var}))\n"
-        s += tab + f"return d\n"
-        s += "end\n\n"
-        s += f"Base.copy({self.state_var}::State) = Base.copy!(State(), {self.state_var})\n\n"
         self.out += s
 
         header = []

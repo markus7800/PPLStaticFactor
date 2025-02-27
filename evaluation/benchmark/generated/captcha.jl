@@ -42,21 +42,6 @@ end
 
 Base.copy(_s_::State) = Base.copy!(State(), _s_)
 
-function distance(other::State, _s_::State)
-    d = 0.
-    d = max(d, other.N_letters isa Vector ? maximum(abs, other.N_letters .- _s_.N_letters) : abs(other.N_letters - _s_.N_letters))
-    d = max(d, other.font isa Vector ? maximum(abs, other.font .- _s_.font) : abs(other.font - _s_.font))
-    d = max(d, other.fontsize isa Vector ? maximum(abs, other.fontsize .- _s_.fontsize) : abs(other.fontsize - _s_.fontsize))
-    d = max(d, other.i isa Vector ? maximum(abs, other.i .- _s_.i) : abs(other.i - _s_.i))
-    d = max(d, other.image isa Vector ? maximum(abs, other.image .- _s_.image) : abs(other.image - _s_.image))
-    d = max(d, other.kerning isa Vector ? maximum(abs, other.kerning .- _s_.kerning) : abs(other.kerning - _s_.kerning))
-    d = max(d, other.letter isa Vector ? maximum(abs, other.letter .- _s_.letter) : abs(other.letter - _s_.letter))
-    d = max(d, other.noisy_letter_image isa Vector ? maximum(abs, other.noisy_letter_image .- _s_.noisy_letter_image) : abs(other.noisy_letter_image - _s_.noisy_letter_image))
-    return d
-end
-
-Base.copy(_s_::State) = Base.copy!(State(), _s_)
-
 function captcha(ctx::AbstractSampleRecordStateContext, captcha_img::Vector{Float64}, _s_::State)
     _s_.N_letters::Int = sample_record_state(ctx, _s_, 69, "N", Poisson(7))
     _s_.font::Int = sample_record_state(ctx, _s_, 81, "font", DiscreteUniform(1, 4))

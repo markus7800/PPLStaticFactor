@@ -24,15 +24,6 @@ end
 
 Base.copy(_s_::State) = Base.copy!(State(), _s_)
 
-function distance(other::State, _s_::State)
-    d = 0.
-    d = max(d, other.b isa Vector ? maximum(abs, other.b .- _s_.b) : abs(other.b - _s_.b))
-    d = max(d, other.i isa Vector ? maximum(abs, other.i .- _s_.i) : abs(other.i - _s_.i))
-    return d
-end
-
-Base.copy(_s_::State) = Base.copy!(State(), _s_)
-
 function geometric(ctx::AbstractSampleRecordStateContext, _s_::State)
     _s_.i::Int = -1
     _s_.b::Bool = true

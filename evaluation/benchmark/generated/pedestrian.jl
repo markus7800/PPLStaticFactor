@@ -30,17 +30,6 @@ end
 
 Base.copy(_s_::State) = Base.copy!(State(), _s_)
 
-function distance(other::State, _s_::State)
-    d = 0.
-    d = max(d, other.distance isa Vector ? maximum(abs, other.distance .- _s_.distance) : abs(other.distance - _s_.distance))
-    d = max(d, other.i isa Vector ? maximum(abs, other.i .- _s_.i) : abs(other.i - _s_.i))
-    d = max(d, other.position isa Vector ? maximum(abs, other.position .- _s_.position) : abs(other.position - _s_.position))
-    d = max(d, other.start isa Vector ? maximum(abs, other.start .- _s_.start) : abs(other.start - _s_.start))
-    return d
-end
-
-Base.copy(_s_::State) = Base.copy!(State(), _s_)
-
 function pedestrian(ctx::AbstractSampleRecordStateContext, _s_::State)
     _s_.start::Float64 = sample_record_state(ctx, _s_, 19, "start", Uniform(0.0, 1.0))
     _s_.position::Float64 = _s_.start
