@@ -11,6 +11,25 @@ end
 include("lmh_standard.jl")
 include("lmh_factorised.jl")
 
+function test_correctness(N::Int, n_iter::Int)
+
+    gt_result = Tuple{Float64, Vector{Dict{String, SampleType}}, Vector{Float64}}[]
+    Random.seed!(0)
+    for _ in 1:N
+        acceptance_rate, traces, log_αs = lmh_standard(n_iter, model, Val(true))
+        push!(gt_result, (acceptance_rate, traces, log_αs))
+    end
+    
+    Random.seed!(0)
+    for i in 1:N
+        gt_acceptance_rate, gt_traces, gt_log_αs = gt_result[i]
+        acceptance_rate = lmh_factorised(n_iter, model, Val(true), gt_traces, gt_log_αs)
+        @assert acceptance_rate == gt_acceptance_rate # this is a redundant check because we check traces anyways
+    end
+
+    println("OK.")
+end
+
 
 function runbench(N::Int, n_iter::Int, verbose::Bool)
 
@@ -137,10 +156,12 @@ name_to_N = Dict{String,Int}(
 )
 N_iter = get(name_to_N, modelname, 10_000)
 
-runbench(1, N_iter, false) # to JIT compile everthing
+# runbench(1, N_iter, false) # to JIT compile everthing
 # runbench(1, N_iter, true) # this will produce times without compilation
 
 
 # runbench(1, 500_000, false)
 # runbench(1, 500_000, true)
+
+test_correctness(10, N_iter ÷ 10)
 

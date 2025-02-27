@@ -1,6 +1,4 @@
 
-LMH_FACTORISED_DEBUG = false
-
 abstract type AbstractFactorResampleContext end
 
 # executes model with respect to trace_proposed
@@ -29,8 +27,6 @@ function resample(ctx::LMHForwardFactorContext, s::State, node_id::Int, address:
     
     ctx.logprob += logpdf(distribution, value)
 
-    LMH_FACTORISED_DEBUG && println("  Resample: ", address, " ",  old_value, " => ", value)
-    # LMH_FACTORISED_DEBUG && println("  Resample +Score: ", address, " ",  logpdf(distribution, value))
     ctx.trace_proposed[address] = value
 
     return value
@@ -39,7 +35,6 @@ end
 function score(ctx::LMHForwardFactorContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     if !isnothing(observed)
         ctx.logprob += logpdf(distribution, observed)
-        # LMH_FACTORISED_DEBUG && println("  +Score: ", address, " ", logpdf(distribution, observed))
         return observed
     end
 
@@ -49,7 +44,7 @@ function score(ctx::LMHForwardFactorContext, s::State, node_id::Int, address::St
         state = copy(s)
         state.node_id = node_id
         ctx.update_diff[address] = state
-        LMH_FACTORISED_DEBUG && println("  Reuse: ", address, " ", value)
+
     else
         value = rand(distribution)
         lp = logpdf(distribution, value)
@@ -57,7 +52,7 @@ function score(ctx::LMHForwardFactorContext, s::State, node_id::Int, address::St
         state = copy(s)
         state.node_id = node_id
         ctx.add_diff[address] = state
-        LMH_FACTORISED_DEBUG && println("  Sample from prior: ", address, " ", value)
+
     end
 
     ctx.logprob += lp
@@ -86,21 +81,19 @@ mutable struct LMHBackwardFactorContext <: AbstractFactorResampleContext
     Q_current::Float64
     sub_diff::Set{String}
     function LMHBackwardFactorContext(trace_current::Dict{String,SampleType}, logprob::Float64, trace_proposed::Dict{String,SampleType})
-        return new(trace_current, trace_proposed, logprob, 0.,Set{String}())
+        return new(trace_current, trace_proposed, logprob, 0., Set{String}())
     end
 end
 
 function resample(ctx::LMHBackwardFactorContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     value = ctx.trace_current[address]
     ctx.logprob -= logpdf(distribution, value)
-    # LMH_FACTORISED_DEBUG && println("  Resample -Score: ", address, " ",  logpdf(distribution, value))
     return value
 end
 
 function score(ctx::LMHBackwardFactorContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     if !isnothing(observed)
         ctx.logprob -= logpdf(distribution, observed)
-        # LMH_FACTORISED_DEBUG && println("  -Score: ", address, " ", logpdf(distribution, observed))
         return observed
     end
 
@@ -126,9 +119,7 @@ function read(ctx::LMHBackwardFactorContext, s::State, node_id::Int, address::St
 end
 
 
-
-
-function lmh_factorised(n_iter::Int, model::Function, gt_traces::Vector{Dict{String, SampleType}}, gt_states::Vector{Dict{String, State}}, gt_log_αs::Vector{Float64})
+function lmh_factorised(n_iter::Int, model::Function, ::Val{DEBUG}, gt_traces::Vector{Dict{String, SampleType}}, gt_log_αs::Vector{Float64}) where DEBUG
     generate_ctx = GenerateContext()
     generate_ctx = GenerateRecordStateContext()
     model(generate_ctx, State())
@@ -139,32 +130,23 @@ function lmh_factorised(n_iter::Int, model::Function, gt_traces::Vector{Dict{Str
 
     n_accepted = 0
     state = State()
-    global LMH_FACTORISED_DEBUG = false
+
     for i in 1:n_iter
-        # LMH_FACTORISED_DEBUG = i == 10
-        LMH_FACTORISED_DEBUG && println("$i. ", trace_current)
-        for (a, v) in trace_current
-            if v isa Vector
-                @assert maximum(abs, v .- gt_traces[i][a]) < 1e-9
-            else
-                @assert abs(v - gt_traces[i][a]) < 1e-9
+        
+        if DEBUG
+            for (a, v) in trace_current
+                if v isa Vector
+                    @assert maximum(abs, v .- gt_traces[i][a]) < 1e-9
+                else
+                    @assert abs(v - gt_traces[i][a]) < 1e-9
+                end
             end
-        end
-        for (a, v) in trace_current
-            # states_current[a] = gt_states[i][a]
-            # if !(distance(states_current[a], gt_states[i][a]) < 1e-9)
-            #     println("Iter $i: $a")
-            #     println(states_current[a])
-            #     println("vs")
-            #     println(gt_states[i][a])
-            #     @assert false
-            # end
         end
 
         # randomly pick resample address
         resample_addr = rand(sort(collect(keys(trace_current)))) # TODO: remove
         # resample_addr = rand(keys(trace_current))
-        LMH_FACTORISED_DEBUG && println("resample_addr=", resample_addr)
+        
         
         log_prob_diff = 0.
 
@@ -179,27 +161,14 @@ function lmh_factorised(n_iter::Int, model::Function, gt_traces::Vector{Dict{Str
 
         log_prob_diff = backward_ctx.logprob
 
-        if LMH_FACTORISED_DEBUG
-            for addr in backward_ctx.sub_diff
-                println("  Sub Q_current -> Q_proposed ", addr)
-            end
-            for (addr, state) in forward_ctx.add_diff
-                println("  Add Q_proposed -> Q_current ", addr)
-            end
-        end
         trace_proposed_length = length(trace_current) + length(forward_ctx.add_diff) - length(backward_ctx.sub_diff)
         log_α = log_prob_diff + forward_ctx.Q_resample_addr  + backward_ctx.Q_current - forward_ctx.Q_proposed + log(length(trace_current)) - log(trace_proposed_length)
-        if LMH_FACTORISED_DEBUG
-            println("  log_prob_diff=", log_prob_diff)
-            println("  len_diff=", log(length(trace_current)) - log(trace_proposed_length))
-            println("  Q_resample_addr=", forward_ctx.Q_resample_addr)
-            println("  Q1=", forward_ctx.Q_proposed)
-            println("  Q2=", backward_ctx.Q_current)
-            println("  log_α=", log_α)
-        end
 
-        if abs(log_α  - gt_log_αs[i]) > 1e-9
-            error("error in $i: $log_α vs $(gt_log_αs[i])")
+        
+        if DEBUG
+            if abs(log_α  - gt_log_αs[i]) > 1e-9
+                error("error in $i: $log_α vs $(gt_log_αs[i])")
+            end
         end
 
         if log(rand()) < log_α
@@ -218,13 +187,8 @@ function lmh_factorised(n_iter::Int, model::Function, gt_traces::Vector{Dict{Str
 
             logprob_current = logprob_current + log_prob_diff
             n_accepted += 1
-            LMH_FACTORISED_DEBUG && println(" accept")
-            # println(i, " accept ", log_α)
-        else
-            LMH_FACTORISED_DEBUG && println(" reject")
-            # println(i, " reject ", log_α)
         end
     end
 
-    println(n_accepted / n_iter)
+    return n_accepted / n_iter
 end
