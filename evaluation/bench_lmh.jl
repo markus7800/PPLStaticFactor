@@ -34,17 +34,22 @@ end
 function runbench(N::Int, n_iter::Int, verbose::Bool)
 
     Random.seed!(0)
-    res = @timed lmh_standard(n_iter, model)
+    res = @timed for _ in 1:N
+        lmh_standard(n_iter, model, Val(false))
+    end
+    standard_time = res.time/(N*n_iter)
 
-    standard_time = res.time/N
-    verbose && println("\n"^3)
-
-    traces, states, log_αs = res.value
+    acceptance_rate = 0.
     Random.seed!(0)
-    res = @timed lmh_factorised(n_iter, model, traces, states, log_αs)
-    factored_time = res.time/N
-
-    verbose && println(factored_time / standard_time)
+    res = @timed for _ in 1:N
+        A = lmh_factorised(n_iter, model, Val(false), Dict{String, SampleType}[], Float64[])
+        acceptance_rate += A / N
+    end
+    factored_time = res.time/(N*n_iter)
+    
+    verbose && println(@sprintf("Standard time %.3f μs", standard_time*10^6))
+    verbose && println(@sprintf("Factored time %.3f μs (%.2f)", factored_time*10^6, factored_time / standard_time))
+    verbose && println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
 
     # Random.seed!(0)
     # updated_lps_2 = Vector{Float64}(undef, N)
@@ -156,8 +161,6 @@ name_to_N = Dict{String,Int}(
 )
 N_iter = get(name_to_N, modelname, 10_000)
 
-# runbench(1, N_iter, false) # to JIT compile everthing
-# runbench(1, N_iter, true) # this will produce times without compilation
 
 
 # runbench(1, 500_000, false)
@@ -165,3 +168,5 @@ N_iter = get(name_to_N, modelname, 10_000)
 
 test_correctness(10, N_iter ÷ 10)
 
+runbench(10, N_iter ÷ 10, false) # to JIT compile everthing
+runbench(10, N_iter ÷ 10, true) # this will produce times without compilation
