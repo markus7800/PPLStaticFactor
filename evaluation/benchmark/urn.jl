@@ -19,11 +19,12 @@ modelname = "urn"
         k::Int = 1
         while k <= K
             ball_ix::Int = sample(ctx, "drawn_ball_" * string(k), DiscreteUniform(1,N))
-            n_black = n_black = get_n(balls, min(length(balls), ball_ix))
+            n_black = n_black + get_n(balls, min(length(balls), ball_ix))
             k = k + 1
         end
     end
-    sample(ctx, "n_black", Dirac(n_black), observed=5)
+    # sample(ctx, "n_black", Dirac(n_black), observed=5)
+    sample(ctx, "n_black", Normal(n_black, 0.1), observed=5.) # make noisy to make single-site updates possible
 end
 
 K = 10

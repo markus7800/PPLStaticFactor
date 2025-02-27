@@ -125,8 +125,8 @@ abstract type AbstractFactorResampleContext end
 mutable struct AddFactorResampleContext <: AbstractFactorResampleContext
     trace::Dict{String,Tuple{SampleType,AbstractState}}
     logprob::Float64
-    function AddFactorResampleContext(trace::Dict{String,Tuple{SampleType,AbstractState}}, logprob::Float64)
-        return new(trace, logprob)
+    function AddFactorResampleContext(trace::Dict{String,Tuple{SampleType,AbstractState}})
+        return new(trace, 0.)
     end
 end
 
@@ -161,14 +161,14 @@ end
 mutable struct SubstractFactorResampleContext <: AbstractFactorResampleContext
     trace::Dict{String,Tuple{SampleType,AbstractState}}
     logprob::Float64
-    function SubstractFactorResampleContext(trace::Dict{String,Tuple{SampleType,AbstractState}}, logprob::Float64)
-        return new(trace, logprob)
+    function SubstractFactorResampleContext(trace::Dict{String,Tuple{SampleType,AbstractState}})
+        return new(trace, 0.)
     end
 end
 
 function resample(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     value, _ = ctx.trace[address]
-    ctx.logprob -= logpdf(distribution, value)
+    ctx.logprob += logpdf(distribution, value)
     return value
 end
 
@@ -178,7 +178,7 @@ function score(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::I
     else
         value, _ = ctx.trace[address]
     end
-    ctx.logprob -= logpdf(distribution, value)
+    ctx.logprob += logpdf(distribution, value)
     return value
 end
 

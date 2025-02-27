@@ -52,14 +52,14 @@ function runbench(N::Int, verbose::Bool)
 
         addr = addresses[i]
 
-        ctx = SubstractFactorResampleContext(trace, lp)
+        sub_ctx = SubstractFactorResampleContext(trace)
         copy!(state, trace[addr][2])
-        factor(ctx, state, addr)
-        ctx = AddFactorResampleContext(trace, ctx.logprob)
+        factor(sub_ctx, state, addr)
+        add_ctx = AddFactorResampleContext(trace)
         copy!(state, trace[addr][2])
-        factor(ctx, state, addr)
-
-        updated_lps_2[i] = isnan(ctx.logprob) ? -Inf : ctx.logprob
+        factor(add_ctx, state, addr)
+        
+        updated_lps_2[i] = lp + add_ctx.logprob - sub_ctx.logprob
     end
     factored_time = res.time/N
     

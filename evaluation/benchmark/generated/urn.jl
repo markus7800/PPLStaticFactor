@@ -53,11 +53,11 @@ function urn(ctx::AbstractSampleRecordStateContext, K::Int, _s_::State)
         _s_.k::Int = 1
         while (_s_.k <= K)
             _s_.ball_ix::Int = sample_record_state(ctx, _s_, 104, ("drawn_ball_" * string(_s_.k)), DiscreteUniform(1, _s_.N))
-            _s_.n_black = _s_.n_black = get_n(_s_.balls, min(length(_s_.balls), _s_.ball_ix))
+            _s_.n_black = (_s_.n_black + get_n(_s_.balls, min(length(_s_.balls), _s_.ball_ix)))
             _s_.k = (_s_.k + 1)
         end
     end
-    _ = sample_record_state(ctx, _s_, 141, "n_black", Dirac(_s_.n_black), observed = 5)
+    _ = sample_record_state(ctx, _s_, 142, "n_black", Normal(_s_.n_black, 0.1), observed = 5.0)
 end
 
 function urn_N_22(ctx::AbstractFactorResampleContext, K::Int, _s_::State)
@@ -74,11 +74,11 @@ function urn_N_22(ctx::AbstractFactorResampleContext, K::Int, _s_::State)
         _s_.k = 1
         while (_s_.k <= K)
             _s_.ball_ix = score(ctx, _s_, 104, ("drawn_ball_" * string(_s_.k)), DiscreteUniform(1, _s_.N))
-            _s_.n_black = _s_.n_black = get_n(_s_.balls, min(length(_s_.balls), _s_.ball_ix))
+            _s_.n_black = (_s_.n_black + get_n(_s_.balls, min(length(_s_.balls), _s_.ball_ix)))
             _s_.k = (_s_.k + 1)
         end
     end
-    score(ctx, _s_, 141, "n_black", Dirac(_s_.n_black), observed = 5)
+    score(ctx, _s_, 142, "n_black", Normal(_s_.n_black, 0.1), observed = 5.0)
 end
 
 function urn_ball__53(ctx::AbstractFactorResampleContext, K::Int, _s_::State)
@@ -95,23 +95,23 @@ function urn_ball__53(ctx::AbstractFactorResampleContext, K::Int, _s_::State)
         _s_.k = 1
         while (_s_.k <= K)
             _s_.ball_ix = read(ctx, _s_, 104, ("drawn_ball_" * string(_s_.k)))
-            _s_.n_black = _s_.n_black = get_n(_s_.balls, min(length(_s_.balls), _s_.ball_ix))
+            _s_.n_black = (_s_.n_black + get_n(_s_.balls, min(length(_s_.balls), _s_.ball_ix)))
             _s_.k = (_s_.k + 1)
         end
     end
-    score(ctx, _s_, 141, "n_black", Dirac(_s_.n_black), observed = 5)
+    score(ctx, _s_, 142, "n_black", Normal(_s_.n_black, 0.1), observed = 5.0)
 end
 
 function urn_drawn_ball__104(ctx::AbstractFactorResampleContext, K::Int, _s_::State)
     _s_.ball_ix = resample(ctx, _s_, 104, ("drawn_ball_" * string(_s_.k)), DiscreteUniform(1, _s_.N))
-    _s_.n_black = _s_.n_black = get_n(_s_.balls, min(length(_s_.balls), _s_.ball_ix))
+    _s_.n_black = (_s_.n_black + get_n(_s_.balls, min(length(_s_.balls), _s_.ball_ix)))
     _s_.k = (_s_.k + 1)
     while (_s_.k <= K)
         _s_.ball_ix = read(ctx, _s_, 104, ("drawn_ball_" * string(_s_.k)))
-        _s_.n_black = _s_.n_black = get_n(_s_.balls, min(length(_s_.balls), _s_.ball_ix))
+        _s_.n_black = (_s_.n_black + get_n(_s_.balls, min(length(_s_.balls), _s_.ball_ix)))
         _s_.k = (_s_.k + 1)
     end
-    score(ctx, _s_, 141, "n_black", Dirac(_s_.n_black), observed = 5)
+    score(ctx, _s_, 142, "n_black", Normal(_s_.n_black, 0.1), observed = 5.0)
 end
 
 function urn_factor(ctx::AbstractFactorResampleContext, K::Int, _s_::State, _addr_::String)
