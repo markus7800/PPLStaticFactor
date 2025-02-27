@@ -5,6 +5,7 @@
 include("../ppl.jl")
 
 modelname = "marsaglia"
+proposers = Dict{String, Distribution}()
 
 @model function marsaglia(ctx::SampleContext)
     s::Float64 = Inf

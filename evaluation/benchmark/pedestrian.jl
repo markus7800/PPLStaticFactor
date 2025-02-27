@@ -4,6 +4,7 @@
 include("../ppl.jl")
 
 modelname = "pedestrian"
+proposers = Dict{String, Distribution}()
 
 
 @model function pedestrian(ctx::SampleContext)

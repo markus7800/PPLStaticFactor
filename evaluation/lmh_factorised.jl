@@ -11,19 +11,18 @@ mutable struct LMHForwardFactorContext <: AbstractFactorResampleContext
     Q_resample_addr::Float64
     add_diff::Dict{String,State}
     update_diff::Dict{String,State}
-    function LMHForwardFactorContext(trace_current::Dict{String,SampleType})
-        return new(trace_current, Dict{String,SampleType}(), 0., 0., 0., Dict{String,State}(), Dict{String,State}())
+    proposers::Dict{String, Distribution}
+    function LMHForwardFactorContext(trace_current::Dict{String,SampleType}, proposers::Dict{String, Distribution})
+        return new(trace_current, Dict{String,SampleType}(), 0., 0., 0., Dict{String,State}(), Dict{String,State}(), proposers)
     end
 end
 
 function resample(ctx::LMHForwardFactorContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+    proposer = get(ctx.proposers, address, distribution)
     old_value = ctx.trace_current[address]
-    forward_proposer = distribution # prior
 
-    value = rand(forward_proposer)
-    backward_proposer = distribution # prior
-
-    ctx.Q_resample_addr = logpdf(backward_proposer, old_value) - logpdf(forward_proposer, value)
+    value = rand(proposer)
+    ctx.Q_resample_addr = logpdf(proposer, old_value) - logpdf(proposer, value)
     
     ctx.logprob += logpdf(distribution, value)
 
@@ -119,7 +118,7 @@ function read(ctx::LMHBackwardFactorContext, s::State, node_id::Int, address::St
 end
 
 
-function lmh_factorised(n_iter::Int, model::Function, ::Val{DEBUG}, gt_traces::Vector{Dict{String, SampleType}}, gt_log_αs::Vector{Float64}) where DEBUG
+function lmh_factorised(n_iter::Int, model::Function, proposers::Dict{String, Distribution}, ::Val{DEBUG}, gt_traces::Vector{Dict{String, SampleType}}, gt_log_αs::Vector{Float64}) where DEBUG
     generate_ctx = GenerateContext()
     generate_ctx = GenerateRecordStateContext()
     model(generate_ctx, State())
@@ -150,7 +149,7 @@ function lmh_factorised(n_iter::Int, model::Function, ::Val{DEBUG}, gt_traces::V
             resample_addr = rand(keys(trace_current))
         end
         
-        forward_ctx = LMHForwardFactorContext(trace_current)
+        forward_ctx = LMHForwardFactorContext(trace_current, proposers)
         copy!(state, states_current[resample_addr])
         factor(forward_ctx, state, resample_addr)
 

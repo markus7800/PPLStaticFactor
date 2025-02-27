@@ -7,8 +7,9 @@ mutable struct LMHCtx <: AbstractSampleRecordStateContext
     Q_proposed::Dict{String,Float64}
     resample_addr::String
     Q_resample_addr::Float64
-    function LMHCtx(trace_current::Dict{String,SampleType}, resample_addr::String)
-        return new(trace_current, Dict{String,SampleType}(), 0., Dict{String,Float64}(), resample_addr, 0.)
+    proposers::Dict{String, Distribution}
+    function LMHCtx(trace_current::Dict{String,SampleType}, resample_addr::String, proposers::Dict{String, Distribution})
+        return new(trace_current, Dict{String,SampleType}(), 0., Dict{String,Float64}(), resample_addr, 0., proposers)
     end
 end
 
@@ -21,13 +22,12 @@ function sample_record_state(ctx::LMHCtx, s::State, node_id::Int, address::Strin
     end
 
     if address == ctx.resample_addr
+        proposer = get(ctx.proposers, address, distribution)
         old_value = ctx.trace_current[address]
-        forward_proposer = distribution # prior
 
-        value = rand(forward_proposer)
-        backward_proposer = distribution # prior
+        value = rand(proposer)
 
-        ctx.Q_resample_addr = logpdf(backward_proposer, old_value) - logpdf(forward_proposer, value)
+        ctx.Q_resample_addr = logpdf(proposer, old_value) - logpdf(proposer, value)
 
     elseif haskey(ctx.trace_current, address)
         value = ctx.trace_current[address]
@@ -46,10 +46,10 @@ function sample_record_state(ctx::LMHCtx, s::State, node_id::Int, address::Strin
 end
 
 
-function lmh_standard(n_iter::Int, model::Function, ::Val{DEBUG}) where DEBUG
+function lmh_standard(n_iter::Int, model::Function, proposers::Dict{String, Distribution}, ::Val{DEBUG}) where DEBUG
 
     # init
-    ctx = LMHCtx(Dict{String,SampleType}(), "")
+    ctx = LMHCtx(Dict{String,SampleType}(), "", proposers)
     retval_current = model(ctx, State())
     trace_current = ctx.trace_proposed
     logprob_current = ctx.logprob_proposed
@@ -73,7 +73,7 @@ function lmh_standard(n_iter::Int, model::Function, ::Val{DEBUG}) where DEBUG
             resample_addr = rand(keys(trace_current))
         end
 
-        ctx = LMHCtx(trace_current, resample_addr)
+        ctx = LMHCtx(trace_current, resample_addr, proposers)
 
         # run model with sampler
         retval_proposed = model(ctx, State())

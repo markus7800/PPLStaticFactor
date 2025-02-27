@@ -3,6 +3,7 @@
 include("../ppl.jl")
 
 modelname = "hmm_variable_seqlen"
+proposers = Dict{String, Distribution}()
 
 @model function hmm(ctx::SampleContext, ys::Vector{Float64})
     TERMINAL_STATE::Int = 4

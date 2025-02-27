@@ -4,6 +4,7 @@
 include("../ppl.jl")
 
 modelname = "aircraft"
+proposers = Dict{String, Distribution}()
 
 @model function aircraft(ctx::SampleContext)
     num_aircraft::Int = sample(ctx, "num_aircraft", Poisson(5))

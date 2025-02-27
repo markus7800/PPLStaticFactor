@@ -5,6 +5,7 @@
 include("../ppl.jl")
 
 modelname = "gmm_variable_numclust"
+proposers = Dict{String, Distribution}()
 
 @model function gmm(ctx::SampleContext, ys::Vector{Float64})
     δ::Float64 = 5.0

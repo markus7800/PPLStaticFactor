@@ -5,6 +5,7 @@
 include("../ppl.jl")
 
 modelname = "captcha"
+proposers = Dict{String, Distribution}()
 
 function render_letter(letter::Int, font::Int, fontsize::Int, kerning::Int)
     # mock heavy computation

@@ -4,6 +4,7 @@
 include("../ppl.jl")
 
 modelname = "urn"
+proposers = Dict{String, Distribution}()
 
 @model function urn(ctx::SampleContext, K::Int)
     N::Int = sample(ctx, "N", Poisson(6))

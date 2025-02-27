@@ -11,19 +11,19 @@ end
 include("lmh_standard.jl")
 include("lmh_factorised.jl")
 
-function test_correctness(N::Int, n_iter::Int)
+function test_correctness(N::Int, n_iter::Int, proposers::Dict{String, Distribution})
 
     gt_result = Tuple{Float64, Vector{Dict{String, SampleType}}, Vector{Float64}}[]
     Random.seed!(0)
     for _ in 1:N
-        acceptance_rate, traces, log_αs = lmh_standard(n_iter, model, Val(true))
+        acceptance_rate, traces, log_αs = lmh_standard(n_iter, model, proposers, Val(true))
         push!(gt_result, (acceptance_rate, traces, log_αs))
     end
     
     Random.seed!(0)
     for i in 1:N
         gt_acceptance_rate, gt_traces, gt_log_αs = gt_result[i]
-        acceptance_rate = lmh_factorised(n_iter, model, Val(true), gt_traces, gt_log_αs)
+        acceptance_rate = lmh_factorised(n_iter, model, proposers, Val(true), gt_traces, gt_log_αs)
         @assert acceptance_rate == gt_acceptance_rate # this is a redundant check because we check traces anyways
     end
 
@@ -31,18 +31,18 @@ function test_correctness(N::Int, n_iter::Int)
 end
 
 
-function runbench(N::Int, n_iter::Int, verbose::Bool)
+function runbench(N::Int, n_iter::Int, proposers::Dict{String, Distribution}, verbose::Bool)
 
     Random.seed!(0)
     res = @timed for _ in 1:N
-        lmh_standard(n_iter, model, Val(false))
+        lmh_standard(n_iter, model, proposers, Val(false))
     end
     standard_time = res.time/(N*n_iter)
 
     acceptance_rate = 0.
     Random.seed!(0)
     res = @timed for _ in 1:N
-        A = lmh_factorised(n_iter, model, Val(false), Dict{String, SampleType}[], Float64[])
+        A = lmh_factorised(n_iter, model, proposers, Val(false), Dict{String, SampleType}[], Float64[])
         acceptance_rate += A / N
     end
     factored_time = res.time/(N*n_iter)
@@ -166,7 +166,7 @@ N_iter = get(name_to_N, modelname, 10_000)
 # runbench(1, 500_000, false)
 # runbench(1, 500_000, true)
 
-test_correctness(10, N_iter ÷ 10)
+test_correctness(10, N_iter ÷ 10, proposers)
 
-runbench(10, N_iter ÷ 10, false) # to JIT compile everthing
-runbench(10, N_iter ÷ 10, true) # this will produce times without compilation
+runbench(10, N_iter ÷ 10, proposers, false) # to JIT compile everthing
+runbench(10, N_iter ÷ 10, proposers, true) # this will produce times without compilation

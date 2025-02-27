@@ -4,6 +4,7 @@
 include("../ppl.jl")
 
 modelname = "hurricane"
+proposers = Dict{String, Distribution}()
 
 @model function hurricane(ctx:: SampleContext)
     first_city_ixs::Bool = sample(ctx, "F", Bernoulli(0.5))

@@ -3,6 +3,7 @@
 include("../ppl.jl")
 
 modelname = "hmm_fixed_seqlen"
+proposers = Dict{String, Distribution}()
 
 @model function hmm(ctx::SampleContext, ys::Vector{Float64})
 

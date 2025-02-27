@@ -5,6 +5,7 @@
 include("../ppl.jl")
 
 modelname = "lda_fixed_numtopic"
+proposers = Dict{String, Distribution}()
 
 @model function lda(ctx::SampleContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int})
     K::Int = 2 # num topics

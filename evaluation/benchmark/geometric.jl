@@ -3,6 +3,7 @@
 include("../ppl.jl")
 
 modelname = "geometric"
+proposers = Dict{String, Distribution}()
 
 @model function geometric(ctx::SampleContext)
     i::Int = -1

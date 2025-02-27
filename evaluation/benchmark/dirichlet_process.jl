@@ -4,6 +4,7 @@
 include("../ppl.jl")
 
 modelname = "dirichlet_process"
+proposers = Dict{String, Distribution}()
 
 @model function dp(ctx::SampleContext, xs::Vector{Float64})
     alpha::Float64 = 5.0
