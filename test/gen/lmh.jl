@@ -21,6 +21,7 @@ end
 
 function lmh(N::Int, n_iter::Int, model, args, observations; check::Bool=false)
     Random.seed!(0)
+    observation_addresses = get_addresses(observations)
 
     n_accepted = 0
     for _ in 1:N
@@ -28,7 +29,7 @@ function lmh(N::Int, n_iter::Int, model, args, observations; check::Bool=false)
         # println(trace)
 
         for i in 1:n_iter
-            resample_address = rand(setdiff(get_addresses(trace.trie), get_addresses(observations)))
+            resample_address = rand(setdiff(get_addresses(trace.trie), observation_addresses))
             # println(resample_address)
             new_trace, accept = mh(trace, select(resample_address), observations=observations, check=check)
             accept = accept && (rand() < get_length(trace.trie) / get_length(new_trace.trie))
