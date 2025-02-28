@@ -33,42 +33,42 @@ Base.copy(_s_::State) = Base.copy!(State(), _s_)
 function hmm(ctx::AbstractSampleRecordStateContext, ys::Vector{Float64}, _s_::State)
     _s_.seqlen::Int = length(ys)
     _s_.transition_probs::Matrix{Float64} = [0.1 0.2 0.7; 0.1 0.8 0.1; 0.3 0.3 0.4]
-    _s_.current::Int = sample_record_state(ctx, _s_, 50, "initial_state", Categorical([0.33, 0.33, 0.34]))
+    _s_.current::Int = sample_record_state(ctx, _s_, 57, "initial_state", Categorical([0.33, 0.33, 0.34]))
     _s_.i::Int = 1
     while (_s_.i <= _s_.seqlen)
-        _s_.current = sample_record_state(ctx, _s_, 76, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))
-        _ = sample_record_state(ctx, _s_, 94, ("obs_" * string(_s_.i)), Normal(_s_.current, 1), observed = get_n(ys, _s_.i))
+        _s_.current = sample_record_state(ctx, _s_, 83, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+        _ = sample_record_state(ctx, _s_, 101, ("obs_" * string(_s_.i)), Normal(_s_.current, 1), observed = get_n(ys, _s_.i))
         _s_.i = (_s_.i + 1)
     end
 end
 
-function hmm_initial_state_50(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.current = resample(ctx, _s_, 50, "initial_state", Categorical([0.33, 0.33, 0.34]))
+function hmm_initial_state_57(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
+    _s_.current = resample(ctx, _s_, 57, "initial_state", Categorical([0.33, 0.33, 0.34]))
     _s_.i = 1
     while (_s_.i <= _s_.seqlen)
-        _s_.current = score(ctx, _s_, 76, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))
-        read(ctx, _s_, 94, ("obs_" * string(_s_.i)), observed = get_n(ys, _s_.i))
+        _s_.current = score(ctx, _s_, 83, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+        read(ctx, _s_, 101, ("obs_" * string(_s_.i)), observed = get_n(ys, _s_.i))
         _s_.i = (_s_.i + 1)
     end
 end
 
-function hmm_state__76(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
-    _s_.current = resample(ctx, _s_, 76, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))
-    score(ctx, _s_, 94, ("obs_" * string(_s_.i)), Normal(_s_.current, 1), observed = get_n(ys, _s_.i))
+function hmm_state__83(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State)
+    _s_.current = resample(ctx, _s_, 83, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+    score(ctx, _s_, 101, ("obs_" * string(_s_.i)), Normal(_s_.current, 1), observed = get_n(ys, _s_.i))
     _s_.i = (_s_.i + 1)
     while (_s_.i <= _s_.seqlen)
-        _s_.current = score(ctx, _s_, 76, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))
-        score(ctx, _s_, 94, ("obs_" * string(_s_.i)), Normal(_s_.current, 1), observed = get_n(ys, _s_.i))
+        _s_.current = score(ctx, _s_, 83, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+        score(ctx, _s_, 101, ("obs_" * string(_s_.i)), Normal(_s_.current, 1), observed = get_n(ys, _s_.i))
         _s_.i = (_s_.i + 1)
     end
 end
 
 function hmm_factor(ctx::AbstractFactorResampleContext, ys::Vector{Float64}, _s_::State, _addr_::String)
-    if _s_.node_id == 50
-        return hmm_initial_state_50(ctx, ys, _s_)
+    if _s_.node_id == 57
+        return hmm_initial_state_57(ctx, ys, _s_)
     end
-    if _s_.node_id == 76
-        return hmm_state__76(ctx, ys, _s_)
+    if _s_.node_id == 83
+        return hmm_state__83(ctx, ys, _s_)
     end
     error("Cannot find factor for $_addr_ $_s_")
 end

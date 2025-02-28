@@ -29,22 +29,22 @@ function geometric(ctx::AbstractSampleRecordStateContext, _s_::State)
     _s_.b::Bool = true
     while _s_.b
         _s_.i = (_s_.i + 1)
-        _s_.b = sample_record_state(ctx, _s_, 38, ("b_" * string(_s_.i)), Bernoulli(0.5))
+        _s_.b = sample_record_state(ctx, _s_, 45, ("b_" * string(_s_.i)), Bernoulli(0.5))
     end
     return _s_.i
 end
 
-function geometric_b__38(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.b = resample(ctx, _s_, 38, ("b_" * string(_s_.i)), Bernoulli(0.5))
+function geometric_b__45(ctx::AbstractFactorResampleContext, _s_::State)
+    _s_.b = resample(ctx, _s_, 45, ("b_" * string(_s_.i)), Bernoulli(0.5))
     while _s_.b
         _s_.i = (_s_.i + 1)
-        _s_.b = score(ctx, _s_, 38, ("b_" * string(_s_.i)), Bernoulli(0.5))
+        _s_.b = score(ctx, _s_, 45, ("b_" * string(_s_.i)), Bernoulli(0.5))
     end
 end
 
 function geometric_factor(ctx::AbstractFactorResampleContext, _s_::State, _addr_::String)
-    if _s_.node_id == 38
-        return geometric_b__38(ctx, _s_)
+    if _s_.node_id == 45
+        return geometric_b__45(ctx, _s_)
     end
     error("Cannot find factor for $_addr_ $_s_")
 end

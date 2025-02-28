@@ -4,5 +4,8 @@ tmp*
 venv
 print_results.py
 evaluation/results.csv
+evaluation/results_*
 evaluation/benchmark/test*
 evaluation/benchmark/generated/test*
+run_n.py
+combine_n.py

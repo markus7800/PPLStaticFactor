@@ -112,16 +112,16 @@ function runbench(N::Int, verbose::Bool)
 
     if verbose
         f = open("evaluation/results.csv", "a")
-        print(f, modelname, ", ", standard_time*10^6, ", ", factored_time*10^6)
+        print(f, modelname, ",", standard_time*10^6, ",", factored_time*10^6)
         if isnan(finite_time)
-            print(f, ", NA")
+            print(f, ",NA")
         else
-            print(f, ", ", finite_time*10^6)
+            print(f, ",", finite_time*10^6)
         end
         if isnan(custom_time)
-            println(f, ", NA")
+            println(f, ",NA")
         else
-            println(f, ", ", custom_time*10^6)
+            println(f, ",", custom_time*10^6)
         end
         close(f)
     end
