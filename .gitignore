@@ -2,7 +2,7 @@ __pycache__
 .DSStore
 tmp*
 venv
-print_results.py
+print_results*
 evaluation/results.csv
 evaluation/results_*
 evaluation/benchmark/test*
