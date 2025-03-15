@@ -1,0 +1,24 @@
+
+
+var geometric = function(p) {
+    var b = flip(p)
+    if (b) {
+        return geometric(p) + 1
+    } else {
+        return 0
+    }
+}
+
+var model = function() {
+    geometric(0.5)
+}
+
+var N = 1e5
+
+console.time('MH rec ')
+repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model) })
+console.timeEnd('MH rec ')
+
+console.time('C3 rec ')
+repeat(10, function() { Infer({method: 'incrementalMH', samples: N, burn: 0}, model) })
+console.timeEnd('C3 rec ')

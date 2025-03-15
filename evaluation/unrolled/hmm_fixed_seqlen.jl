@@ -13,21 +13,16 @@ proposers = Dict{String, Distribution}()
     ]
 
     current::Int = sample(ctx, "initial_state", Categorical([0.33, 0.33, 0.34]))
-    for i in 1:10
+    for i in 1:50
         current = sample(ctx, "state_" * string(i), Categorical(get_row(transition_probs, current)))
         sample(ctx, "obs_" * string(i), Normal(current, 1), observed=get_n(ys,i))
     end
 end
 
 ys = [
-    0.57,
-    2.14,
-    2.53,
-    3.05,
-    2.17,
-    2.4,
-    3.01,
-    3.55,
-    0.65,
-    1.12
+    3.36, 2.87, 1.54, 1.13, 2.05, 2.55, 3.08, 1.23, 2.37, 2.5,
+    1.42, 1.46, 0.65, 1.15, 0.31, 2.89, 0.96, 2.23, 1.55, 1.52,
+    2.72, 4.16, 2.4, 2.41, 1.05, 3.05, 2.04, 3.47, 1.08, 0.63,
+    3.87, 0.08, 2.06, 2.21, 2.24, 1.77, 0.67, 2.45, 4.05, 2.95,
+    1.65, 3.01, 3.74, 1.54, 2.47, 1.54, 3.7, 4.29, 0.93, 1.95, 
 ]

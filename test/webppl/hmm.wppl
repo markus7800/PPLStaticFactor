@@ -1,0 +1,63 @@
+
+
+var model = {
+    transition: [
+        [0.1, 0.2, 0.6, 0.1],
+        [0.05, 0.8, 0.1, 0.05],
+        [0.3, 0.3, 0.3, 0.1]
+    ]
+}
+
+var data = [
+    3.36, 2.87, 1.54, 1.13, 2.05, 2.55, 3.08, 1.23, 2.37, 2.5,
+    1.42, 1.46, 0.65, 1.15, 0.31, 2.89, 0.96, 2.23, 1.55, 1.52,
+    2.72, 4.16, 2.4, 2.41, 1.05, 3.05, 2.04, 3.47, 1.08, 0.63,
+    3.87, 0.08, 2.06, 2.21, 2.24, 1.77, 0.67, 2.45, 4.05, 2.95,
+    1.65, 3.01, 3.74, 1.54, 2.47, 1.54, 3.7, 4.29, 0.93, 1.95,
+    100.0
+]
+
+var hmmfn = function(n) {
+	if (n === 0) {
+		return 0;
+	} else {
+		var prevState = hmmfn(n-1);
+		var state = (prevState == 3) ? 3 : transition(prevState, n);
+		query.add(n, state);
+		var obs = (state == 3) ? 100.0 : data[n-1]
+		observation(state, obs);
+		return state;
+	}
+}
+
+var transition = function(prevState) {
+	return discrete(model.transition[prevState]);
+}
+
+var observation = function(state, obs) {
+    observe(Gaussian({mu: state, sigma: 1.}), obs)
+}
+
+var model_rec = function() {
+	hmmfn(50);
+	return query;
+}
+
+
+var N = 1e4
+
+console.time('MH rec ')
+repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model_rec) })
+console.timeEnd('MH rec ')
+
+console.time('C3 rec ')
+repeat(10, function() { Infer({method: 'incrementalMH', samples: N, burn: 0}, model_rec) })
+console.timeEnd('C3 rec ')
+
+// console.time('MH iter')
+// repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model_iter) })
+// console.timeEnd('MH iter')
+
+// console.time('C3 iter')
+// repeat(10, function() { Infer({method: 'incrementalMH', samples: N, burn: 0}, model_iter) })
+// console.timeEnd('C3 iter')

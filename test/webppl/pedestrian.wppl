@@ -1,0 +1,29 @@
+
+
+var pedestrian = function(position, distance) {
+    if (position > 0 && distance < 10) {
+        var step = uniform(-1, 1)
+        var new_position = position + step
+        var new_distance = position + Math.abs(distance)
+        return pedestrian(new_position, new_distance)
+    } else {
+        return distance
+    }
+}
+
+var model = function() {
+    var start = uniform(0.,1.)
+    var final_distance = pedestrian(start, 0)
+    observe(Gaussian({mu: final_distance, sigma: 0.1}), 1.1)
+}
+
+
+var N = 1e5
+
+console.time('MH rec ')
+repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model) })
+console.timeEnd('MH rec ')
+
+console.time('C3 rec ')
+repeat(10, function() { Infer({method: 'incrementalMH', samples: N, burn: 0}, model) })
+console.timeEnd('C3 rec ')

@@ -1,0 +1,26 @@
+
+
+var marsaglia = function (s, x) {
+    if (s > 1) {
+        var x = uniform(-1, 1)
+        var y = uniform(-1, 1)
+        var new_s = x*x + y*y
+        return marsaglia(new_s, x)
+    } else {
+        return x * Math.sqrt(-2 * Math.log(s) / s)
+    }
+}
+
+var model = function() {
+    return marsaglia(2, 0.)
+}
+
+var N = 1e5
+
+console.time('MH rec ')
+repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model) })
+console.timeEnd('MH rec ')
+
+console.time('C3 rec ')
+repeat(10, function() { Infer({method: 'incrementalMH', samples: N, burn: 0}, model) })
+console.timeEnd('C3 rec ')

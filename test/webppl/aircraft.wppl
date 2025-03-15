@@ -1,0 +1,66 @@
+
+var model_iter = function() {
+    var num_aircraft = poisson(5) + 1
+    var blips = repeat(num_aircraft, function() {
+        var position = gaussian(2.,5.)
+        var num_blips = discrete([0.1,0.4,0.5])
+        return repeat(num_blips, function() {
+            return gaussian(position, 1.)
+        })
+    })
+    var flat_blips = blips.flat(1)
+    observe(Gaussian({mu: flat_blips.length, sigma: 1}), 3.)
+    observe(Gaussian({mu: flat_blips.length > 0 ? flat_blips[0] : 0, sigma: 1}), 1.)
+    observe(Gaussian({mu: flat_blips.length > 1 ? flat_blips[0] : 0, sigma: 1}), 2.)
+    observe(Gaussian({mu: flat_blips.length > 2 ? flat_blips[0] : 0, sigma: 1}), 3.)
+}
+
+var foreach_ix = function(N, fn) {
+    var lst = []
+	var foreach_ = function(i, _lst) {
+		if (i < N) {
+			_lst.push(fn(i));
+			foreach_(i + 1, _lst);
+		}
+	}
+	foreach_(0, lst);
+    return lst
+};
+
+
+var model_rec = function() {
+    var num_aircraft = poisson(5) + 1
+    var blips = foreach_ix(num_aircraft, function() {
+        var position = gaussian(2.,5.)
+        var num_blips = discrete([0.1,0.4,0.5])
+        return foreach_ix(num_blips, function() {
+            return gaussian(position, 1.)
+        })
+    })
+    var flat_blips = blips.flat(1)
+    observe(Gaussian({mu: flat_blips.length, sigma: 1}), 3.)
+    observe(Gaussian({mu: flat_blips.length > 0 ? flat_blips[0] : 0, sigma: 1}), 1.)
+    observe(Gaussian({mu: flat_blips.length > 1 ? flat_blips[0] : 0, sigma: 1}), 2.)
+    observe(Gaussian({mu: flat_blips.length > 2 ? flat_blips[0] : 0, sigma: 1}), 3.)
+}
+
+
+var N = 1e4
+
+console.time('MH rec ')
+repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model_rec) })
+console.timeEnd('MH rec ')
+
+console.time('C3 rec ')
+repeat(10, function() { Infer({method: 'incrementalMH', samples: N, burn: 0}, model_rec) })
+console.timeEnd('C3 rec ')
+
+console.time('MH iter')
+repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model_iter) })
+console.timeEnd('MH iter')
+
+console.time('C3 iter')
+repeat(10, function() { Infer({method: 'incrementalMH', samples: N, burn: 0}, model_iter) })
+console.timeEnd('C3 iter')
+
+// webppl aircraft.wppl --random-seed=0

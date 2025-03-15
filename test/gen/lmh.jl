@@ -44,12 +44,12 @@ function lmh(N::Int, n_iter::Int, model, args, observations; check::Bool=false)
 end
 
 name_to_N = Dict{String,Int}(
-    "aircraft" => 75_000,
+    "aircraft" => 100_000,
     "captcha" => 1_000,
     "dirichlet_process" => 10_000,
     "geometric" => 500_000,
-    "gmm_fixed_numclust" => 25_000,
-    "gmm_variable_numclust" => 25_000,
+    "gmm_fixed_numclust" => 50_000,
+    "gmm_variable_numclust" => 50_000,
     "hmm_fixed_seqlen" => 100_000,
     "hmm_variable_seqlen" => 100_000,
     "hurricane" => 1_000_000,

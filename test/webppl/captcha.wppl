@@ -1,0 +1,58 @@
+
+var WIDTH = 20
+var HEIGHT = 5
+
+var render_letter = function(letter, font, fontsize, kerning) {
+    return zeros([WIDTH*HEIGHT,1])
+}
+
+
+var model_iter = function() {
+    var N_letters = poisson(7)
+    var font = randomInteger(3)
+    var image = reduce(function(i, acc) {
+        var fontsize = randomInteger(6) + 38
+        var kerning = randomInteger(4) - 2
+        var letter = randomInteger(26)
+        var noisy_letter_image = multivariateGaussian(render_letter(letter, font, fontsize, kerning), idMatrix(WIDTH*HEIGHT))
+        return acc.add(noisy_letter_image)
+    }, zeros([WIDTH*HEIGHT,1]), repeat(N_letters, function() { return 0}))
+    observe(MultivariateGaussian({mu: image, cov: idMatrix(WIDTH*HEIGHT)}))
+}
+
+var add_letters = function(image, font, N) {
+    if (N > 0) {
+        var fontsize = randomInteger(6) + 38
+        var kerning = randomInteger(4) - 2
+        var letter = randomInteger(26)
+        var noisy_letter_image = multivariateGaussian(render_letter(letter, font, fontsize, kerning), idMatrix(WIDTH*HEIGHT))
+        return add_letters(image, N-1).add(noisy_letter_image)
+    }
+    return image
+}
+
+var model_rec = function() {
+    var N_letters = poisson(7)
+    var font = randomInteger(3)
+    var image = add_letters(zeros([WIDTH*HEIGHT,1]), font, N_letters)
+    observe(MultivariateGaussian({mu: image, cov: idMatrix(WIDTH*HEIGHT)}))
+}
+
+
+var N = 1e2
+
+console.time('MH rec ')
+repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model_rec) })
+console.timeEnd('MH rec ')
+
+console.time('C3 rec ')
+repeat(10, function() { Infer({method: 'incrementalMH', samples: N, burn: 0}, model_rec) })
+console.timeEnd('C3 rec ')
+
+console.time('MH iter')
+repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model_iter) })
+console.timeEnd('MH iter')
+
+console.time('C3 iter')
+repeat(10, function() { Infer({method: 'incrementalMH', samples: N, burn: 0}, model_iter) })
+console.timeEnd('C3 iter')

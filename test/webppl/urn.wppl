@@ -1,0 +1,53 @@
+
+
+var model_iter = function() {
+    var N = poisson(6)
+    var balls = repeat(N, function() {
+        flip(0.5)
+    })
+    var n_black = (N == 0) ? 0 : reduce(function(i, acc) {
+        var ball_ix = randomInteger(N)
+        return acc + balls[ball_ix]
+    }, 0., repeat(10, function() { return 0}))
+
+    observe(Gaussian({mu: n_black, sigma: 0.1}), 5)
+}
+
+
+var draw_ball = function(balls, N, K) {
+    if (K > 0) {
+        var ball_ix = randomInteger(N)
+        return balls[ball_ix] + draw_ball(balls, N, K-1)
+    } else {
+        return 0
+    }
+}
+
+var model_rec = function() {
+    var N = poisson(6)
+    var balls = repeat(N, function() {
+        flip(0.5)
+    })
+    var n_black = (N == 0) ? 0 : draw_ball(balls, N, 10)
+    
+    observe(Gaussian({mu: n_black, sigma: 0.1}), 5)
+}
+
+
+var N = 1e4
+
+console.time('MH rec ')
+repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model_rec) })
+console.timeEnd('MH rec ')
+
+console.time('C3 rec ')
+repeat(10, function() { Infer({method: 'incrementalMH', samples: N, burn: 0}, model_rec) })
+console.timeEnd('C3 rec ')
+
+console.time('MH iter')
+repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model_iter) })
+console.timeEnd('MH iter')
+
+console.time('C3 iter')
+repeat(10, function() { Infer({method: 'incrementalMH', samples: N, burn: 0}, model_iter) })
+console.timeEnd('C3 iter')

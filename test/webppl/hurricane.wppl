@@ -1,0 +1,27 @@
+
+
+var model = function() {
+    var first_city = flip(0.5)
+    if (first_city) {
+        var prep_0 = flip(0.5)
+        var damage_0 = flip(prep_0 ? 0.20: 0.80)
+        var prep_1 = flip(damage_0 ? 0.75 : 0.50)
+        var damage_1 = flip(prep_1 ? 0.20 : 0.80)
+    } else {
+        var prep_1 = flip(0.5)
+        var damage_1 = flip(prep_1 ? 0.20 : 0.80)
+        var prep_0 = flip(damage_1 ? 0.75 : 0.50)
+        var damage_0 = flip(prep_0 ? 0.20 : 0.80)
+    }
+}
+
+
+var N = 1e5
+
+console.time('MH rec ')
+repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model) })
+console.timeEnd('MH rec ')
+
+console.time('C3 rec ')
+repeat(10, function() { Infer({method: 'incrementalMH', samples: N, burn: 0}, model) })
+console.timeEnd('C3 rec ')
