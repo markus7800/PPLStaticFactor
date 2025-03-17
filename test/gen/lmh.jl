@@ -56,6 +56,7 @@ function lmh(N::Int, n_iter::Int, selector::LMHSelector, model, args, observatio
             choices = get_choices(trace)
             L = get_length(selector, choices, args, observations)
             resample_address = get_resample_address(selector, choices, args, observations)
+            # println("$i. resample_address: ", resample_address)
             if check && !has_value(choices, resample_address)
                 display(choices)
                 error("Resample address $resample_address not in choices")

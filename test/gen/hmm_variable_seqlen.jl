@@ -42,7 +42,7 @@ for i in eachindex(ys)
 end
 
 N = name_to_N[modelname]
-acceptance_rate = lmh(10, N ÷ 10, model, args, observations, check=false)
-res = @timed lmh(10, N ÷ 10, model, args, observations, check=false)
+acceptance_rate = lmh(10, N ÷ 10, DefaultLMHSelector(), model, args, observations, check=false)
+res = @timed lmh(10, N ÷ 10, DefaultLMHSelector(), model, args, observations, check=false)
 println(@sprintf("Gen time: %.3f μs", res.time / N * 10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))

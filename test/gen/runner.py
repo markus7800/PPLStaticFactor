@@ -11,8 +11,8 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-with open("evaluation/results.csv", "w") as f:
-    f.write("model, acceptancerate, none, static, finite, custom\n")
+# with open("evaluation/results.csv", "w") as f:
+#     f.write("model, acceptancerate, none, static, finite, custom\n")
 
 filenames = [
     "aircraft.jl",

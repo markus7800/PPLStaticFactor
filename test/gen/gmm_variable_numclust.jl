@@ -17,14 +17,19 @@ modelname = "gmm_variable_numclust"
 
     k::Int = 1
     means::Vector{Float64} = Float64[]
-    vars::Vector{Float64} = Float64[]
     while k <= num_clusters
         mu::Float64 = {:mu => k} ~ normal(ξ, 1/sqrt(κ))
-        var::Float64 = {:var => k} ~ inv_gamma(α, β)
         means = vcat(means, mu)
+        k = k + 1
+    end
+    k = 1
+    vars::Vector{Float64} = Float64[]
+    while k <= num_clusters
+        var::Float64 = {:var => k} ~ inv_gamma(α, β)
         vars = vcat(vars, var)
         k = k + 1
     end
+
 
     i::Int = 1
     while i <= length(ys)
@@ -45,22 +50,29 @@ function get_resample_address(::GMMLMHSelector, trace::Gen.ChoiceMap, args::Tupl
     total = 2 + 2*K + N
 
     U = rand()
-    if U < 2/total
-        if rand() < 0.5
-            return :num_clusters
-        else
-            return :w
-        end
-    elseif U < (2 + 2*K)/total
-        k = rand(1:K)
-        if rand() < 0.5
+    n = 1
+    if U < n/total
+        return :num_clusters
+    end
+    n += 1
+    if U < n/total
+        return :w
+    end
+    for k in 1:K
+        n += 1
+        if U < n/total
             return :mu => k
-        else
+        end
+        n += 1
+        if U < n/total
             return :var => k
         end
-    else
-        i = rand(1:N)
-        return :z => i
+    end
+    for i in 1:N
+        n += 1
+        if U < n/total
+            return :z => i
+        end
     end
 end
 function get_length(::GMMLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
@@ -108,7 +120,7 @@ gt_σ²s = [3.0, 8.0, 7.0, 1.0]
 
 ys = gt_ys
 
-N = name_to_N[modelname]
+N_iter = name_to_N[modelname]
 
 model = gmm
 args = (ys,)
@@ -118,9 +130,9 @@ for i in eachindex(gt_ys)
 end
 selector = GMMLMHSelector()
 
-acceptance_rate = lmh(10, N ÷ 10, selector, model, args, observations, check=true)
-res = @timed lmh(10, N ÷ 10, selector, model, args, observations)
-println(@sprintf("Gen time: %.3f μs", res.time / N * 10^6))
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
+println(@sprintf("Gen time: %.3f μs", res.time / N_iter * 10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
 
 @gen function get_mu(k::Int)::Float64
@@ -155,8 +167,8 @@ const map_observe_y = Map(observe_y)
 
     w::Vector{Float64} = {:w} ~ dirichlet(fill(δ,num_clusters))
 
-    means ~ get_mus(collect(1:num_clusters))
-    vars ~ get_vars(collect(1:num_clusters))
+    means ~ get_mus(1:num_clusters)
+    vars ~ get_vars(1:num_clusters)
 
     {:data} ~ map_observe_y(fill(w, length(ys)), fill(means, length(ys)), fill(vars, length(ys)))
 
@@ -171,22 +183,29 @@ function get_resample_address(::GMMCombinatorLMHSelector, trace::Gen.ChoiceMap, 
     total = 2 + 2*K + N
 
     U = rand()
-    if U < 2/total
-        if rand() < 0.5
-            return :num_clusters
-        else
-            return :w
-        end
-    elseif U < (2 + 2*K)/total
-        k = rand(1:K)
-        if rand() < 0.5
+    n = 1
+    if U < n/total
+        return :num_clusters
+    end
+    n += 1
+    if U < n/total
+        return :w
+    end
+    for k in 1:K
+        n += 1
+        if U < n/total
             return :means => k => :mu
-        else
+        end
+        n += 1
+        if U < n/total
             return :vars => k => :var
         end
-    else
-        i = rand(1:N)
-        return :data => i => :z
+    end
+    for i in 1:N
+        n += 1
+        if U < n/total
+            return :data => i => :z
+        end
     end
 end
 function get_length(::GMMCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
@@ -204,9 +223,10 @@ for i in eachindex(gt_ys)
 end
 selector = GMMCombinatorLMHSelector()
 
-acceptance_rate = lmh(10, N ÷ 10, selector, model, args, observations, check=true)
-res = @timed lmh(10, N ÷ 10, selector, model, args, observations)
-println(@sprintf("Gen combinator time: %.3f μs", res.time / N * 10^6))
+
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
+println(@sprintf("Gen combinator time: %.3f μs", res.time / N_iter * 10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
 
 # tr, _ = generate(model, args, observations)
