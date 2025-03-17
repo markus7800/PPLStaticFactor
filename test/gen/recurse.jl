@@ -40,7 +40,7 @@ recurse_model = Recurse(
 
 # args::Tuple{U,Int} = (root_production_input::U, root_idx::Int)
 Random.seed!(0)
-tr = simulate(recurse_model, (ProductionNode(""), 1))
+tr = simulate(recurse_model, (ProductionNode(""), 1)) # have to use 1 as root index
 get_choices(tr)
 
 get_retval(tr)

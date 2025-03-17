@@ -68,8 +68,8 @@ function get_resample_address(selector::AircraftLMHSelector, trace::Gen.ChoiceMa
             end
         end
     end
-
 end
+
 function get_length(::AircraftLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
     N = 0
     num_aircraft = trace[:num_aircraft] + 1
