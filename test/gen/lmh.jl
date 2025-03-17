@@ -54,14 +54,18 @@ function lmh(N::Int, n_iter::Int, selector::LMHSelector, model, args, observatio
 
         for i in 1:n_iter
             choices = get_choices(trace)
+            L = get_length(selector, choices, args, observations)
             resample_address = get_resample_address(selector, choices, args, observations)
             if check && !has_value(choices, resample_address)
                 display(choices)
                 error("Resample address $resample_address not in choices")
             end
+            if check && (get_length(choices) - get_length(observations)) != L
+                error("Length computed by selector $L disagrees with real trace length $(get_length(choices) - get_length(observations)) ")
+            end
 
             new_trace, accept = mh(trace, select(resample_address), observations=observations, check=check)
-            accept = accept && (rand() < get_length(selector, choices, args, observations) / get_length(selector, get_choices(new_trace), args, observations))
+            accept = accept && (rand() < L / get_length(selector, get_choices(new_trace), args, observations))
 
             if accept
                 trace = new_trace
