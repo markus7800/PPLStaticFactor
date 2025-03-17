@@ -2,18 +2,25 @@ using Gen
 import Random
 using Printf
 
-function get_addresses(trie::Union{Gen.Trie,Gen.DynamicChoiceMap})
-    addresses = Set(keys(trie.leaf_nodes))
-    for (prefix, node) in trie.internal_nodes
-        addresses = addresses ∪ Set(prefix => address for address in get_addresses(node))
+function get_addresses(choices::Gen.ChoiceMap)
+    addresses = Set()
+    for (key, value) in get_values_shallow(choices)
+        push!(addresses, key)
+    end
+    for (prefix, submap) in get_submaps_shallow(choices)
+        # this is super slow for map combinator because we have submap for each iter
+        addresses = addresses ∪ Set(prefix => address for address in get_addresses(submap))
     end
     return addresses
 end
 
-function get_length(trie::Union{Gen.Trie,Gen.DynamicChoiceMap})
-    count = length(trie.leaf_nodes)
-    for (prefix, node) in trie.internal_nodes
-        count += get_length(node)
+function get_length(choices::Gen.ChoiceMap)
+    count = 0
+    for (key, value) in get_values_shallow(choices)
+        count += 1
+    end
+    for (prefix, submap) in get_submaps_shallow(choices)
+        count += get_length(submap)
     end
     return count
 end
@@ -29,10 +36,10 @@ function lmh(N::Int, n_iter::Int, model, args, observations; check::Bool=false)
         # println(trace)
 
         for i in 1:n_iter
-            resample_address = rand(setdiff(get_addresses(trace.trie), observation_addresses))
-            # println(resample_address)
+            resample_address = rand(setdiff(get_addresses(get_choices(trace)), observation_addresses))
+
             new_trace, accept = mh(trace, select(resample_address), observations=observations, check=check)
-            accept = accept && (rand() < get_length(trace.trie) / get_length(new_trace.trie))
+            accept = accept && (rand() < get_length(get_choices(trace)) / get_length(get_choices(new_trace)))
 
             if accept
                 trace = new_trace

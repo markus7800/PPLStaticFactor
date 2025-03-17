@@ -85,5 +85,59 @@ end
 N = name_to_N[modelname]
 acceptance_rate = lmh(10, N ÷ 10, model, args, observations)
 res = @timed lmh(10, N ÷ 10, model, args, observations)
-println(@sprintf("Gen time %.3f μs", res.time / N * 10^6))
+println(@sprintf("Gen time: %.3f μs", res.time / N * 10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+@gen function get_mu(k::Int)::Float64
+    ξ::Float64 = 0.0
+    κ::Float64 = 0.01
+    mu::Float64 = {:mu} ~ normal(ξ, 1/sqrt(κ))
+    return mu
+end
+const get_mus = Map(get_mu)
+
+@gen function get_var(k::Int)::Float64
+    α::Float64 = 2.0
+    β::Float64 = 10.0
+    var::Float64 = {:var} ~ inv_gamma(α, β)
+    return var
+end
+const get_vars = Map(get_var)
+
+@gen function observe_y(w::Vector{Float64}, means::AbstractVector{Float64}, vars::AbstractVector{Float64})
+    z::Int = {:z} ~ categorical(w)
+    z = min(z, length(means))
+    {:y} ~ normal(means[z], vars[z])
+end
+
+const map_observe_y = Map(observe_y)
+
+@gen (static) function gmm_rec()
+    δ::Float64 = 5.0
+
+    num_clusters::Int = {:num_clusters} ~ poisson(3.)
+    num_clusters = num_clusters + 1
+
+    w::Vector{Float64} = {:w} ~ dirichlet(fill(δ,num_clusters))
+
+    means ~ get_mus(collect(1:num_clusters))
+    vars ~ get_vars(collect(1:num_clusters))
+
+    {:data} ~ map_observe_y(fill(w, 100), fill(means, 100), fill(vars, 100))
+
+end
+
+
+model = gmm_rec
+args = ()
+observations = choicemap();
+for i in eachindex(gt_ys)
+    observations[:data => i => :y] = gt_ys[i]
+end
+
+@profview acceptance_rate = lmh(10, N ÷ 10, model, args, observations)
+res = @timed lmh(10, N ÷ 10, model, args, observations)
+println(@sprintf("Gen combinator time: %.3f μs", res.time / N * 10^6))
+println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+# tr, _ = generate(model, args, observations)
