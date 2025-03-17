@@ -15,7 +15,7 @@ function render_letter(letter::Int, font::Int, fontsize::Int, kerning::Int)
 end
 
 @gen function captcha()
-    N_letters::Int = {:N} ~ poisson(7)
+    N_letters::Int = {:N_letters} ~ poisson(7)
     font::Int = {:font} ~ uniform_discrete(1,4)
     image::Vector{Float64} = zeros(200 * 50)
     i::Int = 1
@@ -30,6 +30,48 @@ end
     {:image} ~ mvnormal(image, 1.0*I(200*50))
 end
 
+struct CaptchaLMHSelector <: LMHSelector
+end
+function get_resample_address(::CaptchaLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
+    N = get_length(selector, trace, args, observations)
+    K = trace[:N_letters]
+
+    U = rand()
+
+    n = 1
+    if U < n/N
+        return :N_letters
+    end
+    n += 1
+
+    if U < n/N
+        return :font
+    end
+
+    for i in 1:K
+        n += 1
+        if U < n/N
+            return :fontsize => i
+        end
+        n += 1
+        if U < n/N
+            return :kerning => i
+        end
+        n += 1
+        if U < n/N
+            return :letter => i
+        end
+        n += 1
+        if U < n/N
+            return :letter_image => i
+        end
+    end
+end
+function get_length(::CaptchaLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    K = trace[:N_letters]
+    return 2 + 4*K
+end
+
 captcha_img = zeros(200*50)
 
 model = captcha
@@ -38,8 +80,82 @@ observations = choicemap();
 
 observations[:image] = captcha_img
 
+selector = CaptchaLMHSelector()
+
 N = name_to_N[modelname]
-acceptance_rate = lmh(10, N ÷ 10, model, args, observations)
-res = @timed lmh(10, N ÷ 10, model, args, observations)
+acceptance_rate = lmh(10, N ÷ 10, selector, model, args, observations)
+res = @timed lmh(10, N ÷ 10, selector, model, args, observations)
+println(@sprintf("Gen time: %.3f μs", res.time / N * 10^6))
+println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+@gen function gen_letter(font::Int)::Vector{Float64}
+    fontsize::Int = {:fontsize} ~ uniform_discrete(38,44)
+    kerning::Int = {:kerning} ~ uniform_discrete(-2,2)
+    letter::Int = {:letter} ~ uniform_discrete(1,26)
+    noisy_letter_image::Vector{Float64} = {:letter_image} ~ mvnormal(vec(render_letter(letter, font, fontsize, kerning)), 0.1*I(200*50))
+    return noisy_letter_image
+end
+
+const gen_letters = Map(gen_letter)
+
+@gen (static) function captcha_combinator()
+    N_letters::Int = {:N_letters} ~ poisson(7)
+    font::Int = {:font} ~ uniform_discrete(1,4)
+    letters ~ gen_letters(fill(font,N_letters))
+    image::Vector{Float64} = sum(letters)
+    {:image} ~ mvnormal(image, 1.0*I(200*50))
+end
+
+
+# tr, _ = generate(captcha_combinator, args, observations);
+# display(get_choices(tr))
+
+struct CaptchaCombinatorLMHSelector <: LMHSelector
+end
+function get_resample_address(::CaptchaCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
+    N = get_length(selector, trace, args, observations)
+    K = trace[:N_letters]
+
+    U = rand()
+
+    n = 1
+    if U < n/N
+        return :N_letters
+    end
+    n += 1
+
+    if U < n/N
+        return :font
+    end
+
+    for i in 1:K
+        n += 1
+        if U < n/N
+            return :letters => i => :fontsize
+        end
+        n += 1
+        if U < n/N
+            return :letters => i => :kerning
+        end
+        n += 1
+        if U < n/N
+            return :letters => i => :letter
+        end
+        n += 1
+        if U < n/N
+            return :letters => i => :letter_image
+        end
+    end
+end
+function get_length(::CaptchaCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    K = trace[:N_letters]
+    return 2 + 4*K
+end
+
+model = captcha_combinator
+selector = CaptchaCombinatorLMHSelector()
+
+acceptance_rate = lmh(10, N ÷ 10, selector, model, args, observations)
+res = @timed lmh(10, N ÷ 10, selector, model, args, observations)
 println(@sprintf("Gen time: %.3f μs", res.time / N * 10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))

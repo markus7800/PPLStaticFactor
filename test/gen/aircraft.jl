@@ -146,7 +146,7 @@ end
     aircrafts ~ gen_aircrafts(1:num_aircraft)
 
     total_num_blibs, blip_1, blip_2, blip_3 = get_observed_blips(aircrafts)
-    
+
     {:observed_num_blips} ~ normal(total_num_blibs, 1)
     {:observed_blip_1} ~ normal(blip_1, 1)
     {:observed_blip_2} ~ normal(blip_2, 1)
@@ -200,13 +200,6 @@ function get_length(::AircraftCombinatorLMHSelector, trace::Gen.ChoiceMap, args:
 end
 
 model = aircraft_combinator
-args = ()
-observations = choicemap();
-observations[:observed_num_blips] = 3
-observations[:observed_blip_1] = 1.
-observations[:observed_blip_2] = 2.
-observations[:observed_blip_3] = 3.
-
 selector = AircraftCombinatorLMHSelector()
 
 acceptance_rate = lmh(10, N ÷ 10, selector, model, args, observations, check=true)
