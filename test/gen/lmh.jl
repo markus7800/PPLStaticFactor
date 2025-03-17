@@ -40,7 +40,7 @@ function get_resample_address(::DefaultLMHSelector, trace::Gen.ChoiceMap, args::
     return rand(setdiff(get_addresses(trace), get_addresses(observations)))
 end
 function get_length(::DefaultLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
-    return get_length(trace)
+    return get_length(trace) - get_length(observations)
 end
 
 

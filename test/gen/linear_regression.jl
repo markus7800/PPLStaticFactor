@@ -15,6 +15,14 @@ modelname = "linear_regression"
 end
 
 
+struct LinregLMHSelector <: LMHSelector end
+function get_resample_address(selector::LinregLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
+    return rand([:slope, :intercept])
+end
+function get_length(::LinregLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    return 2
+end
+
 xs = [
     0.85, 0.52, -0.96, -0.3, -0.89, 1.45, -0.63, -1.57, 0.43, -1.06, 0.98, 0.86, 0.2, 0.29, 2.25,
     -0.97, 0.26, 0.05, 0.5, -0.38, 0.77, 0.81, 0.88, -0.26, -0.26, -0.51, 0.17, 0.33, 0.59, 0.3,
@@ -35,6 +43,7 @@ ys = [
 ]
 
 
+N = name_to_N[modelname]
 
 model = lr
 args = (xs,)
@@ -44,8 +53,9 @@ for i in eachindex(ys)
     observations[:y => i] = ys[i]
 end
 
-N = name_to_N[modelname]
-acceptance_rate = lmh(10, N ÷ 10, model, args, observations)
-res = @timed lmh(10, N ÷ 10, model, args, observations)
+selector = LinregLMHSelector()
+
+acceptance_rate = lmh(10, N ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N ÷ 10, selector, model, args, observations)
 println(@sprintf("Gen time: %.3f μs", res.time / N * 10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))

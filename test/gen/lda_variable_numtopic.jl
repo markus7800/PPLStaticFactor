@@ -42,6 +42,44 @@ M = 25  # num docs
 N = 262 # total word instances
 V = 5  # num words
 
+struct LDALMHSelector <: LMHSelector end
+function get_resample_address(selector::LDALMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
+    total = get_length(selector, trace, args, observations)
+    K = trace[:K] + 1
+    M, N, V, _ = args
+    U = rand()
+
+    n = 1
+    if U < n/total
+        return :K
+    end
+    for i in 1:M
+        n += 1
+        if U < n/total
+            return :theta => i
+        end
+    end
+    for i in 1:K
+        n += 1
+        if U < n/total
+            return :phi => i
+        end
+    end
+    for i in 1:N
+        n += 1
+        if U < n/total
+            return :z => i
+        end
+    end
+end
+function get_length(::LDALMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    K = trace[:K] + 1
+    M, N, V, _ = args
+    return 1 + M + K + N
+end
+
+N_iter = name_to_N[modelname]
+
 model = lda
 args = (M,N,V,doc)
 observations = choicemap();
@@ -49,8 +87,96 @@ for n in eachindex(w)
     observations[:w => n] = w[n]
 end
 
-N = name_to_N[modelname]
-acceptance_rate = lmh(10, N ÷ 10, model, args, observations)
-res = @timed lmh(10, N ÷ 10, model, args, observations)
-println(@sprintf("Gen time: %.3f μs", res.time / N * 10^6))
+selector = LDALMHSelector()
+
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
+println(@sprintf("Gen time: %.3f μs", res.time / N_iter * 10^6))
+println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+
+@gen function gen_theta(K::Int)::Vector{Float64}
+    theta = {:theta} ~ dirichlet(fill(1/K, K))
+    return theta
+end
+const gen_thetas = Map(gen_theta)
+
+@gen function gen_phi(V::Int)::Vector{Float64}
+    phi = {:phi} ~ dirichlet(fill(1/V,V))
+    return phi
+end
+const gen_phis = Map(gen_phi)
+
+
+@gen function gen_z(n::Int, thetas, phis)
+    z = {:z} ~ categorical(thetas[doc[n]])
+    z = min(length(phis),z)
+    {:w} ~ categorical(phis[z])
+end
+const gen_zs = Map(gen_z)
+
+@gen (static) function lda_combinator(M::Int, N::Int, V::Int, doc::Vector{Int})
+    K::Int = {:K} ~ poisson(2) # num topics
+    K = K + 1
+
+    thetas ~ gen_thetas(fill(K,M))
+
+    phis ~ gen_phis(fill(V,K))
+
+    data ~ gen_zs(1:N, fill(thetas,N), fill(phis, N))
+end
+
+
+# tr, _ = generate(lda_combinator, args, observations);
+# display(get_choices(tr))
+
+struct LDACombinatorLMHSelector <: LMHSelector end
+function get_resample_address(selector::LDACombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
+    total = get_length(selector, trace, args, observations)
+    K = trace[:K] + 1
+    M, N, V, _ = args
+    U = rand()
+
+    n = 1
+    if U < n/total
+        return :K
+    end
+    for i in 1:M
+        n += 1
+        if U < n/total
+            return :thetas => i => :theta
+        end
+    end
+    for i in 1:K
+        n += 1
+        if U < n/total
+            return :phis => i => :phi
+        end
+    end
+    for i in 1:N
+        n += 1
+        if U < n/total
+            return :data => i => :z
+        end
+    end
+end
+function get_length(::LDACombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    K = trace[:K] + 1
+    M, N, V, _ = args
+    return 1 + M + K + N
+end
+
+model = lda_combinator
+
+observations = choicemap();
+for n in eachindex(w)
+    observations[:data => n => :w] = w[n]
+end
+
+
+selector = LDACombinatorLMHSelector()
+
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
+println(@sprintf("Gen combinator time: %.3f μs", res.time / N_iter * 10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
