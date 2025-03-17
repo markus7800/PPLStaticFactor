@@ -43,6 +43,8 @@ function get_length(::DefaultLMHSelector, trace::Gen.ChoiceMap, args::Tuple, obs
     return get_length(trace) - get_length(observations)
 end
 
+@gen function lmh_proposal(trace, selector::LMHSelector, model_args::Tuple, observations::Gen.ChoiceMap)
+end
 
 function lmh(N::Int, n_iter::Int, selector::LMHSelector, model, args, observations; check::Bool=false)
     Random.seed!(0)
@@ -90,6 +92,7 @@ name_to_N = Dict{String,Int}(
     "lda_fixed_numtopic" => 10_000,
     "lda_variable_numtopic" => 10_000,
     "linear_regression" => 100_000,
+    "markov_chain" => 100_000,
     "marsaglia" => 500_000,
     "pedestrian" => 100_000,
     "urn" => 100_000,

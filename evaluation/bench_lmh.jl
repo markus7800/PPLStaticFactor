@@ -127,6 +127,7 @@ name_to_N = Dict{String,Int}(
     "lda_variable_numtopic" => 10_000,
     "linear_regression" => 100_000,
     "marsaglia" => 500_000,
+    "markov_chain" => 100_000,
     "pedestrian" => 100_000,
     "urn" => 100_000,
 
@@ -135,7 +136,7 @@ name_to_N = Dict{String,Int}(
     "lda_fixed_numtopic_unrolled" => 10_000,
     "linear_regression_unrolled" => 100_000,
 )
-N_iter = get(name_to_N, modelname, 10_000)
+N_iter = name_to_N[modelname]
 
 
 
