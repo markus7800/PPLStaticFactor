@@ -2,6 +2,15 @@ using Gen
 import Random
 using Printf
 
+abstract type LMHSelector end
+function get_resample_address(::LMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
+    error("Not implemented!")
+end
+function get_length(::LMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    error("Not implemented!")
+end
+
+
 function get_addresses(choices::Gen.ChoiceMap)
     addresses = Set()
     for (key, value) in get_values_shallow(choices)
@@ -25,10 +34,18 @@ function get_length(choices::Gen.ChoiceMap)
     return count
 end
 
+struct DefaultLMHSelector <: LMHSelector
+end
+function get_resample_address(::DefaultLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
+    return rand(setdiff(get_addresses(trace), get_addresses(observations)))
+end
+function get_length(::DefaultLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    return get_length(trace)
+end
 
-function lmh(N::Int, n_iter::Int, model, args, observations; check::Bool=false)
+
+function lmh(N::Int, n_iter::Int, selector::LMHSelector, model, args, observations; check::Bool=false)
     Random.seed!(0)
-    observation_addresses = get_addresses(observations)
 
     n_accepted = 0
     for _ in 1:N
@@ -36,10 +53,15 @@ function lmh(N::Int, n_iter::Int, model, args, observations; check::Bool=false)
         # println(trace)
 
         for i in 1:n_iter
-            resample_address = rand(setdiff(get_addresses(get_choices(trace)), observation_addresses))
+            choices = get_choices(trace)
+            resample_address = get_resample_address(selector, choices, args, observations)
+            if check && !has_value(choices, resample_address)
+                display(choices)
+                error("Resample address $resample_address not in choices")
+            end
 
             new_trace, accept = mh(trace, select(resample_address), observations=observations, check=check)
-            accept = accept && (rand() < get_length(get_choices(trace)) / get_length(get_choices(new_trace)))
+            accept = accept && (rand() < get_length(selector, choices, args, observations) / get_length(selector, get_choices(new_trace), args, observations))
 
             if accept
                 trace = new_trace

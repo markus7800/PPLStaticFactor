@@ -3,7 +3,7 @@ include("lmh.jl")
 
 modelname = "gmm_variable_numclust"
 
-@gen function gmm()
+@gen function gmm(ys::Vector{Float64})
     δ::Float64 = 5.0
     ξ::Float64 = 0.0
     κ::Float64 = 0.01
@@ -34,6 +34,40 @@ modelname = "gmm_variable_numclust"
         i = i + 1
     end
 
+end
+
+struct GMMLMHSelector <: LMHSelector
+end
+function get_resample_address(::GMMLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
+    ys = args[1]
+    N = length(ys)
+    K = trace[:num_clusters]
+    total = 2 + 2*K + N
+
+    U = rand()
+    if U < 2/total
+        if rand() < 0.5
+            return :num_clusters
+        else
+            return :w
+        end
+    elseif U < (2 + 2*K)/total
+        k = rand(1:K)
+        if rand() < 0.5
+            return :mu => k
+        else
+            return :var => k
+        end
+    else
+        i = rand(1:N)
+        return :z => i
+    end
+end
+function get_length(::GMMLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    ys = args[1]
+    N = length(ys)
+    K = trace[:num_clusters]
+    return 2 + 2*K + N
 end
 
 
@@ -76,15 +110,15 @@ ys = gt_ys
 
 
 model = gmm
-args = ()
+args = (ys,)
 observations = choicemap();
 for i in eachindex(gt_ys)
     observations[:y => i] = gt_ys[i]
 end
 
-N = name_to_N[modelname]
-acceptance_rate = lmh(10, N ÷ 10, model, args, observations)
-res = @timed lmh(10, N ÷ 10, model, args, observations)
+N = name_to_N[modelname] ÷ 10
+acceptance_rate = lmh(10, N ÷ 10, GMMLMHSelector(), model, args, observations, check=true)
+res = @timed lmh(10, N ÷ 10, GMMLMHSelector(), model, args, observations)
 println(@sprintf("Gen time: %.3f μs", res.time / N * 10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
 
@@ -112,7 +146,7 @@ end
 
 const map_observe_y = Map(observe_y)
 
-@gen (static) function gmm_rec()
+@gen (static) function gmm_rec(ys::Vector{Float64})
     δ::Float64 = 5.0
 
     num_clusters::Int = {:num_clusters} ~ poisson(3.)
@@ -127,16 +161,49 @@ const map_observe_y = Map(observe_y)
 
 end
 
+struct GMMRecLMHSelector <: LMHSelector
+end
+function get_resample_address(::GMMRecLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
+    ys = args[1]
+    N = length(ys)
+    K = trace[:num_clusters]
+    total = 2 + 2*K + N
+
+    U = rand()
+    if U < 2/total
+        if rand() < 0.5
+            return :num_clusters
+        else
+            return :w
+        end
+    elseif U < (2 + 2*K)/total
+        k = rand(1:K)
+        if rand() < 0.5
+            return :means => k => :mu
+        else
+            return :vars => k => :var
+        end
+    else
+        i = rand(1:N)
+        return :data => i => :z
+    end
+end
+function get_length(::GMMRecLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    ys = args[1]
+    N = length(ys)
+    K = trace[:num_clusters]
+    return 2 + 2*K + N
+end
 
 model = gmm_rec
-args = ()
+args = (ys,)
 observations = choicemap();
 for i in eachindex(gt_ys)
     observations[:data => i => :y] = gt_ys[i]
 end
 
-@profview acceptance_rate = lmh(10, N ÷ 10, model, args, observations)
-res = @timed lmh(10, N ÷ 10, model, args, observations)
+acceptance_rate = lmh(10, N ÷ 10, GMMRecLMHSelector(), model, args, observations, check=true)
+res = @timed lmh(10, N ÷ 10, GMMRecLMHSelector(), model, args, observations)
 println(@sprintf("Gen combinator time: %.3f μs", res.time / N * 10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
 
