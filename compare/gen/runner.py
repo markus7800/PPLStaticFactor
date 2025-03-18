@@ -11,8 +11,8 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-# with open("evaluation/results.csv", "w") as f:
-#     f.write("model, acceptancerate, none, static, finite, custom\n")
+with open("compare/gen/results.csv", "w") as f:
+    f.write("model, acceptancerate, base, combinator\n")
 
 filenames = [
     "aircraft.jl",
@@ -35,6 +35,6 @@ filenames = [
 
 for filename in filenames:
     print(bcolors.HEADER + filename + bcolors.ENDC)
-    cmd = ["julia", "--project=./test", "test/gen/" + filename]
+    cmd = ["julia", "--project=./compare/gen", "compare/gen/" + filename]
     subprocess.run(cmd, capture_output=False)
     print()
