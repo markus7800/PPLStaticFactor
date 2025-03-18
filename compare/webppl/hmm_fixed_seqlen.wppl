@@ -1,10 +1,11 @@
-
+// adapted from https://proceedings.mlr.press/v51/ritchie16.html
+// Ritchie et al. 2016. C3: Lightweight Incrementalized MCMC for Probabilistic Programs using Continuations and Callsite Caching
 
 var model = {
     transition: [
-        [0.1, 0.2, 0.6, 0.1],
-        [0.05, 0.8, 0.1, 0.05],
-        [0.3, 0.3, 0.3, 0.1]
+        [0.1, 0.2, 0.7],
+        [0.1, 0.8, 0.1],
+        [0.3, 0.3, 0.4]
     ]
 }
 
@@ -19,12 +20,12 @@ var data = [
 
 var hmmfn = function(n) {
 	if (n === 0) {
-		return 0;
+		return 0; // initial state
 	} else {
 		var prevState = hmmfn(n-1);
-		var state = (prevState == 3) ? 3 : transition(prevState, n);
+		var state = transition(prevState);
 		query.add(n, state);
-		var obs = (state == 3) ? 100.0 : data[n-1]
+		var obs = data[n-1]
 		observation(state, obs);
 		return state;
 	}
@@ -53,11 +54,3 @@ console.timeEnd('MH rec ')
 console.time('C3 rec ')
 repeat(10, function() { Infer({method: 'incrementalMH', samples: N, burn: 0}, model_rec) })
 console.timeEnd('C3 rec ')
-
-// console.time('MH iter')
-// repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model_iter) })
-// console.timeEnd('MH iter')
-
-// console.time('C3 iter')
-// repeat(10, function() { Infer({method: 'incrementalMH', samples: N, burn: 0}, model_iter) })
-// console.timeEnd('C3 iter')

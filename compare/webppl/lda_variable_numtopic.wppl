@@ -1,3 +1,5 @@
+// adapted from https://proceedings.mlr.press/v51/ritchie16.html
+// Ritchie et al. 2016. C3: Lightweight Incrementalized MCMC for Probabilistic Programs using Continuations and Callsite Caching
 
 
 var documents = [

@@ -1,7 +1,7 @@
 using Gen
 include("lmh.jl")
 
-modelname = "geometric"
+modelname = "geometric_recurse"
 
 @gen function geometric(p::Float64)
     i::Int = -1

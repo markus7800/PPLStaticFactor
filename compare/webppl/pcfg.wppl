@@ -1,0 +1,43 @@
+
+var model = {
+    production: [
+        [0.1, 0.2, 0.6, 0.1],
+        [0.05, 0.8, 0.1, 0.05],
+        [0.3, 0.3, 0.3, 0.1]
+    ]
+}
+
+// this recursion operates in the opposite direction of hmm.wppl
+// in hmm.wppl recursion base case is start state
+// we cannot do this if we do not know number of iterations
+var pcfgfn = function(current_symbol, n) {
+	if (current_symbol != 3) {  // Non-Terminal
+		query.add(n, current_symbol);
+		var next_symbol = transition(current_symbol, n+1);
+		return pcfgfn(next_symbol, n+1);
+	} else {
+		return n
+	}
+}
+
+var transition = function(current) {
+	return discrete(model.production[current]);
+}
+
+
+var model_rec = function() {
+	var current_symbol = discrete(Vector([0.33, 0.33, 0.34]))
+	pcfgfn(current_symbol, 0);
+	return query;
+}
+
+
+var N = 1e4
+
+console.time('MH rec ')
+repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model_rec) })
+console.timeEnd('MH rec ')
+
+console.time('C3 rec ')
+repeat(10, function() { Infer({method: 'incrementalMH', samples: N, burn: 0}, model_rec) })
+console.timeEnd('C3 rec ')

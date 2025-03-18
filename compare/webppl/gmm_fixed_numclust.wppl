@@ -1,3 +1,6 @@
+// adapted from https://proceedings.mlr.press/v51/ritchie16.html
+// Ritchie et al. 2016. C3: Lightweight Incrementalized MCMC for Probabilistic Programs using Continuations and Callsite Caching
+
 var data = [-7.87951290075215, -23.251364738213493, -5.34679518882793, -3.163770449770572,
     10.524424782864525, 5.911987013277482, -19.228378698266436, 0.3898087330050574,
     8.576922415766697, 7.727416085566447, -18.043123523482492, 9.108136117789305,
@@ -60,7 +63,9 @@ var model_rec = function() {
 };
 
 var model_iter = function() {
-	var nComponents = poisson(3) + 1
+    // slightly different from evaluation/benchmark/gmm_variable_num_clust.jl
+    // because we wanted to stick to the reference implemenation of Ritchie 2016
+	var nComponents = 4
 	var params = repeat(nComponents, function() {
 		return [gaussian(0, 10), uniform(0, 5)];
 	});
