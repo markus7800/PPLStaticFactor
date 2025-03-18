@@ -12,7 +12,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 with open("compare/gen/results.csv", "w") as f:
-    f.write("model, acceptancerate, base, combinator\n")
+    f.write("model,acceptancerate,base,combinator,rel\n")
 
 filenames = [
     "aircraft.jl",
@@ -22,7 +22,6 @@ filenames = [
     "gmm_fixed_numclust.jl",
     "gmm_variable_numclust.jl",
     "hmm_fixed_seqlen.jl",
-    "hmm_variable_seqlen.jl",
     "hurricane.jl",
     "lda_fixed_numtopic.jl",
     "lda_variable_numtopic.jl",

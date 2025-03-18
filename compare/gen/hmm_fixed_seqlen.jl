@@ -25,6 +25,10 @@ get_row(x::AbstractMatrix, i) = x[i, :]
 end
 
 struct HMMLMHSelector <: LMHSelector end
+function get_length(::HMMLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    ys = args[1]
+    return length(ys) + 1
+end
 function get_resample_address(selector::HMMLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
     N = get_length(selector, trace, args, observations)
     U = rand()
@@ -35,10 +39,6 @@ function get_resample_address(selector::HMMLMHSelector, trace::Gen.ChoiceMap, ar
         return :state => i
     end
 end
-function get_length(::HMMLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
-    ys = args[1]
-    return length(ys) + 1
-end
 
 ys = [
     3.36, 2.87, 1.54, 1.13, 2.05, 2.55, 3.08, 1.23, 2.37, 2.5,
@@ -48,7 +48,7 @@ ys = [
     1.65, 3.01, 3.74, 1.54, 2.47, 1.54, 3.7, 4.29, 0.93, 1.95, 
 ]
 
-N = name_to_N[modelname]
+N_iter = name_to_N[modelname]
 
 model = hmm
 args = (ys,)
@@ -58,10 +58,14 @@ for i in eachindex(ys)
 end
 selector = HMMLMHSelector()
 
-acceptance_rate = lmh(10, N ÷ 10, selector, model, args, observations, check=true)
-res = @timed lmh(10, N ÷ 10, selector, model, args, observations)
-println(@sprintf("Gen time: %.3f μs", res.time / N * 10^6))
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
+base_time = res.time / N_iter # total of N_iter / 10 * 10 iterations
+println(@sprintf("Gen time: %.3f μs", base_time*10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+
+# === Implementation with Combinators  ===
 
 
 @gen function hmm_step(t::Int, current::Int, transition_probs::Matrix{Float64})::Int
@@ -91,6 +95,10 @@ end
 # display(get_choices(tr))
 
 struct HMMCombinatorLMHSelector <: LMHSelector end
+function get_length(::HMMCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    ys = args[1]
+    return length(ys) + 1
+end
 function get_resample_address(selector::HMMCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
     N = get_length(selector, trace, args, observations)
     U = rand()
@@ -101,10 +109,6 @@ function get_resample_address(selector::HMMCombinatorLMHSelector, trace::Gen.Cho
         return :states => i => :state
     end
 end
-function get_length(::HMMCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
-    ys = args[1]
-    return length(ys) + 1
-end
 
 model = hmm_combinator
 observations = choicemap();
@@ -114,7 +118,12 @@ end
 selector = HMMCombinatorLMHSelector()
 
 
-acceptance_rate = lmh(10, N ÷ 10, selector, model, args, observations, check=true)
-res = @timed lmh(10, N ÷ 10, selector, model, args, observations)
-println(@sprintf("Gen combinator, time: %.3f μs", res.time / N * 10^6))
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
+combinator_time = res.time / N_iter
+println(@sprintf("Gen combinator time: %.3f μs", combinator_time * 10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+
+f = open("compare/gen/results.csv", "a")
+println(f, modelname, ",", acceptance_rate, ",", base_time*10^6, ",", combinator_time*10^6, ",", combinator_time / base_time)

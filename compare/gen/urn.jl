@@ -38,6 +38,11 @@ end
 
 
 struct UrnLMHSelector <: LMHSelector end
+function get_length(::UrnLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    K = args[1]
+    N = trace[:N]
+    return N > 0 ? 1 + N + K : 1
+end
 function get_resample_address(selector::UrnLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
     N = get_length(selector, trace, args, observations)
     K = args[1]
@@ -65,11 +70,6 @@ function get_resample_address(selector::UrnLMHSelector, trace::Gen.ChoiceMap, ar
         end
     end
 end
-function get_length(::UrnLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
-    K = args[1]
-    N = trace[:N]
-    return N > 0 ? 1 + N + K : 1
-end
 
 K = 10
 
@@ -82,11 +82,14 @@ observations[:n_black] = 5
 
 selector = UrnLMHSelector()
 
-acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations)
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
 res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
-println(@sprintf("Gen time: %.3f μs", res.time / N_iter * 10^6))
+base_time = res.time / N_iter # total of N_iter / 10 * 10 iterations
+println(@sprintf("Gen time: %.3f μs", base_time*10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
 
+
+# === Implementation with Combinators  ===
 
 @gen function gen_ball(i::Int)::Int
     ball::Int = {:ball} ~ bernoulli(0.5)
@@ -126,6 +129,11 @@ end
 
 
 struct UrnCombinatorLMHSelector <: LMHSelector end
+function get_length(::UrnCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    K = args[1]
+    N = trace[:N]
+    return N > 0 ? 1 + N + K : 1
+end
 function get_resample_address(selector::UrnCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
     N = get_length(selector, trace, args, observations)
     K = args[1]
@@ -153,16 +161,16 @@ function get_resample_address(selector::UrnCombinatorLMHSelector, trace::Gen.Cho
         end
     end
 end
-function get_length(::UrnCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
-    K = args[1]
-    N = trace[:N]
-    return N > 0 ? 1 + N + K : 1
-end
 
 model = urn_combinator
 selector = UrnCombinatorLMHSelector()
 
-acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations)
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
 res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
-println(@sprintf("Gen combinator time: %.3f μs", res.time / N_iter * 10^6))
+combinator_time = res.time / N_iter
+println(@sprintf("Gen combinator time: %.3f μs", combinator_time * 10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+
+f = open("compare/gen/results.csv", "a")
+println(f, modelname, ",", acceptance_rate, ",", base_time*10^6, ",", combinator_time*10^6, ",", combinator_time / base_time)

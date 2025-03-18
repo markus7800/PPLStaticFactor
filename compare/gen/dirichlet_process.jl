@@ -3,7 +3,7 @@ include("lmh.jl")
 
 modelname = "dirichlet_process"
 
-@gen function dp()
+@gen function dp(xs::Vector{Float64})
     alpha::Float64 = 5.0
     stick::Float64 = 1.0
     beta::Float64 = 0.0
@@ -37,15 +37,46 @@ zs = [7, 8, 5, 7, 4, 6, 3, 3, 6, 1, 3, 1, 3, 1, 4, 3, 4, 4, 8, 8, 5, 7, 8, 4, 5,
 xs = [0.42, 0.29, -0.01, 0.37, 0.23, 0.54, 0.95, 0.9, 0.48, 0.82, 0.88, 0.61, 0.83, 0.56, 0.42, 0.83, 0.36, 0.41, 0.51, 0.39, 0.06, 0.23, 0.4, 0.33, 0.23, 0.49, 0.13, 1.06, 0.22, 0.65, 0.25, 0.6, 0.25, 0.28, 0.23, 0.45, 0.34, 0.29, 0.88, 0.83, 0.81, 0.27, 0.72, 0.27, 0.43, 0.51, 0.35, 0.91, 0.31, 0.83]
 
 
+struct DirichletProcessLMHSelector <: LMHSelector end
+function get_length(::DirichletProcessLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    xs = args[1]
+    return get_length(trace) - length(xs)
+end
+function get_resample_address(selector::DirichletProcessLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
+    total = get_length(selector, trace, args, observations)
+    xs = args[1]
+    N_data = length(xs)
+    N_stick = (total - N_data) ÷ 2
+    if rand() < N_data / total
+        return :z => rand(1:N_data)
+    else
+        i = rand(1:N_stick)
+        if rand() < 0.5
+            return :beta => i
+        else
+            return :theta => i
+        end
+    end
+end
+
+
+N_iter = name_to_N[modelname]
+
 model = dp
-args = ()
+args = (xs,)
 observations = choicemap();
 for j in eachindex(xs)
     observations[:x => j] = xs[j]
 end
 
-N = name_to_N[modelname]
-acceptance_rate = lmh(10, N ÷ 10, DefaultLMHSelector(), model, args, observations)
-res = @timed lmh(10, N ÷ 10, DefaultLMHSelector(), model, args, observations)
-println(@sprintf("Gen time: %.3f μs", res.time / N * 10^6))
+selector = DirichletProcessLMHSelector()
+
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
+base_time = res.time / N_iter # total of N_iter / 10 * 10 iterations
+println(@sprintf("Gen time: %.3f μs", base_time*10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+
+f = open("compare/gen/results.csv", "a")
+println(f, modelname, ",", acceptance_rate, ",", base_time*10^6, ",", "-", ",", "-")

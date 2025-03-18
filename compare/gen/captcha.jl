@@ -32,6 +32,10 @@ end
 
 struct CaptchaLMHSelector <: LMHSelector
 end
+function get_length(::CaptchaLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    K = trace[:N_letters]
+    return 2 + 4*K
+end
 function get_resample_address(::CaptchaLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
     N = get_length(selector, trace, args, observations)
     K = trace[:N_letters]
@@ -67,12 +71,10 @@ function get_resample_address(::CaptchaLMHSelector, trace::Gen.ChoiceMap, args::
         end
     end
 end
-function get_length(::CaptchaLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
-    K = trace[:N_letters]
-    return 2 + 4*K
-end
 
 captcha_img = zeros(200*50)
+
+N_iter = name_to_N[modelname]
 
 model = captcha
 args = ()
@@ -82,11 +84,15 @@ observations[:image] = captcha_img
 
 selector = CaptchaLMHSelector()
 
-N = name_to_N[modelname]
-acceptance_rate = lmh(10, N ÷ 10, selector, model, args, observations)
-res = @timed lmh(10, N ÷ 10, selector, model, args, observations)
-println(@sprintf("Gen time: %.3f μs", res.time / N * 10^6))
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
+base_time = res.time / N_iter # total of N_iter / 10 * 10 iterations
+println(@sprintf("Gen time: %.3f μs", base_time*10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+
+# === Implementation with Combinators  ===
+
 
 @gen function gen_letter(font::Int)::Vector{Float64}
     fontsize::Int = {:fontsize} ~ uniform_discrete(38,44)
@@ -111,6 +117,10 @@ end
 # display(get_choices(tr))
 
 struct CaptchaCombinatorLMHSelector <: LMHSelector
+end
+function get_length(::CaptchaCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    K = trace[:N_letters]
+    return 2 + 4*K
 end
 function get_resample_address(::CaptchaCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
     N = get_length(selector, trace, args, observations)
@@ -147,15 +157,15 @@ function get_resample_address(::CaptchaCombinatorLMHSelector, trace::Gen.ChoiceM
         end
     end
 end
-function get_length(::CaptchaCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
-    K = trace[:N_letters]
-    return 2 + 4*K
-end
 
 model = captcha_combinator
 selector = CaptchaCombinatorLMHSelector()
 
-acceptance_rate = lmh(10, N ÷ 10, selector, model, args, observations)
-res = @timed lmh(10, N ÷ 10, selector, model, args, observations)
-println(@sprintf("Gen combinator time: %.3f μs", res.time / N * 10^6))
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
+combinator_time = res.time / N_iter
+println(@sprintf("Gen combinator time: %.3f μs", combinator_time * 10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+f = open("compare/gen/results.csv", "a")
+println(f, modelname, ",", acceptance_rate, ",", base_time*10^6, ",", combinator_time*10^6, ",", combinator_time / base_time)

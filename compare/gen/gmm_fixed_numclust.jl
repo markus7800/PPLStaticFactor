@@ -38,6 +38,12 @@ end
 
 struct GMMLMHSelector <: LMHSelector
 end
+function get_length(::GMMLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    ys = args[1]
+    N = length(ys)
+    K = 4
+    return 1 + 2*K + N
+end
 function get_resample_address(::GMMLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
     ys = args[1]
     N = length(ys)
@@ -58,12 +64,6 @@ function get_resample_address(::GMMLMHSelector, trace::Gen.ChoiceMap, args::Tupl
         i = rand(1:N)
         return :z => i
     end
-end
-function get_length(::GMMLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
-    ys = args[1]
-    N = length(ys)
-    K = 4
-    return 1 + 2*K + N
 end
 
 gt_k = 4
@@ -104,7 +104,7 @@ gt_σ²s = [3.0, 8.0, 7.0, 1.0]
 ys = gt_ys
 
 
-N = name_to_N[modelname]
+N_iter = name_to_N[modelname]
 
 model = gmm
 args = (ys,)
@@ -114,7 +114,106 @@ for i in eachindex(gt_ys)
 end
 selector = GMMLMHSelector()
 
-acceptance_rate = lmh(10, N ÷ 10, selector, model, args, observations, check=true)
-res = @timed lmh(10, N ÷ 10, selector, model, args, observations)
-println(@sprintf("Gen time: %.3f μs", res.time / N * 10^6))
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
+base_time = res.time / N_iter # total of N_iter / 10 * 10 iterations
+println(@sprintf("Gen time: %.3f μs", base_time*10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+
+
+# === Implementation with Combinators  ===
+
+
+@gen function get_mu(k::Int)::Float64
+    ξ::Float64 = 0.0
+    κ::Float64 = 0.01
+    mu::Float64 = {:mu} ~ normal(ξ, 1/sqrt(κ))
+    return mu
+end
+const get_mus = Map(get_mu)
+
+@gen function get_var(k::Int)::Float64
+    α::Float64 = 2.0
+    β::Float64 = 10.0
+    var::Float64 = {:var} ~ inv_gamma(α, β)
+    return var
+end
+const get_vars = Map(get_var)
+
+@gen function observe_y(w::Vector{Float64}, means::AbstractVector{Float64}, vars::AbstractVector{Float64})
+    z::Int = {:z} ~ categorical(w)
+    z = min(z, length(means))
+    {:y} ~ normal(means[z], vars[z])
+end
+const map_observe_y = Map(observe_y)
+
+@gen (static) function gmm_combinator(ys::Vector{Float64})
+    δ::Float64 = 5.0
+
+    num_clusters = 4
+
+    w::Vector{Float64} = {:w} ~ dirichlet(fill(δ,num_clusters))
+
+    means ~ get_mus(1:num_clusters)
+    vars ~ get_vars(1:num_clusters)
+
+    {:data} ~ map_observe_y(fill(w, length(ys)), fill(means, length(ys)), fill(vars, length(ys)))
+
+end
+
+struct GMMCombinatorLMHSelector <: LMHSelector
+end
+function get_length(::GMMCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    ys = args[1]
+    N = length(ys)
+    K = 4
+    return 1 + 2*K + N
+end
+function get_resample_address(::GMMCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
+    ys = args[1]
+    N = length(ys)
+    K = 4
+    total = 1 + 2*K + N
+
+    U = rand()
+    n = 1
+    if U < n/total
+        return :w
+    end
+    for k in 1:K
+        n += 1
+        if U < n/total
+            return :means => k => :mu
+        end
+        n += 1
+        if U < n/total
+            return :vars => k => :var
+        end
+    end
+    for i in 1:N
+        n += 1
+        if U < n/total
+            return :data => i => :z
+        end
+    end
+end
+
+model = gmm_combinator
+args = (ys,)
+observations = choicemap();
+for i in eachindex(gt_ys)
+    observations[:data => i => :y] = gt_ys[i]
+end
+selector = GMMCombinatorLMHSelector()
+
+
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
+combinator_time = res.time / N_iter
+println(@sprintf("Gen combinator time: %.3f μs", combinator_time * 10^6))
+println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+
+f = open("compare/gen/results.csv", "a")
+println(f, modelname, ",", acceptance_rate, ",", base_time*10^6, ",", combinator_time*10^6, ",", combinator_time / base_time)

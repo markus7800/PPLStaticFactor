@@ -16,14 +16,34 @@ modelname = "pedestrian"
     end
     {:final_distance} ~ normal(distance, 0.1)
 end
+struct PedestrianLMHSelector <: LMHSelector end
+function get_length(::PedestrianLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    return get_length(trace) - 1
+end
+function get_resample_address(selector::PedestrianLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
+    N = get_length(selector, trace, args, observations)
+
+    if rand() < 1/N
+        return :start
+    else
+        return :step => rand(1:(N-1))
+    end
+end
+
+N_iter = name_to_N[modelname]
 
 model = pedestrian
 args = ()
 observations = choicemap()
 observations[:final_distance] = 1.1
 
-N = name_to_N[modelname]
-acceptance_rate = lmh(10, N ÷ 10, DefaultLMHSelector(), model, args, observations)
-res = @timed lmh(10, N ÷ 10, DefaultLMHSelector(), model, args, observations)
-println(@sprintf("Gen time: %.3f μs", res.time / N * 10^6))
+selector = PedestrianLMHSelector()
+
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
+base_time = res.time / N_iter # total of N_iter / 10 * 10 iterations
+println(@sprintf("Gen time: %.3f μs", base_time*10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+f = open("compare/gen/results.csv", "a")
+println(f, modelname, ",", acceptance_rate, ",", base_time*10^6, ",", "-", ",", "-")

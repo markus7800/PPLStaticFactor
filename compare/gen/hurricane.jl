@@ -23,23 +23,28 @@ modelname = "hurricane"
 end
 
 struct HurricaneLMHSelector <: LMHSelector end
-function get_resample_address(selector::HurricaneLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
-    return rand([:F, :P0, :D0, :P1, :D1])
-end
 function get_length(::HurricaneLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
     return 5
 end
+function get_resample_address(selector::HurricaneLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
+    return rand([:F, :P0, :D0, :P1, :D1])
+end
+
+N_iter = name_to_N[modelname]
 
 model = hurricane
 args = ()
 observations = choicemap();
 selector = HurricaneLMHSelector()
 
-N = name_to_N[modelname]
-acceptance_rate = lmh(10, N ÷ 10, selector, model, args, observations)
-res = @timed lmh(10, N ÷ 10, selector, model, args, observations)
-println(@sprintf("Gen time: %.3f μs", res.time / N * 10^6))
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
+base_time = res.time / N_iter # total of N_iter / 10 * 10 iterations
+println(@sprintf("Gen time: %.3f μs", base_time*10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+
+# === Implementation with Combinators  ===
 
 @gen function P0_first()
     prep_0 = {:P0} ~ bernoulli(0.5)
@@ -68,17 +73,22 @@ end
 
 
 struct HurricaneCombinatorLMHSelector <: LMHSelector end
-function get_resample_address(selector::HurricaneCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
-    return rand([:F, :city => :P0, :city => :D0, :city => :P1, :city => :D1])
-end
 function get_length(::HurricaneCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
     return 5
+end
+function get_resample_address(selector::HurricaneCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
+    return rand([:F, :city => :P0, :city => :D0, :city => :P1, :city => :D1])
 end
 
 model = hurricane_combinator
 selector = HurricaneCombinatorLMHSelector()
 
-acceptance_rate = lmh(10, N ÷ 10, selector, model, args, observations)
-res = @timed lmh(10, N ÷ 10, selector, model, args, observations)
-println(@sprintf("Gen combinator time: %.3f μs", res.time / N * 10^6))
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
+combinator_time = res.time / N_iter
+println(@sprintf("Gen combinator time: %.3f μs", combinator_time * 10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+
+f = open("compare/gen/results.csv", "a")
+println(f, modelname, ",", acceptance_rate, ",", base_time*10^6, ",", combinator_time*10^6, ",", combinator_time / base_time)

@@ -16,11 +16,11 @@ end
 
 
 struct LinregLMHSelector <: LMHSelector end
-function get_resample_address(selector::LinregLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
-    return rand([:slope, :intercept])
-end
 function get_length(::LinregLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
     return 2
+end
+function get_resample_address(selector::LinregLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
+    return rand([:slope, :intercept])
 end
 
 xs = [
@@ -43,7 +43,7 @@ ys = [
 ]
 
 
-N = name_to_N[modelname]
+N_iter = name_to_N[modelname]
 
 model = lr
 args = (xs,)
@@ -55,7 +55,41 @@ end
 
 selector = LinregLMHSelector()
 
-acceptance_rate = lmh(10, N ÷ 10, selector, model, args, observations, check=true)
-res = @timed lmh(10, N ÷ 10, selector, model, args, observations)
-println(@sprintf("Gen time: %.3f μs", res.time / N * 10^6))
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
+base_time = res.time / N_iter # total of N_iter / 10 * 10 iterations
+println(@sprintf("Gen time: %.3f μs", base_time*10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+# === Implementation with Combinators  ===
+
+@gen function observe_y(x::Float64, slope::Float64, intercept::Float64)
+    {:y} ~ normal(slope * x + intercept, 1.)
+end
+const observe_ys = Map(observe_y)
+
+@gen (static) function lr_combinator(xs::Vector{Float64})
+    slope::Float64 = {:slope} ~ normal(0.,3.)
+    intercept::Float64 = {:intercept} ~ normal(0.,3.)
+
+    {:data} ~ observe_ys(xs, fill(slope, length(xs)), fill(intercept, length(xs)))
+end
+
+model = lr_combinator
+args = (xs,)
+observations = choicemap();
+
+for i in eachindex(ys)
+    observations[:data => i => :y] = ys[i]
+end
+
+
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
+combinator_time = res.time / N_iter
+println(@sprintf("Gen combinator time: %.3f μs", combinator_time * 10^6))
+println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+
+f = open("compare/gen/results.csv", "a")
+println(f, modelname, ",", acceptance_rate, ",", base_time*10^6, ",", combinator_time*10^6, ",", combinator_time / base_time)

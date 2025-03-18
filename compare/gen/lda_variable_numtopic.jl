@@ -43,6 +43,11 @@ N = 262 # total word instances
 V = 5  # num words
 
 struct LDALMHSelector <: LMHSelector end
+function get_length(::LDALMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    K = trace[:K] + 1
+    M, N, V, _ = args
+    return 1 + M + K + N
+end
 function get_resample_address(selector::LDALMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
     total = get_length(selector, trace, args, observations)
     K = trace[:K] + 1
@@ -72,11 +77,6 @@ function get_resample_address(selector::LDALMHSelector, trace::Gen.ChoiceMap, ar
         end
     end
 end
-function get_length(::LDALMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
-    K = trace[:K] + 1
-    M, N, V, _ = args
-    return 1 + M + K + N
-end
 
 N_iter = name_to_N[modelname]
 
@@ -91,8 +91,12 @@ selector = LDALMHSelector()
 
 acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
 res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
-println(@sprintf("Gen time: %.3f μs", res.time / N_iter * 10^6))
+base_time = res.time / N_iter # total of N_iter / 10 * 10 iterations
+println(@sprintf("Gen time: %.3f μs", base_time*10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+
+# === Implementation with Combinators  ===
 
 
 @gen function gen_theta(K::Int)::Vector{Float64}
@@ -131,6 +135,11 @@ end
 # display(get_choices(tr))
 
 struct LDACombinatorLMHSelector <: LMHSelector end
+function get_length(::LDACombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    K = trace[:K] + 1
+    M, N, V, _ = args
+    return 1 + M + K + N
+end
 function get_resample_address(selector::LDACombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
     total = get_length(selector, trace, args, observations)
     K = trace[:K] + 1
@@ -160,11 +169,6 @@ function get_resample_address(selector::LDACombinatorLMHSelector, trace::Gen.Cho
         end
     end
 end
-function get_length(::LDACombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
-    K = trace[:K] + 1
-    M, N, V, _ = args
-    return 1 + M + K + N
-end
 
 model = lda_combinator
 
@@ -173,10 +177,14 @@ for n in eachindex(w)
     observations[:data => n => :w] = w[n]
 end
 
-
 selector = LDACombinatorLMHSelector()
 
 acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
 res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
-println(@sprintf("Gen combinator time: %.3f μs", res.time / N_iter * 10^6))
+combinator_time = res.time / N_iter
+println(@sprintf("Gen combinator time: %.3f μs", combinator_time * 10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+
+f = open("compare/gen/results.csv", "a")
+println(f, modelname, ",", acceptance_rate, ",", base_time*10^6, ",", combinator_time*10^6, ",", combinator_time / base_time)

@@ -14,12 +14,12 @@ modelname = "geometric"
 end
 
 struct GeometricLMHSelector <: LMHSelector end
+function get_length(::GeometricLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    return get_length(trace)
+end
 function get_resample_address(selector::GeometricLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
     total = get_length(selector, trace, args, observations)
     return :b => rand(0:total-1)
-end
-function get_length(::GeometricLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
-    return get_length(trace)
 end
 
 N = name_to_N[modelname]
@@ -91,12 +91,12 @@ histogram([get_retval(simulate(geometric, args)) for _ in 1:10^5], normalize=tru
 
 
 struct GeometricRecurseLMHSelector <: LMHSelector end
+function get_length(::GeometricRecurseLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    return get_length(trace)
+end
 function get_resample_address(selector::GeometricRecurseLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
     total = get_length(selector, trace, args, observations)
     return :i => (rand(0:total-1), Val(:production)) => :b
-end
-function get_length(::GeometricRecurseLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
-    return get_length(trace)
 end
 
 # regenerate not implemented
@@ -106,13 +106,13 @@ acceptance_rate = lmh(10, N ÷ 10, GeometricRecurseLMHSelector(), geometric_recu
 
 
 struct GeometricRecurseLMHSelector2 <: LMHSelector end
+function get_length(::GeometricRecurseLMHSelector2, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    return get_length(trace)
+end
 function get_resample_address(selector::GeometricRecurseLMHSelector2, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
     total = get_length(selector, trace, args, observations)
     p = args[1]
     return :i => (rand(0:total-1), Val(:production)) => :b, bernoulli, (p,)
-end
-function get_length(::GeometricRecurseLMHSelector2, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
-    return get_length(trace)
 end
 
 @gen function lmh_proposal(trace, resample_address, distribution, dist_args)

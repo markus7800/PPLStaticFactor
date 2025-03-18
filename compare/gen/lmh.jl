@@ -3,10 +3,10 @@ import Random
 using Printf
 
 abstract type LMHSelector end
-function get_resample_address(::LMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
+function get_length(::LMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
     error("Not implemented!")
 end
-function get_length(::LMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+function get_resample_address(::LMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
     error("Not implemented!")
 end
 
@@ -36,11 +36,11 @@ end
 
 struct DefaultLMHSelector <: LMHSelector
 end
-function get_resample_address(::DefaultLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
-    return rand(setdiff(get_addresses(trace), get_addresses(observations)))
-end
 function get_length(::DefaultLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
     return get_length(trace) - get_length(observations)
+end
+function get_resample_address(::DefaultLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
+    return rand(setdiff(get_addresses(trace), get_addresses(observations)))
 end
 
 function lmh(N::Int, n_iter::Int, selector::LMHSelector, model, args, observations; check::Bool=false)

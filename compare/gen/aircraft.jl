@@ -41,6 +41,18 @@ modelname = "aircraft"
 end
 
 struct AircraftLMHSelector <: LMHSelector end
+function get_length(::AircraftLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    N = 0
+    num_aircraft = trace[:num_aircraft] + 1
+    N += 1 + 2*num_aircraft
+
+    for i in 1:num_aircraft
+        num_blips = trace[:num_blips => i]
+        N += num_blips
+    end
+
+    return N
+end
 function get_resample_address(selector::AircraftLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
     N = get_length(selector, trace, args, observations)
 
@@ -70,20 +82,8 @@ function get_resample_address(selector::AircraftLMHSelector, trace::Gen.ChoiceMa
     end
 end
 
-function get_length(::AircraftLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
-    N = 0
-    num_aircraft = trace[:num_aircraft] + 1
-    N += 1 + 2*num_aircraft
 
-    for i in 1:num_aircraft
-        num_blips = trace[:num_blips => i]
-        N += num_blips
-    end
-
-    return N
-end
-
-N = name_to_N[modelname]
+N_iter = name_to_N[modelname]
 
 model = aircraft
 args = ()
@@ -96,11 +96,14 @@ observations[:observed_blip_3] = 3.
 
 selector = AircraftLMHSelector()
 
-acceptance_rate = lmh(10, N ÷ 10, selector, model, args, observations, check=true)
-res = @timed lmh(10, N ÷ 10, selector, model, args, observations)
-println(@sprintf("Gen time: %.3f μs", res.time / N * 10^6))
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
+base_time = res.time / N_iter # total of N_iter / 10 * 10 iterations
+println(@sprintf("Gen time: %.3f μs", base_time*10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
 
+
+# === Implementation with Combinators  ===
 
 
 @gen function gen_blip(position::Float64)::Float64
@@ -157,6 +160,18 @@ end
 # display(get_choices(tr))
 
 struct AircraftCombinatorLMHSelector <: LMHSelector end
+function get_length(::AircraftCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+    N = 0
+    num_aircraft = trace[:num_aircraft] + 1
+    N += 1 + 2*num_aircraft
+
+    for i in 1:num_aircraft
+        num_blips = trace[:aircrafts => i => :num_blips]
+        N += num_blips
+    end
+
+    return N
+end
 function get_resample_address(selector::AircraftCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
     N = get_length(selector, trace, args, observations)
 
@@ -186,23 +201,16 @@ function get_resample_address(selector::AircraftCombinatorLMHSelector, trace::Ge
     end
 
 end
-function get_length(::AircraftCombinatorLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
-    N = 0
-    num_aircraft = trace[:num_aircraft] + 1
-    N += 1 + 2*num_aircraft
-
-    for i in 1:num_aircraft
-        num_blips = trace[:aircrafts => i => :num_blips]
-        N += num_blips
-    end
-
-    return N
-end
 
 model = aircraft_combinator
 selector = AircraftCombinatorLMHSelector()
 
-acceptance_rate = lmh(10, N ÷ 10, selector, model, args, observations, check=true)
-res = @timed lmh(10, N ÷ 10, selector, model, args, observations)
-println(@sprintf("Gen combinator time: %.3f μs", res.time / N * 10^6))
+acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
+res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
+combinator_time = res.time / N_iter
+println(@sprintf("Gen combinator time: %.3f μs", combinator_time * 10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+
+f = open("compare/gen/results.csv", "a")
+println(f, modelname, ",", acceptance_rate, ",", base_time*10^6, ",", combinator_time*10^6, ",", combinator_time / base_time)
