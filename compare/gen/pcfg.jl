@@ -1,47 +1,47 @@
 using Gen
 include("lmh.jl")
 
-modelname = "markov_chain"
+modelname = "pcfg"
 
 get_row(x::AbstractMatrix, i) = x[i, :]
 
-@gen function markov_chain()
-    TERMINAL_STATE::Int = 4
-    transition_probs::Matrix{Float64} = [
+@gen function pcfg()
+    TERMINAL_SYMBOL::Int = 4
+    production_probs::Matrix{Float64} = [
         0.1 0.2 0.6 0.1;
         0.05 0.8 0.1 0.05;
         0.3 0.3 0.3 0.1
     ]
 
-    current::Int = {:initial_state} ~ categorical([0.33, 0.33, 0.34])
+    current::Int = {:initial_symbol} ~ categorical([0.33, 0.33, 0.34])
     i::Int = 1 
-    while current != TERMINAL_STATE
-        current = {:state => i} ~ categorical(get_row(transition_probs, current))
+    while current != TERMINAL_SYMBOL
+        current = {:symbol => i} ~ categorical(get_row(production_probs, current))
         i = i + 1
     end
 end
 
-struct MarkovChainLMHSelector <: LMHSelector end
-function get_length(::MarkovChainLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
+struct PCFGLMHSelector <: LMHSelector end
+function get_length(::PCFGLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
     return get_length(trace)
 end
 
-function get_resample_address(selector::MarkovChainLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
+function get_resample_address(selector::PCFGLMHSelector, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)
     N = get_length(selector, trace, args, observations)
     U = rand()
     if U < 1/N
-        return :initial_state
+        return :initial_symbol
     else
         i = rand(1:N-1)
-        return :state => i
+        return :symbol => i
     end
 end
 N_iter = name_to_N[modelname]
 
-model = markov_chain
+model = pcfg
 args = ()
 observations = choicemap();
-selector = MarkovChainLMHSelector()
+selector = PCFGLMHSelector()
 
 acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
 res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)

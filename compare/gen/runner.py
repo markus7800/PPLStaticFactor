@@ -26,9 +26,9 @@ filenames = [
     "lda_fixed_numtopic.jl",
     "lda_variable_numtopic.jl",
     "linear_regression.jl",
-    "markov_chain.jl",
     "marsaglia.jl",
     "pedestrian.jl",
+    "pcfg.jl",
     "urn.jl"
 ]
 

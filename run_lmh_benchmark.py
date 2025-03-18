@@ -22,14 +22,13 @@ filenames = [
     "gmm_fixed_numclust.jl",
     "gmm_variable_numclust.jl",
     "hmm_fixed_seqlen.jl",
-    "hmm_variable_seqlen.jl",
     "hurricane.jl",
     "lda_fixed_numtopic.jl",
     "lda_variable_numtopic.jl",
     "linear_regression.jl",
-    "markov_chain.jl",
     "marsaglia.jl",
     "pedestrian.jl",
+    "pcfg.jl",
     "urn.jl"
 ]
 
