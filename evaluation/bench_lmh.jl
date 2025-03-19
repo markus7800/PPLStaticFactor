@@ -96,16 +96,16 @@ function runbench(N::Int, n_iter::Int, proposers::Dict{String, Distribution}, ve
     
     if verbose
         f = open("evaluation/results.csv", "a")
-        print(f, modelname, ",", acceptance_rate, ",", standard_time*10^6, ",", factored_time*10^6)
+        print(f, modelname, ",", acceptance_rate, ",", standard_time*10^6, ",", factored_time*10^6, ",", factored_time/standard_time)
         if isnan(finite_time)
-            print(f, ",NA")
+            print(f, ",NA,NA")
         else
-            print(f, ",", finite_time*10^6)
+            print(f, ",", finite_time*10^6, ",", finite_time/standard_time)
         end
         if isnan(custom_time)
-            println(f, ",NA")
+            println(f, ",NA,NA")
         else
-            println(f, ",", custom_time*10^6)
+            println(f, ",", custom_time*10^6, ",", custom_time/standard_time)
         end
         close(f)
     end

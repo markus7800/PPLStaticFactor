@@ -44,10 +44,10 @@ for i, filename in enumerate(filenames):
         f.write(pw.out)
 
 filenames = [
-    "gmm_fixed_numclust.jl",
+    # "gmm_fixed_numclust.jl",
     "hmm_fixed_seqlen.jl",
-    "lda_fixed_numtopic.jl",
-    "linear_regression.jl",
+    # "lda_fixed_numtopic.jl",
+    # "linear_regression.jl",
 ]
 for i, filename in enumerate(filenames):
     print(i+1, filename)

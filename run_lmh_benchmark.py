@@ -1,4 +1,5 @@
 import subprocess
+import sys
 
 class bcolors:
     HEADER = '\033[95m'
@@ -12,11 +13,11 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 with open("evaluation/results.csv", "w") as f:
-    f.write("model,acceptancerate,none,static,finite,custom\n")
+    f.write("model,acceptancerate,none,static,rel_static,finite,rel_finite,custom,rel_custom\n")
 
 filenames = [
     "aircraft.jl",
-    "bayesian_network.jl"
+    "bayesian_network.jl",
     "captcha.jl",
     "dirichlet_process.jl",
     "geometric.jl",
@@ -32,24 +33,27 @@ filenames = [
     "pcfg.jl",
     "urn.jl"
 ]
-
-for filename in filenames:
-    print(bcolors.HEADER + filename + bcolors.ENDC)
-    cmd = ["julia", "--project=.", "evaluation/bench_lmh.jl", "benchmark", filename]
-    subprocess.run(cmd, capture_output=False)
-    print()
-
-
-print("\nUnrolled programs:\n")
-
-filenames = [
+filenames_unrolled = [
     # "gmm_fixed_numclust.jl",
     "hmm_fixed_seqlen.jl",
     # "lda_fixed_numtopic.jl",
     # "linear_regression.jl",
 ]
-for filename in filenames:
-    print(bcolors.HEADER + filename + bcolors.ENDC)
-    cmd = ["julia", "--project=.", "evaluation/bench_lmh.jl", "unrolled", filename]
-    subprocess.run(cmd, capture_output=False)
-    print()
+
+N_repetitions = int(sys.argv[1])
+
+for _ in range(N_repetitions):
+    for filename in filenames:
+        print(bcolors.HEADER + filename + bcolors.ENDC)
+        cmd = ["julia", "--project=.", "evaluation/bench_lmh.jl", "benchmark", filename]
+        subprocess.run(cmd, capture_output=False)
+        print()
+
+
+    print("\nUnrolled programs:\n")
+
+    for filename in filenames_unrolled:
+        print(bcolors.HEADER + filename + bcolors.ENDC)
+        cmd = ["julia", "--project=.", "evaluation/bench_lmh.jl", "unrolled", filename]
+        subprocess.run(cmd, capture_output=False)
+        print()
