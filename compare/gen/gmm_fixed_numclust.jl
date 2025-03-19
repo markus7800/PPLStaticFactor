@@ -16,11 +16,15 @@ modelname = "gmm_fixed_numclust"
 
     k::Int = 1
     means::Vector{Float64} = Float64[]
-    vars::Vector{Float64} = Float64[]
     while k <= num_clusters
         mu::Float64 = {:mu => k} ~ normal(ξ, 1/sqrt(κ))
-        var::Float64 = {:var => k} ~ inv_gamma(α, β)
         means = vcat(means, mu)
+        k = k + 1
+    end
+    k = 1
+    vars::Vector{Float64} = Float64[]
+    while k <= num_clusters
+        var::Float64 = {:var => k} ~ inv_gamma(α, β)
         vars = vcat(vars, var)
         k = k + 1
     end
@@ -48,21 +52,28 @@ function get_resample_address(::GMMLMHSelector, trace::Gen.ChoiceMap, args::Tupl
     ys = args[1]
     N = length(ys)
     K = 4
-    total = 2 + 2*K + N
+    total = 1 + 2*K + N
 
     U = rand()
-    if U < 1/total
+    n = 1
+    if U < n/total
         return :w
-    elseif U < (2 + 2*K)/total
-        k = rand(1:K)
-        if rand() < 0.5
+    end
+    for k in 1:K
+        n += 1
+        if U < n/total
             return :mu => k
-        else
+        end
+        n += 1
+        if U < n/total
             return :var => k
         end
-    else
-        i = rand(1:N)
-        return :z => i
+    end
+    for i in 1:N
+        n += 1
+        if U < n/total
+            return :z => i
+        end
     end
 end
 
