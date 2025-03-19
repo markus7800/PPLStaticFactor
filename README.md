@@ -60,6 +60,18 @@ If the build was successful, run the docker image:
 docker run -it --name pplstaticfactor --rm pplstaticfactor
 ```
 
+### Environment Reference for Custom Installation
+- `Python 3.10.12` with `requirments.txt`
+  - `sexpdata==1.0.2`
+  - `pandas==2.2.3`
+- `Julia 1.9.2` with `Project.toml`
+  - `Distributions = "0.25.112"`
+  - `JuliaSyntax = "0.4.10"`
+  - `Gen = "0.4.7"`
+- `node.js 23.10`
+  - `webppl@0.9.15`
+
+
 ## Replication of Paper
 
 Generate the sub-programs:
