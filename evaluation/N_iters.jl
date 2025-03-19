@@ -8,7 +8,7 @@ name_to_N = Dict{String,Int}(
     "geometric" => 500_000,
     "gmm_fixed_numclust" => 50_000,
     "gmm_variable_numclust" => 50_000,
-    "hmm_fixed_seqlen" => 100_000,
+    "hmm" => 100_000,
     "hurricane" => 1_000_000,
     "lda_fixed_numtopic" => 10_000,
     "lda_variable_numtopic" => 10_000,
@@ -19,7 +19,7 @@ name_to_N = Dict{String,Int}(
     "urn" => 100_000,
 
     "gmm_fixed_numclust_unrolled" => 50_000,
-    "hmm_fixed_seqlen_unrolled" => 100_000,
+    "hmm_unrolled" => 100_000,
     "lda_fixed_numtopic_unrolled" => 10_000,
     "linear_regression_unrolled" => 100_000,
 )

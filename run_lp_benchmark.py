@@ -23,7 +23,7 @@ filenames = [
     "geometric.jl",
     "gmm_fixed_numclust.jl",
     "gmm_variable_numclust.jl",
-    "hmm_fixed_seqlen.jl",
+    "hmm.jl",
     "hurricane.jl",
     "lda_fixed_numtopic.jl",
     "lda_variable_numtopic.jl",
@@ -35,7 +35,7 @@ filenames = [
 ]
 filenames_unrolled = [
     # "gmm_fixed_numclust.jl",
-    "hmm_fixed_seqlen.jl",
+    "hmm.jl",
     # "lda_fixed_numtopic.jl",
     # "linear_regression.jl",
 ]

@@ -1,6 +1,6 @@
 include("../ppl.jl")
 
-modelname = "hmm_fixed_seqlen_unrolled"
+modelname = "hmm_unrolled"
 proposers = Dict{String, Distribution}()
 
 # https://github.com/stan-dev/example-models/blob/4902ad703332ad0808dab7a7b94bacc1a429940d/misc/cluster/lda/lda.stan#L4

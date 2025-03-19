@@ -3,7 +3,7 @@ using Printf
 # ARGS = ["benchmark", "lda_variable_numtopic.jl"]
 
 include(ARGS[1] * "/generated/" * ARGS[2])
-if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm_fixed_seqlen", "lda_fixed_numtopic")
+if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm", "lda_fixed_numtopic")
     include("finite/"  * ARGS[2])
 end
 if modelname in ("gmm_fixed_numclust", "lda_fixed_numtopic")
@@ -32,7 +32,7 @@ function test_correctness(N::Int, n_iter::Int, proposers::Dict{String, Distribut
     end
 
 
-    if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm_fixed_seqlen", "lda_fixed_numtopic")
+    if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm", "lda_fixed_numtopic")
         Random.seed!(0)
         for i in 1:N
             gt_acceptance_rate, gt_traces, gt_log_αs = gt_result[i]
@@ -75,7 +75,7 @@ function runbench(N::Int, n_iter::Int, proposers::Dict{String, Distribution}, ve
 
 
     finite_time = NaN
-    if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm_fixed_seqlen", "lda_fixed_numtopic")
+    if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm", "lda_fixed_numtopic")
         res = @timed for _ in 1:N
             lmh_finite(n_iter, model, proposers, Val(false), Val(finite_factor), Dict{String, SampleType}[], Float64[])
         end

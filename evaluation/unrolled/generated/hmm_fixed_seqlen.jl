@@ -1,6 +1,6 @@
 # this file is auto-generated
 
-include("../hmm_fixed_seqlen.jl")
+include("../hmm.jl")
 
 mutable struct State <: AbstractState
     node_id:: Int

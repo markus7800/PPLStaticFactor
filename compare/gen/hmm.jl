@@ -1,7 +1,7 @@
 using Gen
 include("lmh.jl")
 
-modelname = "hmm_fixed_seqlen"
+modelname = "hmm"
 
 get_row(x::AbstractMatrix, i) = x[i, :]
 

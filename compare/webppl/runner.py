@@ -23,7 +23,7 @@ filenames = [
     "geometric.wppl",
     "gmm_fixed_numclust.wppl",
     "gmm_variable_numclust.wppl",
-    "hmm_fixed_seqlen.wppl",
+    "hmm.wppl",
     "hurricane.wppl",
     "lda_fixed_numtopic.wppl",
     "lda_variable_numtopic.wppl",
