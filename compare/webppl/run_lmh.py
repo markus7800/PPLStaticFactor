@@ -87,4 +87,4 @@ import pandas as pd
 df = pd.read_csv("compare/webppl/results.csv")
 avg_df = df.groupby("model").median()
 avg_df = avg_df.reset_index()
-avg_df.to_csv("compare/webppl/paper_webppl_results.csv", index=False, sep=",", na_rep="NA")
+avg_df.to_csv("compare/webppl/results_aggregated.csv", index=False, sep=",", na_rep="NA")

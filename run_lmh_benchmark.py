@@ -63,4 +63,4 @@ import pandas as pd
 df = pd.read_csv("evaluation/lmh_results.csv")
 avg_df = df.groupby("model").median()
 avg_df = avg_df.reset_index()
-avg_df.to_csv("evaluation/paper_lmh_results.csv", index=False, sep=",", na_rep="NA")
+avg_df.to_csv("evaluation/lmh_results_aggregated.csv", index=False, sep=",", na_rep="NA")
