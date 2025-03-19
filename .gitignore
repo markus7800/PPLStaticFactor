@@ -3,8 +3,10 @@ __pycache__
 tmp*
 venv
 print_results*
-*results.csv
-*results_*
+evaluation/lp_results.csv
+evaluation/lmh_results.csv
+compare/webppl/results.csv
+compare/gen/results.csv
 evaluation/benchmark/test*
 evaluation/benchmark/generated/test*
 run_n.py

@@ -83,3 +83,8 @@ for _ in range(N_repetitions):
             f.write(f"{modelname},{N},{mh_time},{c3_time},{c3_time/mh_time}\n")
         print()
     
+import pandas as pd
+df = pd.read_csv("compare/webppl/results.csv")
+avg_df = df.groupby("model").median()
+avg_df = avg_df.reset_index()
+avg_df.to_csv("compare/webppl/paper_webppl_results.csv", index=False, sep=",", na_rep="NA")

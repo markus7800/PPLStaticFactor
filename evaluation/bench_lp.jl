@@ -114,7 +114,7 @@ function runbench(N::Int, verbose::Bool)
     end
 
     if verbose
-        f = open("evaluation/results.csv", "a")
+        f = open("evaluation/lp_results.csv", "a")
         print(f, modelname, ",", N, ",", standard_time*10^6, ",", factored_time*10^6, ",", factored_time/standard_time)
         if isnan(finite_time)
             print(f, ",NA,NA")

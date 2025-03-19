@@ -42,3 +42,10 @@ for _ in range(N_repetitions):
         cmd = ["julia", "--project=./compare/gen", "compare/gen/" + filename]
         subprocess.run(cmd, capture_output=False)
         print()
+
+    
+import pandas as pd
+df = pd.read_csv("compare/gen/results.csv")
+avg_df = df.groupby("model").median()
+avg_df = avg_df.reset_index()
+avg_df.to_csv("compare/gen/paper_gen_results.csv", index=False, sep=",", na_rep="NA")

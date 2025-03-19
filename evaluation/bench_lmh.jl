@@ -95,7 +95,7 @@ function runbench(N::Int, n_iter::Int, proposers::Dict{String, Distribution}, ve
     verbose && println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
     
     if verbose
-        f = open("evaluation/results.csv", "a")
+        f = open("evaluation/lmh_results.csv", "a")
         print(f, modelname, ",", N*n_iter, ",", acceptance_rate, ",", standard_time*10^6, ",", factored_time*10^6, ",", factored_time/standard_time)
         if isnan(finite_time)
             print(f, ",NA,NA")

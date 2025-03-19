@@ -79,4 +79,4 @@ println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
 
 
 f = open("compare/gen/results.csv", "a")
-println(f, modelname, ",", N_iter, ",", acceptance_rate, ",", base_time*10^6, ",", "-", ",", "-")
+println(f, modelname, ",", N_iter, ",", acceptance_rate, ",", base_time*10^6, ",", "NA", ",", "NA")

@@ -12,7 +12,7 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-with open("evaluation/results.csv", "w") as f:
+with open("evaluation/lp_results.csv", "w") as f:
     f.write("model,N,none,static,rel_static,finite,rel_finite,custom,rel_custom\n")
 
 filenames = [
@@ -57,3 +57,10 @@ for _ in range(N_repetitions):
         cmd = ["julia", "--project=.", "evaluation/bench_lp.jl", "unrolled", filename]
         subprocess.run(cmd, capture_output=False)
         print()
+
+
+import pandas as pd
+df = pd.read_csv("evaluation/lp_results.csv")
+avg_df = df.groupby("model").median()
+avg_df = avg_df.reset_index()
+avg_df.to_csv("evaluation/paper_lp_results.csv", index=False, sep=",", na_rep="NA")
