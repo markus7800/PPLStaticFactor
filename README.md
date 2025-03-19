@@ -61,7 +61,7 @@ docker run -it --name pplstaticfactor --rm pplstaticfactor
 ```
 
 ### Environment Reference for Custom Installation
-- `Python 3.10.12` with `requirments.txt`
+- `Python 3.10.12` with `requirements.txt`
   - `sexpdata==1.0.2`
   - `pandas==2.2.3`
 - `Julia 1.9.2` with `Project.toml`
