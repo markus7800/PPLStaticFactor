@@ -17,7 +17,7 @@ with open("evaluation/results.csv", "w") as f:
 
 filenames = [
     "aircraft.jl",
-    "bayesian_network.jl"
+    "bayesian_network.jl",
     "captcha.jl",
     "dirichlet_process.jl",
     "geometric.jl",
