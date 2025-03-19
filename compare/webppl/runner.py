@@ -17,6 +17,7 @@ with open("compare/gen/results.csv", "w") as f:
 
 filenames = [
     "aircraft.wppl",
+    "bayesian_network.wppl",
     "captcha.wppl",
     "dirichlet_process.wppl",
     "geometric.wppl",

@@ -78,6 +78,7 @@ end
 
 name_to_N = Dict{String,Int}(
     "aircraft" => 100_000,
+    "bayesian_network" => 100_000,
     "captcha" => 1_000,
     "dirichlet_process" => 10_000,
     "geometric" => 500_000,

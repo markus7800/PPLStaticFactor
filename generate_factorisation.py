@@ -17,6 +17,7 @@ import time
 
 filenames = [
     "aircraft.jl",
+    "bayesian_network.jl",
     "captcha.jl",
     "dirichlet_process.jl",
     "geometric.jl",
