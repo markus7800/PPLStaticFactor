@@ -13,7 +13,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 with open("evaluation/results.csv", "w") as f:
-    f.write("model,none,static,finite,custom\n")
+    f.write("model,N,none,static,rel_static,finite,rel_finite,custom,rel_custom\n")
 
 filenames = [
     "aircraft.jl",

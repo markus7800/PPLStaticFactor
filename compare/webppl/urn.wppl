@@ -1,12 +1,12 @@
 
 
 var model_iter = function() {
-    var N = poisson(6)
-    var balls = repeat(N, function() {
+    var N_balls = poisson(6)
+    var balls = repeat(N_balls, function() {
         flip(0.5)
     })
-    var n_black = (N == 0) ? 0 : reduce(function(i, acc) {
-        var ball_ix = randomInteger(N)
+    var n_black = (N_balls == 0) ? 0 : reduce(function(i, acc) {
+        var ball_ix = randomInteger(N_balls)
         return acc + balls[ball_ix]
     }, 0., repeat(10, function() { return 0}))
 
@@ -24,17 +24,18 @@ var draw_ball = function(balls, N, K) {
 }
 
 var model_rec = function() {
-    var N = poisson(6)
-    var balls = repeat(N, function() {
+    var N_balls = poisson(6)
+    var balls = repeat(N_balls, function() {
         flip(0.5)
     })
-    var n_black = (N == 0) ? 0 : draw_ball(balls, N, 10)
+    var n_black = (N_balls == 0) ? 0 : draw_ball(balls, N_balls, 10)
     
     observe(Gaussian({mu: n_black, sigma: 0.1}), 5)
 }
 
 
 var N = 1e4
+console.log("N:", N*10)
 
 console.time('MH rec ')
 repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model_rec) })

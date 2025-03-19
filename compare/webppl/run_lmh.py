@@ -1,5 +1,6 @@
 import subprocess
 import re
+import sys
 
 class bcolors:
     HEADER = '\033[95m'
@@ -13,7 +14,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 with open("compare/gen/results.csv", "w") as f:
-    f.write("model,acceptancerate,base,combinator,rel\n")
+    f.write("model,N,acceptancerate,base,combinator,rel\n")
 
 filenames = [
     "aircraft.wppl",
@@ -44,33 +45,41 @@ def parse_time(s: str):
 
 
 with open("compare/webppl/results.csv", "w") as f:
-    f.write("model,base,c3,rel\n")
+    f.write("model,N,base,c3,rel\n")
 
-for filename in filenames:
-    print(bcolors.HEADER + filename + bcolors.ENDC)
-    cmd = ["webppl", "--random-seed=0", "compare/webppl/" + filename]
-    res = subprocess.run(cmd, capture_output=True)
-    out = res.stdout.decode()
-    print(out)
+N_repetitions = int(sys.argv[1])
 
-    match = re.search(r"C3 rec : (\d+.\d+(s|ms))", out)
-    assert match is not None
-    c3_time = parse_time(match.group(1))
-
-
-    match = re.search(r"MH rec : (\d+.\d+(s|ms))", out)
-    assert match is not None
-    mh_time = parse_time(match.group(1))
-    match = re.search(r"MH iter: (\d+.\d+(s|ms))", out)
-    if match:
-        # use iterative implemenation if faster as comparison
-        mh_time = min(mh_time, parse_time(match.group(1)))
+for _ in range(N_repetitions):
+    for filename in filenames:
+        print(bcolors.HEADER + filename + bcolors.ENDC)
+        cmd = ["webppl", "--random-seed=0", "compare/webppl/" + filename]
+        res = subprocess.run(cmd, capture_output=True)
+        out = res.stdout.decode()
+        # print(out)
 
 
-    print(f"{c3_time=}, {mh_time=}")
+        match = re.search(r"N: (\d+)", out)
+        assert match is not None
+        N = int(match.group(1))
 
-    with open("compare/webppl/results.csv", "a") as f:
-        modelname = filename[:-5]
-        f.write(f"{modelname},{mh_time},{c3_time},{c3_time/mh_time}\n")
-    print()
+        match = re.search(r"C3 rec : (\d+.\d+(s|ms))", out)
+        assert match is not None
+        c3_time = parse_time(match.group(1))
+
+
+        match = re.search(r"MH rec : (\d+.\d+(s|ms))", out)
+        assert match is not None
+        mh_time = parse_time(match.group(1))
+        match = re.search(r"MH iter: (\d+.\d+(s|ms))", out)
+        if match:
+            # use iterative implemenation if faster as comparison
+            mh_time = min(mh_time, parse_time(match.group(1)))
+
+
+        print(f"{N=}, {c3_time=}, {mh_time=}")
+
+        with open("compare/webppl/results.csv", "a") as f:
+            modelname = filename[:-5]
+            f.write(f"{modelname},{N},{mh_time},{c3_time},{c3_time/mh_time}\n")
+        print()
     

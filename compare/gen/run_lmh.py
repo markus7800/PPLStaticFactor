@@ -1,4 +1,5 @@
 import subprocess
+import sys
 
 class bcolors:
     HEADER = '\033[95m'
@@ -12,7 +13,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 with open("compare/gen/results.csv", "w") as f:
-    f.write("model,acceptancerate,base,combinator,rel\n")
+    f.write("model,N,acceptancerate,base,combinator,rel\n")
 
 filenames = [
     "aircraft.jl",
@@ -33,8 +34,11 @@ filenames = [
     "urn.jl"
 ]
 
-for filename in filenames:
-    print(bcolors.HEADER + filename + bcolors.ENDC)
-    cmd = ["julia", "--project=./compare/gen", "compare/gen/" + filename]
-    subprocess.run(cmd, capture_output=False)
-    print()
+N_repetitions = int(sys.argv[1])
+
+for _ in range(N_repetitions):
+    for filename in filenames:
+        print(bcolors.HEADER + filename + bcolors.ENDC)
+        cmd = ["julia", "--project=./compare/gen", "compare/gen/" + filename]
+        subprocess.run(cmd, capture_output=False)
+        print()

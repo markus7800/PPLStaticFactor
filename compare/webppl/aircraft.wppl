@@ -46,6 +46,7 @@ var model_rec = function() {
 
 
 var N = 1e3
+console.log("N:", N*10)
 
 console.time('MH rec ')
 repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model_rec) })

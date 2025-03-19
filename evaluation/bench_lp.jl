@@ -115,7 +115,7 @@ function runbench(N::Int, verbose::Bool)
 
     if verbose
         f = open("evaluation/results.csv", "a")
-        print(f, modelname, ",", standard_time*10^6, ",", factored_time*10^6, ",", factored_time/standard_time)
+        print(f, modelname, ",", N, ",", standard_time*10^6, ",", factored_time*10^6, ",", factored_time/standard_time)
         if isnan(finite_time)
             print(f, ",NA,NA")
         else
@@ -134,6 +134,6 @@ end
 include("N_iters.jl")
 N_iter = name_to_N[modelname]
 
-runbench(N_iter, false) # to JIT compile everthing
+runbench(N_iter, false) # to JIT compile everything
 runbench(N_iter, true) # this will produce times without compilation
 

@@ -96,7 +96,7 @@ function runbench(N::Int, n_iter::Int, proposers::Dict{String, Distribution}, ve
     
     if verbose
         f = open("evaluation/results.csv", "a")
-        print(f, modelname, ",", acceptance_rate, ",", standard_time*10^6, ",", factored_time*10^6, ",", factored_time/standard_time)
+        print(f, modelname, ",", N*n_iter, ",", acceptance_rate, ",", standard_time*10^6, ",", factored_time*10^6, ",", factored_time/standard_time)
         if isnan(finite_time)
             print(f, ",NA,NA")
         else
@@ -116,11 +116,7 @@ include("N_iters.jl")
 N_iter = name_to_N[modelname]
 
 
-
-# runbench(1, 500_000, false)
-# runbench(1, 500_000, true)
-
 test_correctness(10, N_iter ÷ 10, proposers)
 
-runbench(10, N_iter ÷ 10, proposers, false) # to JIT compile everthing
+runbench(10, N_iter ÷ 10, proposers, false) # to JIT compile everything
 runbench(10, N_iter ÷ 10, proposers, true) # this will produce times without compilation
