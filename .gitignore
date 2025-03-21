@@ -3,10 +3,10 @@ __pycache__
 tmp*
 venv
 print_results*
-evaluation/lp_results*
-evaluation/lmh_results*
-compare/webppl/results*
-compare/gen/results*
+# evaluation/lp_results*
+# evaluation/lmh_results*
+# compare/webppl/results*
+# compare/gen/results*
 evaluation/benchmark/test*
 evaluation/benchmark/generated/test*
 run_n.py
