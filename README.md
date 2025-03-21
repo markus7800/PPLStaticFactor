@@ -17,7 +17,8 @@ Overview:
 ├── compare/
 │     ├── gen/                              # benchmark set of 16 probabilistic models re-implemented in Gen.jl
 │     │     ├── run_lmh.py                  # script to run combinator inference for every model
-│     │     └── paper_gen_results.csv       # Gen runtime results reported in paper
+│     │     ├── paper_gen_results.csv       # Gen runtime results reported in paper
+│     │     └── geometric_recurse.jl        # Demonstrating why we could not evaluate Recurse combinator
 │     └── webppl/                           # benchmark set of 16 probabilistic models re-implemented in WebPPL
 │           ├── run_lmh.py                  # script to run C3 inference for every model
 │           └── paper_webppl_results.csv    # WebPPL C3 runtime results reported in paper

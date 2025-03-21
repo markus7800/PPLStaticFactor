@@ -1,7 +1,11 @@
 using Gen
 include("lmh.jl")
 
-modelname = "geometric_recurse"
+# this file reimplements the Geometric model with Gen's Recurse construct
+# and demonstrates why we cannot apply LMH for such models
+# This file is not meant to be run as a script, but rather in an interactive Julia session.
+
+# repeat the original implementation
 
 @gen function geometric(p::Float64)
     i::Int = -1
@@ -22,7 +26,7 @@ function get_resample_address(selector::GeometricLMHSelector, trace::Gen.ChoiceM
     return :b => rand(0:total-1)
 end
 
-N = name_to_N[modelname]
+N = 100_000
 
 model = geometric
 args = (0.5,)
@@ -34,6 +38,8 @@ acceptance_rate = lmh(10, N ÷ 10, selector, model, args, observations, check=tr
 res = @timed lmh(10, N ÷ 10, selector, model, args, observations)
 println(@sprintf("Gen time: %.3f μs", res.time / N * 10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
+
+# implement Geometric with Recurse
 
 struct ProductionValue
     val::Int
@@ -79,15 +85,17 @@ recurse_model = Recurse(
     return i.val
 end
 
-tr, _ = generate(geometric, args); get_choices(tr)
+Random.seed!(0); tr, _ = generate(geometric, args); get_choices(tr)
 
-
-tr, _ = generate(geometric_recurse, args); get_choices(tr)
+Random.seed!(0); tr, _ = generate(geometric_recurse, args); get_choices(tr)
 tr[:i => (0, Val(:production)) => :b]
 
-using Plots
-histogram([get_retval(simulate(geometric_recurse, args)) for _ in 1:10^5], normalize=true)
-histogram([get_retval(simulate(geometric, args)) for _ in 1:10^5], normalize=true)
+# check that both models produce the same distribution
+g1 = [get_retval(simulate(geometric_recurse, args)) for _ in 1:10^5];
+[sum(g1 .== i) / length(g1) for i in 0:10]
+
+g2 = [get_retval(simulate(geometric, args)) for _ in 1:10^5];
+[sum(g2 .== i) / length(g2) for i in 0:10]
 
 
 struct GeometricRecurseLMHSelector <: LMHSelector end
@@ -99,11 +107,12 @@ function get_resample_address(selector::GeometricRecurseLMHSelector, trace::Gen.
     return :i => (rand(0:total-1), Val(:production)) => :b
 end
 
-# regenerate not implemented
+# ERROR: regenerate not implemented for Recurse
 acceptance_rate = lmh(10, N ÷ 10, GeometricRecurseLMHSelector(), geometric_recurse, args, observations, check=true)
 
-
-
+# There is a second way to implement MH in Gen without using regenerate
+# It requires only `update` which is implemented for Recurse
+# But we have to write a proposal generative function
 
 struct GeometricRecurseLMHSelector2 <: LMHSelector end
 function get_length(::GeometricRecurseLMHSelector2, trace::Gen.ChoiceMap, args::Tuple, observations::Gen.ChoiceMap)::Int
@@ -152,3 +161,7 @@ end
 # https://github.com/probcomp/Gen.jl/blob/91d798f2d2f0c175b1be3dc6daf3a10a8acf5da3/src/inference/mh.jl#L37
 # If the proposal modifies addresses that determine the control flow in the model, values must be provided by the proposal for any addresses that are newly sampled by the model.
 acceptance_rate = lmh_2(10, N ÷ 10, GeometricRecurseLMHSelector2(), geometric_recurse, args, observations, check=true)
+
+# This means in the lmh_proposal we would have to provide values for any addresses that are newly sampled by the model,
+# but we do not know these addresses for a general single-site update (without running the actual model). 
+# To the best of our understanding, a model specific implementation of LMH would be possible, but not a general-purpose implementation like we want.
