@@ -40,11 +40,11 @@ for _, row in df.iterrows():
         arrow = "$\\megaslowarrow$"
         color = "\\textcolor{OrangeRed}"
 
-    rel_str = color + "{" + f"{ratio:.2f}" + "} & " + color + "{" + arrow + "}"
+    rel_str = color + "{" + f"{1/ratio:.2f}" + "} & " + color + "{" + arrow + "}"
     print(row_start[row.model], "&", f"{row.acceptancerate:.2f}", "&", f"{row.none:.3f} & {row.static:.3f} & {rel_str}", end="")
     if pd.isna(row.finite):
         print(" & - & - \\\\")
     else:
-        print(f" & {row.finite:.3f} & {row.finite/row.none:.2f} \\\\")
+        print(f" & {row.finite:.3f} & {1/(row.finite/row.none):.2f} \\\\")
 
 
