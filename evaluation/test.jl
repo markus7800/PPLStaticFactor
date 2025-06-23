@@ -1,10 +1,11 @@
 include("vi_standard.jl")
-import StatsPlots
 
 
 Random.seed!(0)
-bbvi(1, 2, 0.001, model)
+bbvi(1000, 100, 0.001, model)
+exit()
 
+import StatsPlots
 
 @model function normal(ctx)
     sample(ctx, "x", Normal(1.,0.1))
