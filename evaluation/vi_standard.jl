@@ -84,26 +84,32 @@ function Base.inv(t::LogTransform,)::Transform
     return ExpTransform()
 end
 struct SigmoidTransform <: Transform
+    a::Float64
+    b::Float64
 end
 struct InverseSigmoidTransform <: Transform
+    a::Float64
+    b::Float64
 end
-function (::SigmoidTransform)(x::Real)::Real
-    return 1 / (1 + exp(-x))
+function (t::SigmoidTransform)(x::Real)::Real
+    return t.a + (t.b - t.a) / (1 + exp(-x))
 end
 function log_abs_det_jacobian(t::SigmoidTransform, x::Real, y::Real)::Real
-    return x - 2 * log1p(exp(x))
+    return log(t.b - t.a) - x - 2 * log1p(exp(-x))
 end
 function Base.inv(t::SigmoidTransform,)::Transform
-    return InverseSigmoidTransform()
+    return InverseSigmoidTransform(t.a, t.b)
 end
-function (::InverseSigmoidTransform)(x::Real)::Real
+function (t::InverseSigmoidTransform)(x::Real)::Real
+    x = (x - t.a) / (t.b - t.a)
     return log(x / (1-x))
 end
 function log_abs_det_jacobian(t::InverseSigmoidTransform, x::Real, y::Real)::Real
-    return -log(abs(x-x^2))
+    # return -log(abs(x-x^2))
+    return log(t.b - t.a) - log(x - t.a) - log(t.b - x)
 end
 function Base.inv(t::InverseSigmoidTransform,)::Transform
-    return SigmoidTransform()
+    return SigmoidTransform(t.a, t.b)
 end
 
 # https://mc-stan.org/docs/reference-manual/transforms.html#simplex-transform.section
@@ -153,22 +159,39 @@ function log_abs_det_jacobian(t::InverseStickBreakingTransform, x::AbstractVecto
     return -log_abs_det_jacobian_stick(x, y)
 end
 
-t = StickBreakingTransform()
-inv_t = inv(t)
-y = zeros(5)
-y = randn(5)
+# import LinearAlgebra
 
-x = t(y)
-inv_t(x) ≈ y
+# t = SigmoidTransform(2., 4.)
+# inv_t = inv(t)
+# x = rand()
+# y = t(x)
+# inv_t(y) ≈ x
 
-import LinearAlgebra
-log(LinearAlgebra.det(ForwardDiff.jacobian(t, y)[1:end-1,:]))
-log(LinearAlgebra.det(ForwardDiff.jacobian(inv_t, x)[:, 1:end-1]))
+# log(LinearAlgebra.det(ForwardDiff.derivative(t, x)))
+# log(LinearAlgebra.det(ForwardDiff.derivative(inv_t, y)))
 
-log_abs_det_jacobian(t, y, x)
-log_abs_det_jacobian(inv_t, x, y)
+# log_abs_det_jacobian(t, x, y)
+# log_abs_det_jacobian(inv_t, y, x)
+
+
+# t = StickBreakingTransform()
+# inv_t = inv(t)
+# y = zeros(5)
+# y = randn(5)
+
+# x = t(y)
+# inv_t(x) ≈ y
+
+# log(LinearAlgebra.det(ForwardDiff.jacobian(t, y)[1:end-1,:]))
+# log(LinearAlgebra.det(ForwardDiff.jacobian(inv_t, x)[:, 1:end-1]))
+
+# log_abs_det_jacobian(t, y, x)
+# log_abs_det_jacobian(inv_t, x, y)
 
 abstract type VaritationalDistribution end
+function Base.rand(vd:: VaritationalDistribution, n::Int)
+    error("Not implemented!")
+end
 function rand_and_logpdf(vd:: VaritationalDistribution)
     error("Not implemented!")
 end
@@ -188,6 +211,12 @@ struct DiscreteVD <: VaritationalDistribution
         end
         return new(zeros(length(support)-1), support, support_to_ix)
     end
+end
+
+function Base.rand(vd:: DiscreteVD, n::Int)
+    w = StickBreakingTransform()(vd.theta)
+    d = Distributions.Categorical(w)
+    return [vd.support[x] for x in rand(d, n)]
 end
 
 function rand_and_logpdf(vd:: DiscreteVD)
@@ -224,6 +253,29 @@ struct ContinuousVD <: VaritationalDistribution
     function ContinuousVD(ndim::Int, univariate::Bool, transform::Transform, elemwise_transform::Bool)
         return new(zeros(2*ndim), univariate, transform, elemwise_transform)
     end
+end
+
+function Base.rand(vd:: ContinuousVD, n::Int)
+    k = length(vd.theta) ÷ 2
+    theta_mu = vd.theta[1:k]
+    theta_omega = vd.theta[k+1:end]
+    if vd.univariate
+        ys = Vector{Float64}(undef, n)
+        for i in 1:n
+            x = (exp.(theta_omega) .* randn(k) .+ theta_mu)[1]
+            ys[i] = vd.transform(x)
+        end
+    else
+        x = (exp.(theta_omega) .* randn(k) .+ theta_mu)
+        y = vd.elemwise_transform ? vd.transform.(x) : vd.transform(x)
+
+        ys = Array{Float64}(undef, length(y), n)
+        for i in 1:n
+            xs = (exp.(theta_omega) .* randn(k) .+ theta_mu)
+            ys[:, i] = vd.elemwise_transform ? vd.transform.(xs) : vd.transform(xs)
+        end
+    end
+    return ys
 end
 
 function rand_and_logpdf(vd::ContinuousVD)
@@ -272,10 +324,10 @@ function init_vd(d::Distributions.InverseGamma)::VaritationalDistribution
     return ContinuousVD(1, true, ExpTransform(), true)
 end
 function init_vd(d::Distributions.Beta)::VaritationalDistribution
-    return ContinuousVD(1, true, SigmoidTransform(), true)
+    return ContinuousVD(1, true, SigmoidTransform(0., 1.), true)
 end
 function init_vd(d::Distributions.Uniform)::VaritationalDistribution
-    return ContinuousVD(1, true, SigmoidTransform(), true)
+    return ContinuousVD(1, true, SigmoidTransform(d.a, d.b), true)
 end
 
 # vd = init_vd(Distributions.Uniform(0,1))
@@ -285,10 +337,10 @@ function init_vd(d::Distributions.Dirichlet)::VaritationalDistribution
     return ContinuousVD(length(d.alpha)-1, false, StickBreakingTransform(), false)
 end
 
-d = Distributions.Dirichlet(5*ones(5))
-rand(d)
-vd = init_vd(d)
-rand_and_logpdf(vd)
+# d = Distributions.Dirichlet(5*ones(5))
+# rand(d)
+# vd = init_vd(d)
+# rand_and_logpdf(vd)
 
 function init_vd(d::Distributions.MvNormal)::VaritationalDistribution
     return ContinuousVD(length(d.μ), false, IdentityTransform(), true)
@@ -340,6 +392,7 @@ function bbvi(n_iter::Int, L::Int, learning_rate::Float64, model::Function)
     pre = 1.1
     post = 0.9
 
+    avg_grads_var = Dict{String, Vector{Float64}}()
     for i in 1:n_iter
         grads_mean = Dict{String, Vector{Float64}}()
         grads_var = Dict{String, Vector{Float64}}()
@@ -354,25 +407,34 @@ function bbvi(n_iter::Int, L::Int, learning_rate::Float64, model::Function)
                     grads_mean[address] = zeros(length(grads))
                     grads_var[address] = zeros(length(grads))
                 end
+                grads_mean[address] = grads_mean[address] + (ctx.elbo .* grads) / L
                 # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
                 # compute grad mean and variance
-                new_value = ctx.elbo .* grads
-                old_mean = grads_mean[address]
-                delta1 = new_value .- old_mean
-                new_mean = old_mean .+ delta1 / l
-                delta2 = new_value .- new_mean
-                grads_mean[address] = new_mean
-                grads_var[address] = grads_var[address] .+ delta1 .* delta2
+                # new_value = ctx.elbo .* grads
+                # old_mean = grads_mean[address]
+                # delta1 = new_value .- old_mean
+                # new_mean = old_mean .+ delta1 / l
+                # delta2 = new_value .- new_mean
+                # grads_mean[address] = new_mean
+                # grads_var[address] = grads_var[address] .+ delta1 .* delta2
             end 
         end
 
-        println(grads_mean)
+        # println(grads_mean)
 
         for (address, v) in grads_var
             grads_var[address] = v / (L - 1)
 
             grads = grads_mean[address]
 
+
+            if !haskey(avg_grads_var, address)
+                avg_grads_var[address] = zeros(length(grads))
+            end
+            avg_grads_var[address] = avg_grads_var[address] + v / ((L - 1) * n_iter)
+        
+
+            # adagrad update
             acc_addr = get(acc, address, fill(eps,size(grads)))
             acc_addr = post .* acc_addr .+ pre .* grads.^2
             acc[address] = acc_addr
@@ -381,8 +443,10 @@ function bbvi(n_iter::Int, L::Int, learning_rate::Float64, model::Function)
             vd_store[address].theta .+= (rho .* grads)
         end
 
-        # adagrad update
     end
+
+    # println("avg_grads_var")
+    # println(avg_grads_var)
 
     return vd_store
 end
