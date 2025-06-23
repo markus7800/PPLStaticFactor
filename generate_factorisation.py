@@ -29,8 +29,8 @@ filenames = [
     "lda_variable_numtopic.jl",
     "linear_regression.jl",
     "marsaglia.jl",
-    "pedestrian.jl",
     "pcfg.jl",
+    "pedestrian.jl",
     "urn.jl"
 ]
 

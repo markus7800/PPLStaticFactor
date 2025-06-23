@@ -1,9 +1,10 @@
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 Gen = "ea4f424c-a589-11e8-07c0-fd5c91b9da4a"
 JuliaSyntax = "70703baa-626e-46a2-a12c-08ffd08c73b4"
 
 [compat]
 Distributions = "0.25.112"
-JuliaSyntax = "0.4.10"
 Gen = "0.4.7"
+JuliaSyntax = "0.4.10"
