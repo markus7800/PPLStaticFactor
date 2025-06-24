@@ -180,35 +180,39 @@ function gmm___start__(ctx::AbstractFactorResumeContext, ys::Vector{Float64}, _s
     _s_.α = 2.0
     _s_.β = 10.0
     _s_.num_clusters = 4
-    _s_.w = read(ctx, _s_, 57, "w")
+    _s_.w = score(ctx, _s_, 57, "w", Dirichlet(fill(_s_.δ, _s_.num_clusters)))
     _s_.k = 1
     _s_.means = Float64[]
     _s_.vars = Float64[]
     while (_s_.k <= _s_.num_clusters)
-        _s_.mu = read(ctx, _s_, 101, ("mu_" * string(_s_.k)))
-        _s_.var = read(ctx, _s_, 124, ("var_" * string(_s_.k)))
+        _s_.mu = score(ctx, _s_, 101, ("mu_" * string(_s_.k)), Normal(_s_.ξ, (1 / sqrt(_s_.κ))))
+        _s_.var = score(ctx, _s_, 124, ("var_" * string(_s_.k)), InverseGamma(_s_.α, _s_.β))
         _s_.means = vcat(_s_.means, _s_.mu)
         _s_.vars = vcat(_s_.vars, _s_.var)
         _s_.k = (_s_.k + 1)
     end
     _s_.i = 1
     while (_s_.i <= length(ys))
-        _s_.z = read(ctx, _s_, 173, ("z_" * string(_s_.i)))
+        _s_.z = score(ctx, _s_, 173, ("z_" * string(_s_.i)), Categorical(_s_.w))
         _s_.z = min(_s_.z, length(_s_.means))
         score(ctx, _s_, 198, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
         return
     end
+    _s_.node_id = -1
+    return
 end
 
 function gmm_y__198(ctx::AbstractFactorResumeContext, ys::Vector{Float64}, _s_::State)
     resume(ctx, _s_, 198, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
     _s_.i = (_s_.i + 1)
     while (_s_.i <= length(ys))
-        _s_.z = read(ctx, _s_, 173, ("z_" * string(_s_.i)))
+        _s_.z = score(ctx, _s_, 173, ("z_" * string(_s_.i)), Categorical(_s_.w))
         _s_.z = min(_s_.z, length(_s_.means))
         score(ctx, _s_, 198, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
         return
     end
+    _s_.node_id = -1
+    return
 end
 
 function gmm_resume(ctx::AbstractFactorResumeContext, ys::Vector{Float64}, _s_::State, _addr_::String)
@@ -218,7 +222,7 @@ function gmm_resume(ctx::AbstractFactorResumeContext, ys::Vector{Float64}, _s_::
     if _s_.node_id == 198
         return gmm_y__198(ctx, ys, _s_)
     end
-    error("Cannot find factor for $_addr_ $_s_")
+    _s_.node_id = -1 # marks termination
 end
 
 function model(ctx::SampleContext)
@@ -233,7 +237,7 @@ function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
     return gmm_factor(ctx, ys, _s_, _addr_)
 end
 
-function resume(ctx::AbstractFactorResumeContext, _s_::State, _addr_::String)
+function resume_from_state(ctx::AbstractFactorResumeContext, _s_::State, _addr_::String)
     return gmm_resume(ctx, ys, _s_, _addr_)
 end
 

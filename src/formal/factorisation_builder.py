@@ -40,7 +40,7 @@ def inject_state_rec(sexpr: list, state_var, var_names, node: SampleNode | Facto
         return [sexpr[0]] + [inject_state_rec(child, state_var, var_names, None) for child in sexpr[1:]]
     
 class FactorFunctionWriter():
-    def __init__(self, model: CFG, root_node: CFGNode, deps: Set[SampleNode|FactorNode], direct_paths: bool, context: str) -> None:
+    def __init__(self, model: CFG, root_node: CFGNode, deps: Set[SampleNode|FactorNode|EndNode], direct_paths: bool, context: str) -> None:
         self.direct_paths = direct_paths
         assert context in ("revisit", "resume")
         self.context = context
@@ -51,11 +51,13 @@ class FactorFunctionWriter():
             cfgnode for cfgnode in model.nodes
             if any(is_on_path(cfgnode, root_node, dep) for dep in deps)
         }
-        # print(samplenode)
+        
+        # print(root_node)
         # for dep in deps:
         #     print("  dep", dep)
         # for pathnode in path_nodes:
         #     print("  pathnode", pathnode)
+        
         path_nodes.add(root_node)
         self.root_node = root_node
         self.deps = deps
@@ -102,6 +104,8 @@ class FactorFunctionWriter():
                     elif current in self.deps:
                         value_sexpr[1] = ["Identifier", "score"]
                         is_score_stmt = True
+                    elif self.context == "resume":
+                        value_sexpr[1] = ["Identifier", "score"]
                     else:
                         value_sexpr[1] = ["Identifier", "read"]
                         del value_sexpr[6] # remove distribution
@@ -142,6 +146,8 @@ class FactorFunctionWriter():
                     elif current in self.deps:
                         value_sexpr[1] = ["Identifier", "score"]
                         is_score_stmt = True
+                    elif self.context == "resume":
+                        value_sexpr[1] = ["Identifier", "score"]
                     else:
                         value_sexpr[1] = ["Identifier", "read"]
                         del value_sexpr[6] # remove distribution
@@ -161,7 +167,7 @@ class FactorFunctionWriter():
                 if current.id.endswith("for_start"):
                     raise Exception("For loops are not supported!")
                 
-                if current.id.endswith("while_start"):
+                elif current.id.endswith("while_start"):
                     while_join_startnode = current
                     assert while_join_startnode not in self.block_nodes
                     self.block_nodes.add(while_join_startnode)
@@ -184,9 +190,17 @@ class FactorFunctionWriter():
                     while_end_joinnode = branchnode.orelse
                     assert while_end_joinnode.id.endswith("while_end")
                     next = get_only_elem(while_end_joinnode.children)
+                    
+                elif current.id.endswith("func") and self.context == "resume":
+                    # have to add end node of func cfg to have func join node in pathnodes
+                    self.out += tab + f"{self.state_var}.node_id = -1\n"
+                    self.out += tab + "return\n"
+                    next = None
+                    
                 else:
                     next = get_only_elem(current.children)
                     # raise Exception(f"Cannot write join {current}")
+                    
             elif isinstance(current, BranchNode):
                 assert current.id.endswith("if_start")
                 prefix_id = current.id[:-len("if_start")]
@@ -211,6 +225,7 @@ class FactorFunctionWriter():
                 
                 self.block_nodes.discard(branch_joinnode)
                 next = get_only_elem(branch_joinnode.children)
+                
             else:
                 raise Exception(f"Cannot write {current}")
 
@@ -382,14 +397,23 @@ class FactorisationBuilder():
             node = node[1]
         return node
     
-    def write_combined_factors(self, suffix: str, context: str, prefixed_nodes):
+    def write_combined_factors(self, context: str, prefixed_nodes):
+        assert context in ("resume", "revisit")
+        
+        if context == "resume":
+            ctx_type = "AbstractFactorResumeContext"
+            suffix = "resume"
+        else:
+            ctx_type = "AbstractFactorRevisitContext"
+            suffix = "factor"
+        
         addr_var = "_addr_"
         self.addr_var = addr_var
         signature = deepcopy(self.model_function.syntaxnode.sexpr[1])
         assert signature[0] == "call"
         assert signature[2] == ["::-i", ["Identifier", "ctx"], ["Identifier", "SampleContext"]]
-        signature[1] = ["Identifier", signature[1][1] + suffix] # name
-        signature[2][2][1] = context
+        signature[1] = ["Identifier", signature[1][1] + "_" + suffix] # name
+        signature[2][2][1] = ctx_type
         signature.append(['::-i', ['Identifier', self.state_var], ['Identifier', 'State']])
         signature.append(['::-i', ['Identifier', addr_var], ['Identifier', 'String']])
 
@@ -414,7 +438,10 @@ class FactorisationBuilder():
 
             prog += tab + tab + "return " + unparse(signature) + "\n"
             prog += tab + "end\n"
-        prog += tab + f"error(\"Cannot find factor for ${self.addr_var} ${self.state_var}\")\n"
+        if context == "resume":
+            prog += tab + f"{self.state_var}.node_id = -1 # marks termination\n"
+        else:
+            prog += tab + f"error(\"Cannot find factor for ${self.addr_var} ${self.state_var}\")\n"
         prog += "end\n\n"
         self.out += prog
 
@@ -437,10 +464,14 @@ class FactorisationBuilder():
         prog += "    return " + unparse(signature) + "\n"
         prog += "end\n\n"
 
-        for fname, context in [("factor", "AbstractFactorRevisitContext"), ("resume", "AbstractFactorResumeContext")]:
+        fs = [("factor", "factor", "AbstractFactorRevisitContext")]
+        if self.build_resume:
+            fs.append(("resume_from_state", "resume", "AbstractFactorResumeContext"))
+
+        for fname, suffix, context in fs:
             prog += f"function {fname}(ctx::{context}, {self.state_var}::State, {self.addr_var}::String)\n"
             signature = deepcopy(self.model_function.syntaxnode.sexpr[1])
-            signature[1] = ["Identifier", signature[1][1] + "_" + fname] # name
+            signature[1] = ["Identifier", signature[1][1] + "_" + suffix] # name
             signature.append(['Identifier', self.state_var])
             signature.append(['Identifier', self.addr_var])
             for i in range(2, len(signature)):
@@ -477,10 +508,6 @@ class FactorisationBuilder():
         for prefix, samplenode in self.prefixed_sample_nodes:
             deps = {y for x, y in self.model_graph_edges if x == samplenode}
 
-            # resume_deps = get_resume_deps(samplenode)
-            # print("Resume deps for", prefix, samplenode)
-            # print(resume_deps)
-
             signature = deepcopy(self.model_function.syntaxnode.sexpr[1])
             assert signature[0] == "call"
             assert signature[2] == ["::-i", ["Identifier", "ctx"], ["Identifier", "SampleContext"]]
@@ -504,7 +531,7 @@ class FactorisationBuilder():
             self.out += prog
 
 
-        self.write_combined_factors("_factor", "AbstractFactorRevisitContext", self.prefixed_sample_nodes)
+        self.write_combined_factors("revisit", self.prefixed_sample_nodes)
         
         if self.build_resume:
             prefixed_factor_nodes = []
@@ -526,7 +553,7 @@ class FactorisationBuilder():
             resume_prefixed_nodes = [(self.start_prefix, self.model_cfg.startnode)] + self.prefixed_factor_nodes
 
             for prefix, node in resume_prefixed_nodes:
-                resume_deps = get_resume_deps(node, False)
+                resume_deps = get_resume_deps(node, False, True)
                 # print("Resume deps for", prefix, node)
                 # print(resume_deps)
 
@@ -552,7 +579,7 @@ class FactorisationBuilder():
                 
                 self.out += prog
                 
-            self.write_combined_factors("_resume", "AbstractFactorResumeContext", resume_prefixed_nodes)
+            self.write_combined_factors("resume", resume_prefixed_nodes)
         
         self.write_helpers()
 

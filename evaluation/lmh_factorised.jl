@@ -1,6 +1,4 @@
 
-abstract type AbstractFactorRevisitContext end
-
 # executes model with respect to trace_proposed
 # resamples at resample_address and samples from prior for other new addresses
 mutable struct LMHForwardFactorContext <: AbstractFactorRevisitContext

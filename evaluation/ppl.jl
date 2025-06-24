@@ -78,6 +78,7 @@ function sample_record_state(ctx::GenerateRecordStateContext, s::AbstractState, 
 end
 
 abstract type AbstractFactorRevisitContext end
+abstract type AbstractFactorResumeContext end
 abstract type AbstractManualRevisitContext end
 abstract type AbstractManualResampleContext <: AbstractManualRevisitContext end
 

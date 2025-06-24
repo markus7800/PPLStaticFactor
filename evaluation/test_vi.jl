@@ -1,10 +1,5 @@
 include("vi.jl")
 
-
-Random.seed!(0)
-bbvi(2, 10, 0.001, model)
-exit()
-
 import StatsPlots
 
 @model function normal(ctx)

@@ -95,7 +95,3 @@ function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
     return marsaglia_factor(ctx, _s_, _addr_)
 end
 
-function resume(ctx::AbstractFactorResumeContext, _s_::State, _addr_::String)
-    return marsaglia_resume(ctx, _s_, _addr_)
-end
-

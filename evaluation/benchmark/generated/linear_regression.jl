@@ -78,7 +78,3 @@ function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
     return lr_factor(ctx, xs, ys, _s_, _addr_)
 end
 
-function resume(ctx::AbstractFactorResumeContext, _s_::State, _addr_::String)
-    return lr_resume(ctx, xs, ys, _s_, _addr_)
-end
-

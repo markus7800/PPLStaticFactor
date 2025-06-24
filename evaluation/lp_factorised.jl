@@ -91,8 +91,6 @@ function read(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::In
     return value
 end
 
-abstract type AbstractManualRevisitContext end
-
 mutable struct ManualResampleContext <: AbstractManualRevisitContext
     trace::Dict{String,SampleType}
     logprob::Float64
