@@ -42,6 +42,7 @@ for i, filename in enumerate(filenames):
     pw.write_program()
     with open("evaluation/benchmark/generated/" + filename, "w") as f:
         f.write(pw.out)
+    exit()
 
 filenames = [
     # "gmm_fixed_numclust.jl",

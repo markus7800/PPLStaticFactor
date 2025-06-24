@@ -103,7 +103,12 @@ class JuliaFunctionDefinition(FunctionDefinition):
             return "JuliaFunctionDefinition(Main)"
         else:
             return f"JuliaFunctionDefinition({self.name})"
-
+        
+def get_address_expr_from_sample_call(expr: Expression) -> Expression:
+    assert isinstance(expr, JuliaExpression)
+    assert expr.syntaxnode.kind == "call"
+    return JuliaExpression(expr.syntaxnode[3])
+    
 class JuliaSampleNode(SampleNode):
     def get_distribution_expr(self) -> Expression:
         value_expr = self.get_value_expr()
@@ -116,9 +121,7 @@ class JuliaSampleNode(SampleNode):
 
     def get_address_expr(self) -> Expression:
         value_expr = self.get_value_expr()
-        assert isinstance(value_expr, JuliaExpression)
-        assert value_expr.syntaxnode.kind == "call"
-        return JuliaExpression(value_expr.syntaxnode[3])
+        return get_address_expr_from_sample_call(value_expr)
     
     def symbolic_name(self) -> str:
         raise NotImplementedError

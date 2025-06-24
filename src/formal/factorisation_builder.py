@@ -4,6 +4,7 @@ import sexpdata
 from formal.syntaxnode import *
 from formal.formal_cfg import *
 from static.model_graph import get_graph
+from static.resume_deps import get_resume_deps
 
 
 def is_on_path_between_nodes(node: CFGNode, start: CFGNode, end: CFGNode) -> bool:
@@ -39,20 +40,24 @@ def inject_state_rec(sexpr: list, state_var, var_names, node: SampleNode | Facto
         return [sexpr[0]] + [inject_state_rec(child, state_var, var_names, None) for child in sexpr[1:]]
     
 class FactorFunctionWriter():
-    def __init__(self, model: CFG, samplenode: SampleNode, deps: Set[SampleNode|FactorNode], direct_paths: bool) -> None:
+    def __init__(self, model: CFG, root_node: SampleNode, deps: Set[SampleNode|FactorNode], direct_paths: bool, context: str) -> None:
         self.direct_paths = direct_paths
+        assert context in ("revisit", "resume")
+        self.context = context
+        self.return_after_score = self.context == "resume"
+        
         is_on_path = is_on_direct_path_between_nodes if direct_paths else is_on_path_between_nodes
         path_nodes = {
             cfgnode for cfgnode in model.nodes
-            if any(is_on_path(cfgnode, samplenode, dep) for dep in deps)
+            if any(is_on_path(cfgnode, root_node, dep) for dep in deps)
         }
         # print(samplenode)
         # for dep in deps:
         #     print("  dep", dep)
         # for pathnode in path_nodes:
         #     print("  pathnode", pathnode)
-        path_nodes.add(samplenode)
-        self.samplenode = samplenode
+        path_nodes.add(root_node)
+        self.root_node = root_node
         self.deps = deps
         self.path_nodes = path_nodes
         self.block_nodes: Set[CFGNode] = set()
@@ -81,17 +86,19 @@ class FactorFunctionWriter():
                 assert isinstance(value, JuliaExpression)
                 value_sexpr = value.syntaxnode.sexpr
 
-
+                is_score_stmt = False
+                
                 if isinstance(current, JuliaSampleNode):
                     value_sexpr =  inject_state_rec(value_sexpr, self.state_var, self.var_names, current)
                     value_sexpr = deepcopy(value_sexpr)
                     assert value_sexpr[0] == "call"
                     assert value_sexpr[1] == ["Identifier", "sample"]
-                    if current == self.samplenode and not self.wrote_first:
+                    if current == self.root_node and not self.wrote_first:
                         self.wrote_first = True
-                        value_sexpr[1] = ["Identifier", "revisit"]
+                        value_sexpr[1] = ["Identifier", self.context]
                     elif current in self.deps:
                         value_sexpr[1] = ["Identifier", "score"]
+                        is_score_stmt = True
                     else:
                         value_sexpr[1] = ["Identifier", "read"]
                         del value_sexpr[6] # remove distribution
@@ -107,21 +114,31 @@ class FactorFunctionWriter():
                 target_sexpr = inject_state_rec(target_sexpr, self.state_var, self.var_names, None)
 
                 self.out += tab + unparse(target_sexpr) + " = " + unparse(value_sexpr) + "\n"
-                next = get_only_elem(current.children)
+                
+                if self.return_after_score and is_score_stmt:
+                    self.out += tab + "return\n"
+                    next = None
+                else:
+                    next = get_only_elem(current.children)
 
             elif isinstance(current, ExprNode):
                 expr = current.get_expr()
                 assert isinstance(expr, JuliaExpression)
                 value_sexpr = expr.syntaxnode.sexpr
                 
+                is_score_stmt = False
 
                 if isinstance(current, JuliaFactorNode):
                     value_sexpr = inject_state_rec(value_sexpr, self.state_var, self.var_names, current)
                     value_sexpr = deepcopy(value_sexpr)
                     assert value_sexpr[0] == "call"
                     assert value_sexpr[1] == ["Identifier", "sample"]
-                    if current in self.deps:
+                    if current == self.root_node and not self.wrote_first:
+                        self.wrote_first = True
+                        value_sexpr[1] = ["Identifier", self.context]
+                    elif current in self.deps:
                         value_sexpr[1] = ["Identifier", "score"]
+                        is_score_stmt = True
                     else:
                         value_sexpr[1] = ["Identifier", "read"]
                         del value_sexpr[6] # remove distribution
@@ -130,7 +147,12 @@ class FactorFunctionWriter():
 
 
                 self.out += tab + unparse(value_sexpr) + "\n"
-                next = get_only_elem(current.children)
+                
+                if self.return_after_score and is_score_stmt:
+                    self.out += tab + "return\n"
+                    next = None
+                else:
+                    next = get_only_elem(current.children)
 
             elif isinstance(current, JoinNode):
                 if current.id.endswith("for_start"):
@@ -189,6 +211,8 @@ class FactorFunctionWriter():
             else:
                 raise Exception(f"Cannot write {current}")
 
+            if next is None:
+                break
             if next in self.block_nodes:
                 break
             if not force_write and next not in self.path_nodes:
@@ -360,7 +384,7 @@ class FactorisationBuilder():
         assert signature[0] == "call"
         assert signature[2] == ["::-i", ["Identifier", "ctx"], ["Identifier", "SampleContext"]]
         signature[1] = ["Identifier", signature[1][1] + "_factor"] # name
-        signature[2][2][1] = "AbstractFactorRevisitContext"
+        signature[2][2][1] = "Union{AbstractFactorRevisitContext,AbstractFactorResumeContext}"
         signature.append(['::-i', ['Identifier', self.state_var], ['Identifier', 'State']])
         signature.append(['::-i', ['Identifier', addr_var], ['Identifier', 'String']])
 
@@ -368,8 +392,8 @@ class FactorisationBuilder():
         prog += unparse(signature) + "\n"
         tab = "    "
         
-        for prefix, samplenode in self.prefixed_sample_nodes:
-            node_id = samplenode.id[5:]
+        for prefix, node in self.prefixed_sample_nodes + self.prefixed_factor_nodes:
+            node_id = node.id[5:]
             prog += tab + f"if {self.state_var}.node_id == {node_id}\n"
 
             signature = deepcopy(self.model_function.syntaxnode.sexpr[1])
@@ -405,16 +429,17 @@ class FactorisationBuilder():
         prog += "    return " + unparse(signature) + "\n"
         prog += "end\n\n"
 
-        prog += f"function factor(ctx::AbstractFactorRevisitContext, {self.state_var}::State, {self.addr_var}::String)\n"
-        signature = deepcopy(self.model_function.syntaxnode.sexpr[1])
-        signature[1] = ["Identifier", signature[1][1] + "_factor"] # name
-        signature.append(['Identifier', self.state_var])
-        signature.append(['Identifier', self.addr_var])
-        for i in range(2, len(signature)):
-            if signature[i][0] == "::-i":
-                signature[i] = signature[i][1]
-        prog += "    return " + unparse(signature) + "\n"
-        prog += "end\n"
+        for fname, context in [("factor", "AbstractFactorRevisitContext"), ("factor_resume", "AbstractFactorResumeContext")]:
+            prog += f"function {fname}(ctx::{context}, {self.state_var}::State, {self.addr_var}::String)\n"
+            signature = deepcopy(self.model_function.syntaxnode.sexpr[1])
+            signature[1] = ["Identifier", signature[1][1] + "_factor"] # name
+            signature.append(['Identifier', self.state_var])
+            signature.append(['Identifier', self.addr_var])
+            for i in range(2, len(signature)):
+                if signature[i][0] == "::-i":
+                    signature[i] = signature[i][1]
+            prog += "    return " + unparse(signature) + "\n"
+            prog += "end\n"
 
 
         self.out += prog
@@ -441,6 +466,10 @@ class FactorisationBuilder():
         for prefix, samplenode in self.prefixed_sample_nodes:
             deps = {y for x, y in self.model_graph_edges if x == samplenode}
 
+            # resume_deps = get_resume_deps(samplenode)
+            # print("Resume deps for", prefix, samplenode)
+            # print(resume_deps)
+
             signature = deepcopy(self.model_function.syntaxnode.sexpr[1])
             assert signature[0] == "call"
             assert signature[2] == ["::-i", ["Identifier", "ctx"], ["Identifier", "SampleContext"]]
@@ -455,7 +484,7 @@ class FactorisationBuilder():
             # header_prog = tab + f"\n{tab}".join(map(unparse, self.header)) + "\n\n"
             # prog += header_prog
 
-            writer = FactorFunctionWriter(self.model, samplenode, deps, self.direct_paths)
+            writer = FactorFunctionWriter(self.model, samplenode, deps, self.direct_paths, "revisit")
             writer.write_factor_function(samplenode, tab=tab)
             prog += writer.out
 
@@ -463,6 +492,47 @@ class FactorisationBuilder():
             
             self.out += prog
 
+
+        prefixed_factor_nodes = []
+        for factornode in self.factor_nodes:
+            factor_expr = factornode.get_factor_expr()
+            addr_expr = get_address_expr_from_sample_call(factor_expr)
+            assert isinstance(addr_expr, JuliaExpression)
+            prefix = unparse(self.get_prefix(addr_expr).sexpr).strip('"') + "_" + factornode.id[5:]
+            prefixed_factor_nodes.append((prefix, factornode))
+            
+        prefixed_factor_nodes = sorted(prefixed_factor_nodes)
+        self.prefixed_factor_nodes = prefixed_factor_nodes
+        
+        
+        for prefix, node in self.prefixed_sample_nodes + self.prefixed_factor_nodes:
+            resume_deps = get_resume_deps(node)
+            # print("Resume deps for", prefix, node)
+            # print(resume_deps)
+
+            signature = deepcopy(self.model_function.syntaxnode.sexpr[1])
+            assert signature[0] == "call"
+            assert signature[2] == ["::-i", ["Identifier", "ctx"], ["Identifier", "SampleContext"]]
+            signature[1] = ["Identifier", signature[1][1] + "_" + prefix] # name
+            signature[2][2][1] = "AbstractFactorResumeContext"
+            signature.append(['::-i', ['Identifier', self.state_var], ['Identifier', 'State']])
+
+            prog = "function "
+            prog += unparse(signature) + "\n"
+
+            tab = "    "
+            # header_prog = tab + f"\n{tab}".join(map(unparse, self.header)) + "\n\n"
+            # prog += header_prog
+
+            writer = FactorFunctionWriter(self.model, node, resume_deps, self.direct_paths, "resume")
+            writer.write_factor_function(node, tab=tab)
+            prog += writer.out
+
+            prog += "end\n\n"
+            
+            self.out += prog
+        
+        
         self.write_combined_factors()
 
         self.write_helpers()
