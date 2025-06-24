@@ -368,85 +368,6 @@ function sample(ctx::GuideContext, address::String, distribution::Distribution; 
     return value
 end
 
-function bbvi(n_iter::Int, L::Int, learning_rate::Float64, model::Function)
-    vd_store = Dict{String, VaritationalDistribution}()
-
-    eps = 1e-8
-    acc = Dict{String, Vector{Float64}}()
-    pre = 1.1
-    post = 0.9
-
-    avg_grads_var = Dict{String, Vector{Float64}}()
-    for i in 1:n_iter
-        grads_mean = Dict{String, Vector{Float64}}()
-        grads_var = Dict{String, Vector{Float64}}()
-        for l in 1:L
-            # println("l = ", l)
-            ctx = GuideContext(vd_store)
-            model(ctx)
-            # println("elbo = ", ctx.elbo)
-            # ctx.elbo == -Inf && continue
-            @assert isfinite(ctx.elbo)
-            elbo = ctx.elbo
-
-            for (address, value) in ctx.trace
-                vd = vd_store[address]
-                grads = logpdf_param_grads(vd, value)
-                if !haskey(grads_mean, address)
-                    grads_mean[address] = zeros(length(grads))
-                    grads_var[address] = zeros(length(grads))
-                end
-                # println(address, ": ", (elbo .* grads))
-                # grads_mean[address] = grads_mean[address] + (elbo .* grads) / L
-                # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
-                # compute grad mean and variance
-                new_value = elbo .* grads
-                old_mean = grads_mean[address]
-                delta1 = new_value .- old_mean
-                new_mean = old_mean .+ delta1 / l
-                delta2 = new_value .- new_mean
-                grads_mean[address] = new_mean
-                grads_var[address] = grads_var[address] .+ delta1 .* delta2
-            end 
-        end
-        # println()
-
-        # println(grads_mean)
-
-        for (address, v) in grads_var
-            grads_var[address] = v / (L - 1)
-
-            grads = grads_mean[address]
-            # grads = clamp.(grads, -1., 1.)
-            # println(address, ": ", grads)
-
-
-            if !haskey(avg_grads_var, address)
-                avg_grads_var[address] = zeros(length(grads))
-            end
-            avg_grads_var[address] = avg_grads_var[address] + v / ((L - 1) * n_iter)
-        
-
-            # adagrad update
-            acc_addr = get(acc, address, fill(eps,size(grads)))
-            acc_addr = post .* acc_addr .+ pre .* grads.^2
-            acc[address] = acc_addr
-            rho = learning_rate ./ (sqrt.(acc_addr) .+ eps)
-
-            vd_store[address].theta .+= (rho .* grads)
-        end
-
-    end
-
-    # for address in sort(collect(keys(avg_grads_var)))
-    #     println(address, ": ", avg_grads_var[address], " - ", mean(avg_grads_var[address]))
-    # end
-    all_params = reduce(vcat, values(avg_grads_var))
-    avg_var = median(all_params)
-
-    return vd_store, avg_var
-end
-
 
 mutable struct GuideRecordStateContext <: AbstractSampleRecordStateContext
     vd_store::Dict{String,VaritationalDistribution}
@@ -511,8 +432,7 @@ function read(ctx::VIForwardFactorContext, s::State, node_id::Int, address::Stri
     return value
 end
 
-
-function bbvi_factorised(n_iter::Int, L::Int, learning_rate::Float64, model::Function)
+function _bbvi(n_iter::Int, L::Int, learning_rate::Float64, model::Function, factorised::Bool)
     vd_store = Dict{String, VaritationalDistribution}()
 
     eps = 1e-8
@@ -525,23 +445,34 @@ function bbvi_factorised(n_iter::Int, L::Int, learning_rate::Float64, model::Fun
         grads_mean = Dict{String, Vector{Float64}}()
         grads_var = Dict{String, Vector{Float64}}()
         for l in 1:L
-            ctx = GuideRecordStateContext(vd_store)
-            model(ctx, State())
+            if factorised
+                ctx = GuideRecordStateContext(vd_store)
+                model(ctx, State())
+            else
+                ctx = GuideContext(vd_store)
+                model(ctx)
+            end
+
 
             for (address, value) in ctx.trace
                 vd = vd_store[address]
                 grads = logpdf_param_grads(vd, value)
-                
-                factor_ctx = VIForwardFactorContext(ctx.trace)
-                factor(factor_ctx, ctx.states[address], address)
-                elbo = factor_ctx.logprob - ctx.log_q[address]
 
+                if factorised
+                    factor_ctx = VIForwardFactorContext(ctx.trace)
+                    factor(factor_ctx, ctx.states[address], address)
+                    elbo = factor_ctx.logprob - ctx.log_q[address]
+                else
+                    elbo = ctx.elbo
+                end
+                @assert isfinite(elbo)
+
+                
                 if !haskey(grads_mean, address)
                     grads_mean[address] = zeros(length(grads))
                     grads_var[address] = zeros(length(grads))
                 end
-                # println(address, ": ", (elbo .* grads))
-                # grads_mean[address] = grads_mean[address] + (elbo .* grads) / L
+                
                 # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
                 # compute grad mean and variance
                 new_value = elbo .* grads
@@ -587,7 +518,14 @@ function bbvi_factorised(n_iter::Int, L::Int, learning_rate::Float64, model::Fun
     # end
     all_params = reduce(vcat, values(avg_grads_var))
     avg_var = median(all_params)
-        
-    # avg_var = mean(mean(m) for m in values(avg_grads_var))
+
     return vd_store, avg_var
+end
+
+function bbvi_standard(n_iter::Int, L::Int, learning_rate::Float64, model::Function)
+    return _bbvi(n_iter, L, learning_rate, model, false)
+end
+
+function bbvi_factorised(n_iter::Int, L::Int, learning_rate::Float64, model::Function)
+    return _bbvi(n_iter, L, learning_rate, model, true)
 end

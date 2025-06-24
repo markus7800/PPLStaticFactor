@@ -12,14 +12,14 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-with open("evaluation/lmh_results.csv", "w") as f:
-    f.write("model,N,acceptancerate,none,static,rel_static,finite,rel_finite,custom,rel_custom\n")
+with open("evaluation/vi_results.csv", "w") as f:
+    f.write("model,N,L,none,static,rel_static\n")
 
 filenames = [
     "aircraft.jl",
     "bayesian_network.jl",
-    "captcha.jl",
-    "dirichlet_process.jl",
+    # "captcha.jl",
+    # "dirichlet_process.jl",
     "geometric.jl",
     "gmm_fixed_numclust.jl",
     # "gmm_variable_numclust.jl",
@@ -42,10 +42,10 @@ filenames_unrolled = [
 
 N_repetitions = int(sys.argv[1])
 
-for _ in range(N_repetitions):
+for i in range(N_repetitions):
     for filename in filenames:
         print(bcolors.HEADER + filename + bcolors.ENDC)
-        cmd = ["julia", "--project=.", "evaluation/bench_vi.jl", "benchmark", filename]
+        cmd = ["julia", "--project=.", "evaluation/bench_vi.jl", "benchmark", filename, str(i)]
         subprocess.run(cmd, capture_output=False)
         print()
 
@@ -54,13 +54,13 @@ for _ in range(N_repetitions):
 
     for filename in filenames_unrolled:
         print(bcolors.HEADER + filename + bcolors.ENDC)
-        cmd = ["julia", "--project=.", "evaluation/bench_vi.jl", "unrolled", filename]
+        cmd = ["julia", "--project=.", "evaluation/bench_vi.jl", "unrolled", filename, str(i)]
         subprocess.run(cmd, capture_output=False)
         print()
 
 
-# import pandas as pd
-# df = pd.read_csv("evaluation/vi_results.csv")
-# avg_df = df.groupby("model").median()
-# avg_df = avg_df.reset_index()
-# avg_df.to_csv("evaluation/vi_results_aggregated.csv", index=False, sep=",", na_rep="NA")
+import pandas as pd
+df = pd.read_csv("evaluation/vi_results.csv")
+avg_df = df.groupby("model").median()
+avg_df = avg_df.reset_index()
+avg_df.to_csv("evaluation/vi_results_aggregated.csv", index=False, sep=",", na_rep="NA")
