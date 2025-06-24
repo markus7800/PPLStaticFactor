@@ -34,9 +34,8 @@
 # include("ppl.jl")
 # bayesian_network, dirichlet_process, geometric does not work
 # captcha takes too long
-include("benchmark/generated/pedestrian.jl")
+# include("benchmark/generated/bayesian_network.jl")
 # include("benchmark/generated/gmm_fixed_numclust.jl")
-println(modelname)
 
 import Distributions
 import ForwardDiff
@@ -405,6 +404,10 @@ function bbvi(n_iter::Int, L::Int, learning_rate::Float64, model::Function)
             ctx = GuideContext(vd_store)
             model(ctx)
             # println("elbo = ", ctx.elbo)
+            # ctx.elbo == -Inf && continue
+            @assert isfinite(ctx.elbo)
+            elbo = ctx.elbo
+
             for (address, value) in ctx.trace
                 vd = vd_store[address]
                 grads = logpdf_param_grads(vd, value)
@@ -412,11 +415,11 @@ function bbvi(n_iter::Int, L::Int, learning_rate::Float64, model::Function)
                     grads_mean[address] = zeros(length(grads))
                     grads_var[address] = zeros(length(grads))
                 end
-                # println(address, ": ", (ctx.elbo .* grads))
-                # grads_mean[address] = grads_mean[address] + (ctx.elbo .* grads) / L
+                # println(address, ": ", (elbo .* grads))
+                # grads_mean[address] = grads_mean[address] + (elbo .* grads) / L
                 # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
                 # compute grad mean and variance
-                new_value = ctx.elbo .* grads
+                new_value = elbo .* grads
                 old_mean = grads_mean[address]
                 delta1 = new_value .- old_mean
                 new_mean = old_mean .+ delta1 / l
@@ -454,8 +457,6 @@ function bbvi(n_iter::Int, L::Int, learning_rate::Float64, model::Function)
 
     end
 
-    println("avg_grads_var")
-    # println(avg_grads_var)
-    println(mean(mean(m) for m in values(avg_grads_var)))
-    return vd_store
+    avg_var = mean(mean(m) for m in values(avg_grads_var))
+    return vd_store, avg_var
 end

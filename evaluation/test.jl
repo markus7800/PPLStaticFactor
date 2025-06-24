@@ -1,8 +1,8 @@
-include("vi_standard.jl")
+include("vi.jl")
 
 
 Random.seed!(0)
-bbvi(1000, 100, 0.001, model)
+bbvi(2, 10, 0.001, model)
 exit()
 
 import StatsPlots
