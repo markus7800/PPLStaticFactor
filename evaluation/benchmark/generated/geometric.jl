@@ -31,6 +31,7 @@ function geometric(ctx::AbstractSampleRecordStateContext, _s_::State)
         _s_.i = (_s_.i + 1)
         _s_.b = sample_record_state(ctx, _s_, 45, ("b_" * string(_s_.i)), Bernoulli(0.5))
     end
+    _ = sample_record_state(ctx, _s_, 60, "x", Normal(_s_.i, 1.0), observed = 5.0)
     return _s_.i
 end
 
@@ -40,6 +41,7 @@ function geometric_b__45(ctx::AbstractFactorResampleContext, _s_::State)
         _s_.i = (_s_.i + 1)
         _s_.b = score(ctx, _s_, 45, ("b_" * string(_s_.i)), Bernoulli(0.5))
     end
+    score(ctx, _s_, 60, "x", Normal(_s_.i, 1.0), observed = 5.0)
 end
 
 function geometric_factor(ctx::AbstractFactorResampleContext, _s_::State, _addr_::String)

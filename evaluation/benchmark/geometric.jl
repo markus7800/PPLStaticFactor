@@ -12,5 +12,6 @@ proposers = Dict{String, Distribution}()
         i = i + 1
         b = sample(ctx, "b_" * string(i), Bernoulli(0.5))
     end
+    sample(ctx, "x", Normal(i,1.), observed=5.)
     return i
 end
