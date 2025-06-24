@@ -1,7 +1,7 @@
 
 include("../ppl.jl")
 
-modelname = "hmm_unrolled"
+modelname = "gmm_fixed_numclust_unrolled"
 proposers = Dict{String, Distribution}()
 
 # model and data adapted from https://github.com/mugamma/gmm/blob/master/pg.ipynb

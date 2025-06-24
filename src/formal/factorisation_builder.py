@@ -89,7 +89,7 @@ class FactorFunctionWriter():
                     assert value_sexpr[1] == ["Identifier", "sample"]
                     if current == self.samplenode and not self.wrote_first:
                         self.wrote_first = True
-                        value_sexpr[1] = ["Identifier", "resample"]
+                        value_sexpr[1] = ["Identifier", "revisit"]
                     elif current in self.deps:
                         value_sexpr[1] = ["Identifier", "score"]
                     else:
@@ -360,7 +360,7 @@ class FactorisationBuilder():
         assert signature[0] == "call"
         assert signature[2] == ["::-i", ["Identifier", "ctx"], ["Identifier", "SampleContext"]]
         signature[1] = ["Identifier", signature[1][1] + "_factor"] # name
-        signature[2][2][1] = "AbstractFactorResampleContext"
+        signature[2][2][1] = "AbstractFactorRevisitContext"
         signature.append(['::-i', ['Identifier', self.state_var], ['Identifier', 'State']])
         signature.append(['::-i', ['Identifier', addr_var], ['Identifier', 'String']])
 
@@ -405,7 +405,7 @@ class FactorisationBuilder():
         prog += "    return " + unparse(signature) + "\n"
         prog += "end\n\n"
 
-        prog += f"function factor(ctx::AbstractFactorResampleContext, {self.state_var}::State, {self.addr_var}::String)\n"
+        prog += f"function factor(ctx::AbstractFactorRevisitContext, {self.state_var}::State, {self.addr_var}::String)\n"
         signature = deepcopy(self.model_function.syntaxnode.sexpr[1])
         signature[1] = ["Identifier", signature[1][1] + "_factor"] # name
         signature.append(['Identifier', self.state_var])
@@ -445,7 +445,7 @@ class FactorisationBuilder():
             assert signature[0] == "call"
             assert signature[2] == ["::-i", ["Identifier", "ctx"], ["Identifier", "SampleContext"]]
             signature[1] = ["Identifier", signature[1][1] + "_" + prefix] # name
-            signature[2][2][1] = "AbstractFactorResampleContext"
+            signature[2][2][1] = "AbstractFactorRevisitContext"
             signature.append(['::-i', ['Identifier', self.state_var], ['Identifier', 'State']])
 
             prog = "function "

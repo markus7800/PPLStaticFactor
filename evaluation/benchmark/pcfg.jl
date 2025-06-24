@@ -1,7 +1,5 @@
 # info: https://en.wikipedia.org/wiki/Probabilistic_context-free_grammar
 
-include("../ppl.jl")
-
 modelname = "pcfg"
 proposers = Dict{String, Distribution}()
 

@@ -29,24 +29,24 @@ function geometric(ctx::AbstractSampleRecordStateContext, _s_::State)
     _s_.b::Bool = true
     while _s_.b
         _s_.i = (_s_.i + 1)
-        _s_.b = sample_record_state(ctx, _s_, 45, ("b_" * string(_s_.i)), Bernoulli(0.5))
+        _s_.b = sample_record_state(ctx, _s_, 41, ("b_" * string(_s_.i)), Bernoulli(0.5))
     end
-    _ = sample_record_state(ctx, _s_, 60, "x", Normal(_s_.i, 1.0), observed = 5.0)
+    _ = sample_record_state(ctx, _s_, 56, "x", Normal(_s_.i, 1.0), observed = 5.0)
     return _s_.i
 end
 
-function geometric_b__45(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.b = resample(ctx, _s_, 45, ("b_" * string(_s_.i)), Bernoulli(0.5))
+function geometric_b__41(ctx::AbstractFactorRevisitContext, _s_::State)
+    _s_.b = revisit(ctx, _s_, 41, ("b_" * string(_s_.i)), Bernoulli(0.5))
     while _s_.b
         _s_.i = (_s_.i + 1)
-        _s_.b = score(ctx, _s_, 45, ("b_" * string(_s_.i)), Bernoulli(0.5))
+        _s_.b = score(ctx, _s_, 41, ("b_" * string(_s_.i)), Bernoulli(0.5))
     end
-    score(ctx, _s_, 60, "x", Normal(_s_.i, 1.0), observed = 5.0)
+    score(ctx, _s_, 56, "x", Normal(_s_.i, 1.0), observed = 5.0)
 end
 
-function geometric_factor(ctx::AbstractFactorResampleContext, _s_::State, _addr_::String)
-    if _s_.node_id == 45
-        return geometric_b__45(ctx, _s_)
+function geometric_factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
+    if _s_.node_id == 41
+        return geometric_b__41(ctx, _s_)
     end
     error("Cannot find factor for $_addr_ $_s_")
 end
@@ -59,6 +59,6 @@ function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return geometric(ctx, _s_)
 end
 
-function factor(ctx::AbstractFactorResampleContext, _s_::State, _addr_::String)
+function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
     return geometric_factor(ctx, _s_, _addr_)
 end

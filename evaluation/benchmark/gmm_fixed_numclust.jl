@@ -2,8 +2,6 @@
 # G. Matheos, A. K. Lew, M. Ghavamizadeh, S. J. Russell, M. F. Cusumano-Towner, and V. K. Mansinghka.
 # Transforming Worlds: Automated Involutive MCMC for Open-Universe Probabilistic Models. (AABI 2021)
 
-include("../ppl.jl")
-
 modelname = "gmm_fixed_numclust"
 proposers = Dict{String, Distribution}()
 

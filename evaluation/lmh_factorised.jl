@@ -1,9 +1,9 @@
 
-abstract type AbstractFactorResampleContext end
+abstract type AbstractFactorRevisitContext end
 
 # executes model with respect to trace_proposed
 # resamples at resample_address and samples from prior for other new addresses
-mutable struct LMHForwardFactorContext <: AbstractFactorResampleContext
+mutable struct LMHForwardFactorContext <: AbstractFactorRevisitContext
     trace_current::Dict{String,SampleType}
     trace_proposed::Dict{String,SampleType}
     logprob::Float64
@@ -17,7 +17,7 @@ mutable struct LMHForwardFactorContext <: AbstractFactorResampleContext
     end
 end
 
-function resample(ctx::LMHForwardFactorContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+function revisit(ctx::LMHForwardFactorContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     proposer = get(ctx.proposers, address, distribution)
     old_value = ctx.trace_current[address]
 
@@ -73,7 +73,7 @@ end
 
 
 # executes model with respect to trace_current
-mutable struct LMHBackwardFactorContext <: AbstractFactorResampleContext
+mutable struct LMHBackwardFactorContext <: AbstractFactorRevisitContext
     trace_current::Dict{String,SampleType}
     trace_proposed::Dict{String,SampleType}
     logprob::Float64
@@ -84,7 +84,7 @@ mutable struct LMHBackwardFactorContext <: AbstractFactorResampleContext
     end
 end
 
-function resample(ctx::LMHBackwardFactorContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+function revisit(ctx::LMHBackwardFactorContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     value = ctx.trace_current[address]
     ctx.logprob += logpdf(distribution, value)
     return value

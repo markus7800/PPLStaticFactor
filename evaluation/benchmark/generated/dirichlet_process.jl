@@ -59,83 +59,83 @@ function dp(ctx::AbstractSampleRecordStateContext, xs::Vector{Float64}, _s_::Sta
     while (_s_.stick > 0.01)
         _s_.i = (_s_.i + 1)
         _s_.cumprod = (_s_.cumprod * (1.0 - _s_.beta))
-        _s_.beta = sample_record_state(ctx, _s_, 93, ("beta_" * string(_s_.i)), Beta(1, _s_.alpha))
-        _s_.theta::Float64 = sample_record_state(ctx, _s_, 109, ("theta_" * string(_s_.i)), Normal(0.0, 1.0))
+        _s_.beta = sample_record_state(ctx, _s_, 89, ("beta_" * string(_s_.i)), Beta(1, _s_.alpha))
+        _s_.theta::Float64 = sample_record_state(ctx, _s_, 105, ("theta_" * string(_s_.i)), Normal(0.0, 1.0))
         _s_.stick = (_s_.stick - (_s_.beta * _s_.cumprod))
         _s_.weights = vcat(_s_.weights, (_s_.beta * _s_.cumprod))
         _s_.thetas = vcat(_s_.thetas, _s_.theta)
     end
     _s_.j::Int = 1
     while (_s_.j <= length(xs))
-        _s_.z::Int = sample_record_state(ctx, _s_, 164, ("z_" * string(_s_.j)), Categorical((_s_.weights / sum(_s_.weights))))
+        _s_.z::Int = sample_record_state(ctx, _s_, 160, ("z_" * string(_s_.j)), Categorical((_s_.weights / sum(_s_.weights))))
         _s_.z = min(_s_.z, length(_s_.thetas))
-        _ = sample_record_state(ctx, _s_, 194, ("x_" * string(_s_.j)), Normal(get_n(_s_.thetas, _s_.z), 0.1), observed = get_n(xs, _s_.j))
+        _ = sample_record_state(ctx, _s_, 190, ("x_" * string(_s_.j)), Normal(get_n(_s_.thetas, _s_.z), 0.1), observed = get_n(xs, _s_.j))
         _s_.j = (_s_.j + 1)
     end
 end
 
-function dp_beta__93(ctx::AbstractFactorResampleContext, xs::Vector{Float64}, _s_::State)
-    _s_.beta = resample(ctx, _s_, 93, ("beta_" * string(_s_.i)), Beta(1, _s_.alpha))
-    _s_.theta = score(ctx, _s_, 109, ("theta_" * string(_s_.i)), Normal(0.0, 1.0))
+function dp_beta__89(ctx::AbstractFactorRevisitContext, xs::Vector{Float64}, _s_::State)
+    _s_.beta = revisit(ctx, _s_, 89, ("beta_" * string(_s_.i)), Beta(1, _s_.alpha))
+    _s_.theta = score(ctx, _s_, 105, ("theta_" * string(_s_.i)), Normal(0.0, 1.0))
     _s_.stick = (_s_.stick - (_s_.beta * _s_.cumprod))
     _s_.weights = vcat(_s_.weights, (_s_.beta * _s_.cumprod))
     _s_.thetas = vcat(_s_.thetas, _s_.theta)
     while (_s_.stick > 0.01)
         _s_.i = (_s_.i + 1)
         _s_.cumprod = (_s_.cumprod * (1.0 - _s_.beta))
-        _s_.beta = score(ctx, _s_, 93, ("beta_" * string(_s_.i)), Beta(1, _s_.alpha))
-        _s_.theta = score(ctx, _s_, 109, ("theta_" * string(_s_.i)), Normal(0.0, 1.0))
+        _s_.beta = score(ctx, _s_, 89, ("beta_" * string(_s_.i)), Beta(1, _s_.alpha))
+        _s_.theta = score(ctx, _s_, 105, ("theta_" * string(_s_.i)), Normal(0.0, 1.0))
         _s_.stick = (_s_.stick - (_s_.beta * _s_.cumprod))
         _s_.weights = vcat(_s_.weights, (_s_.beta * _s_.cumprod))
         _s_.thetas = vcat(_s_.thetas, _s_.theta)
     end
     _s_.j = 1
     while (_s_.j <= length(xs))
-        _s_.z = score(ctx, _s_, 164, ("z_" * string(_s_.j)), Categorical((_s_.weights / sum(_s_.weights))))
+        _s_.z = score(ctx, _s_, 160, ("z_" * string(_s_.j)), Categorical((_s_.weights / sum(_s_.weights))))
         _s_.z = min(_s_.z, length(_s_.thetas))
-        score(ctx, _s_, 194, ("x_" * string(_s_.j)), Normal(get_n(_s_.thetas, _s_.z), 0.1), observed = get_n(xs, _s_.j))
+        score(ctx, _s_, 190, ("x_" * string(_s_.j)), Normal(get_n(_s_.thetas, _s_.z), 0.1), observed = get_n(xs, _s_.j))
         _s_.j = (_s_.j + 1)
     end
 end
 
-function dp_theta__109(ctx::AbstractFactorResampleContext, xs::Vector{Float64}, _s_::State)
-    _s_.theta = resample(ctx, _s_, 109, ("theta_" * string(_s_.i)), Normal(0.0, 1.0))
+function dp_theta__105(ctx::AbstractFactorRevisitContext, xs::Vector{Float64}, _s_::State)
+    _s_.theta = revisit(ctx, _s_, 105, ("theta_" * string(_s_.i)), Normal(0.0, 1.0))
     _s_.stick = (_s_.stick - (_s_.beta * _s_.cumprod))
     _s_.weights = vcat(_s_.weights, (_s_.beta * _s_.cumprod))
     _s_.thetas = vcat(_s_.thetas, _s_.theta)
     while (_s_.stick > 0.01)
         _s_.i = (_s_.i + 1)
         _s_.cumprod = (_s_.cumprod * (1.0 - _s_.beta))
-        _s_.beta = read(ctx, _s_, 93, ("beta_" * string(_s_.i)))
-        _s_.theta = read(ctx, _s_, 109, ("theta_" * string(_s_.i)))
+        _s_.beta = read(ctx, _s_, 89, ("beta_" * string(_s_.i)))
+        _s_.theta = read(ctx, _s_, 105, ("theta_" * string(_s_.i)))
         _s_.stick = (_s_.stick - (_s_.beta * _s_.cumprod))
         _s_.weights = vcat(_s_.weights, (_s_.beta * _s_.cumprod))
         _s_.thetas = vcat(_s_.thetas, _s_.theta)
     end
     _s_.j = 1
     while (_s_.j <= length(xs))
-        _s_.z = read(ctx, _s_, 164, ("z_" * string(_s_.j)))
+        _s_.z = read(ctx, _s_, 160, ("z_" * string(_s_.j)))
         _s_.z = min(_s_.z, length(_s_.thetas))
-        score(ctx, _s_, 194, ("x_" * string(_s_.j)), Normal(get_n(_s_.thetas, _s_.z), 0.1), observed = get_n(xs, _s_.j))
+        score(ctx, _s_, 190, ("x_" * string(_s_.j)), Normal(get_n(_s_.thetas, _s_.z), 0.1), observed = get_n(xs, _s_.j))
         _s_.j = (_s_.j + 1)
     end
 end
 
-function dp_z__164(ctx::AbstractFactorResampleContext, xs::Vector{Float64}, _s_::State)
-    _s_.z = resample(ctx, _s_, 164, ("z_" * string(_s_.j)), Categorical((_s_.weights / sum(_s_.weights))))
+function dp_z__160(ctx::AbstractFactorRevisitContext, xs::Vector{Float64}, _s_::State)
+    _s_.z = revisit(ctx, _s_, 160, ("z_" * string(_s_.j)), Categorical((_s_.weights / sum(_s_.weights))))
     _s_.z = min(_s_.z, length(_s_.thetas))
-    score(ctx, _s_, 194, ("x_" * string(_s_.j)), Normal(get_n(_s_.thetas, _s_.z), 0.1), observed = get_n(xs, _s_.j))
+    score(ctx, _s_, 190, ("x_" * string(_s_.j)), Normal(get_n(_s_.thetas, _s_.z), 0.1), observed = get_n(xs, _s_.j))
 end
 
-function dp_factor(ctx::AbstractFactorResampleContext, xs::Vector{Float64}, _s_::State, _addr_::String)
-    if _s_.node_id == 93
-        return dp_beta__93(ctx, xs, _s_)
+function dp_factor(ctx::AbstractFactorRevisitContext, xs::Vector{Float64}, _s_::State, _addr_::String)
+    if _s_.node_id == 89
+        return dp_beta__89(ctx, xs, _s_)
     end
-    if _s_.node_id == 109
-        return dp_theta__109(ctx, xs, _s_)
+    if _s_.node_id == 105
+        return dp_theta__105(ctx, xs, _s_)
     end
-    if _s_.node_id == 164
-        return dp_z__164(ctx, xs, _s_)
+    if _s_.node_id == 160
+        return dp_z__160(ctx, xs, _s_)
     end
     error("Cannot find factor for $_addr_ $_s_")
 end
@@ -148,6 +148,6 @@ function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return dp(ctx, xs, _s_)
 end
 
-function factor(ctx::AbstractFactorResampleContext, _s_::State, _addr_::String)
+function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
     return dp_factor(ctx, xs, _s_, _addr_)
 end

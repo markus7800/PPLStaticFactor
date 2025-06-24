@@ -2,8 +2,6 @@
 # commit = 46d70db1d6eb90207d46d0095fea2810c9ed543b
 # https://en.wikipedia.org/wiki/Marsaglia_polar_method#Julia
 
-include("../ppl.jl")
-
 modelname = "marsaglia"
 proposers = Dict{String, Distribution}()
 

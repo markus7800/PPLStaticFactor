@@ -1,7 +1,5 @@
 # info: https://en.wikipedia.org/wiki/Bayesian_linear_regression
 
-include("../ppl.jl")
-
 modelname = "linear_regression"
 proposers = Dict{String, Distribution}("slope" => Normal(2.,0.25), "intercept" => Normal(-1.,0.25))
 

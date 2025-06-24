@@ -2,8 +2,6 @@
 # commit = 4902ad703332ad0808dab7a7b94bacc1a429940d
 # Blei, D. M., Ng, A. Y., & Jordan, M. I. (2003). Latent dirichlet allocation. Journal of machine Learning research, 3(Jan), 993-1022.
 
-include("../ppl.jl")
-
 modelname = "lda_variable_numtopic"
 proposers = Dict{String, Distribution}()
 

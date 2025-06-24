@@ -1,16 +1,16 @@
 
-function hmm_initial_state(ctx::AbstractManualResampleContext, ys::Vector{Float64}, addr::String)
+function hmm_initial_state(ctx::AbstractManualRevisitContext, ys::Vector{Float64}, addr::String)
     seqlen::Int = length(ys)
     transition_probs::Matrix{Float64} = [0.1 0.2 0.7; 0.1 0.8 0.1; 0.3 0.3 0.4]
 
     old_value::Int = manual_read(ctx, addr)
-    new_value::Int = manual_resample(ctx, addr, Categorical([0.33, 0.33, 0.34]))
+    new_value::Int = manual_revisit(ctx, addr, Categorical([0.33, 0.33, 0.34]))
 
     manual_add_logpdf(ctx, "state_1", Categorical(get_row(transition_probs, new_value)))
     manual_sub_logpdf(ctx, "state_1", Categorical(get_row(transition_probs, old_value)))
 end
 
-function hmm_state(ctx::AbstractManualResampleContext, ys::Vector{Float64}, addr::String)
+function hmm_state(ctx::AbstractManualRevisitContext, ys::Vector{Float64}, addr::String)
     seqlen::Int = length(ys)
     transition_probs::Matrix{Float64} = [0.1 0.2 0.7; 0.1 0.8 0.1; 0.3 0.3 0.4]
 
@@ -18,7 +18,7 @@ function hmm_state(ctx::AbstractManualResampleContext, ys::Vector{Float64}, addr
     current::Int = i == 1 ? manual_read(ctx, "initial_state") : manual_read(ctx, "state_" * string(i-1))
     
     old_value::Int = manual_read(ctx, addr)
-    new_value::Int = manual_resample(ctx, addr, Categorical(get_row(transition_probs, current)))
+    new_value::Int = manual_revisit(ctx, addr, Categorical(get_row(transition_probs, current)))
 
     manual_add_logpdf(ctx, "obs_" * string(i), Normal(new_value, 1), observed = get_n(ys, i))
     manual_sub_logpdf(ctx, "obs_" * string(i), Normal(old_value, 1), observed = get_n(ys, i))
@@ -39,6 +39,6 @@ function hmm_manual_factor(ctx::AbstractManualResampleContext, ys::Vector{Float6
     end
 end
 
-function finite_factor(ctx::AbstractManualResampleContext)
+function finite_factor(ctx::AbstractManualRevisitContext)
     hmm_manual_factor(ctx, ys)
 end

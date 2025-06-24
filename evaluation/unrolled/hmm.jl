@@ -1,6 +1,4 @@
 
-include("../ppl.jl")
-
 modelname = "hmm_unrolled"
 proposers = Dict{String, Distribution}()
 

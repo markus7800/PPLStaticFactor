@@ -1,7 +1,5 @@
 
-include("../ppl.jl")
-
-modelname = "hmm_unrolled"
+modelname = "linear_regression_unrolled"
 proposers = Dict{String, Distribution}("slope" => Normal(2.,0.25), "intercept" => Normal(-1.,0.25))
 
 @model function lr(ctx::SampleContext, xs::Vector{Float64}, ys::Vector{Float64})

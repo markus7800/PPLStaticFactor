@@ -1,7 +1,5 @@
 # info: https://en.wikipedia.org/wiki/Geometric_distribution
 
-include("../ppl.jl")
-
 modelname = "geometric"
 proposers = Dict{String, Distribution}()
 

@@ -2,8 +2,6 @@
 # Le, Tuan Anh and Baydin, Atilim Gunes and Wood, Frank 2016
 # Inference Compilation and Universal Probabilistic Programming
 
-include("../ppl.jl")
-
 modelname = "captcha"
 proposers = Dict{String, Distribution}()
 

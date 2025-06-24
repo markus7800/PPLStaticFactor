@@ -39,8 +39,8 @@ function marsaglia(ctx::AbstractSampleRecordStateContext, _s_::State)
     _s_.y::Float64 = 0.0
     _s_.i::Int = 1
     while (_s_.s > 1)
-        _s_.x = sample_record_state(ctx, _s_, 52, ("x_" * string(_s_.i)), Uniform(-1.0, 1.0))
-        _s_.y = sample_record_state(ctx, _s_, 68, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
+        _s_.x = sample_record_state(ctx, _s_, 48, ("x_" * string(_s_.i)), Uniform(-1.0, 1.0))
+        _s_.y = sample_record_state(ctx, _s_, 64, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
         _s_.s = ((_s_.x ^ 2) + (_s_.y ^ 2))
         _s_.i = (_s_.i + 1)
     end
@@ -48,37 +48,37 @@ function marsaglia(ctx::AbstractSampleRecordStateContext, _s_::State)
     return _s_.z
 end
 
-function marsaglia_x__52(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.x = resample(ctx, _s_, 52, ("x_" * string(_s_.i)), Uniform(-1.0, 1.0))
-    _s_.y = score(ctx, _s_, 68, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
+function marsaglia_x__48(ctx::AbstractFactorRevisitContext, _s_::State)
+    _s_.x = revisit(ctx, _s_, 48, ("x_" * string(_s_.i)), Uniform(-1.0, 1.0))
+    _s_.y = score(ctx, _s_, 64, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
     _s_.s = ((_s_.x ^ 2) + (_s_.y ^ 2))
     _s_.i = (_s_.i + 1)
     while (_s_.s > 1)
-        _s_.x = score(ctx, _s_, 52, ("x_" * string(_s_.i)), Uniform(-1.0, 1.0))
-        _s_.y = score(ctx, _s_, 68, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
+        _s_.x = score(ctx, _s_, 48, ("x_" * string(_s_.i)), Uniform(-1.0, 1.0))
+        _s_.y = score(ctx, _s_, 64, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
         _s_.s = ((_s_.x ^ 2) + (_s_.y ^ 2))
         _s_.i = (_s_.i + 1)
     end
 end
 
-function marsaglia_y__68(ctx::AbstractFactorResampleContext, _s_::State)
-    _s_.y = resample(ctx, _s_, 68, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
+function marsaglia_y__64(ctx::AbstractFactorRevisitContext, _s_::State)
+    _s_.y = revisit(ctx, _s_, 64, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
     _s_.s = ((_s_.x ^ 2) + (_s_.y ^ 2))
     _s_.i = (_s_.i + 1)
     while (_s_.s > 1)
-        _s_.x = score(ctx, _s_, 52, ("x_" * string(_s_.i)), Uniform(-1.0, 1.0))
-        _s_.y = score(ctx, _s_, 68, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
+        _s_.x = score(ctx, _s_, 48, ("x_" * string(_s_.i)), Uniform(-1.0, 1.0))
+        _s_.y = score(ctx, _s_, 64, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
         _s_.s = ((_s_.x ^ 2) + (_s_.y ^ 2))
         _s_.i = (_s_.i + 1)
     end
 end
 
-function marsaglia_factor(ctx::AbstractFactorResampleContext, _s_::State, _addr_::String)
-    if _s_.node_id == 52
-        return marsaglia_x__52(ctx, _s_)
+function marsaglia_factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
+    if _s_.node_id == 48
+        return marsaglia_x__48(ctx, _s_)
     end
-    if _s_.node_id == 68
-        return marsaglia_y__68(ctx, _s_)
+    if _s_.node_id == 64
+        return marsaglia_y__64(ctx, _s_)
     end
     error("Cannot find factor for $_addr_ $_s_")
 end
@@ -91,6 +91,6 @@ function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return marsaglia(ctx, _s_)
 end
 
-function factor(ctx::AbstractFactorResampleContext, _s_::State, _addr_::String)
+function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
     return marsaglia_factor(ctx, _s_, _addr_)
 end

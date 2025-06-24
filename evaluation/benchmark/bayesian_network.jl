@@ -1,7 +1,5 @@
 # source: https://www.bnlearn.com/bnrepository/discrete-medium.html#alarm
 
-include("../ppl.jl")
-
 modelname = "bayesian_network"
 proposers = Dict{String, Distribution}()
 

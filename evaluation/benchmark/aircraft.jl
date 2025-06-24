@@ -1,8 +1,6 @@
 # source: https://probprog.github.io/anglican/examples/viewer/?worksheet=aircraft
 # commit = 46d70db1d6eb90207d46d0095fea2810c9ed543b
 
-include("../ppl.jl")
-
 modelname = "aircraft"
 proposers = Dict{String, Distribution}()
 

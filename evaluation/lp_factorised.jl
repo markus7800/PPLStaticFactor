@@ -22,7 +22,7 @@ function sample(ctx::ResampleContext, address::String, distribution::Distributio
     return value
 end
 
-mutable struct AddFactorResampleContext <: AbstractFactorResampleContext
+mutable struct AddFactorResampleContext <: AbstractFactorRevisitContext
     trace::Dict{String,Tuple{SampleType,AbstractState}}
     logprob::Float64
     function AddFactorResampleContext(trace::Dict{String,Tuple{SampleType,AbstractState}})
@@ -30,7 +30,7 @@ mutable struct AddFactorResampleContext <: AbstractFactorResampleContext
     end
 end
 
-function resample(ctx::AddFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+function revisit(ctx::AddFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     value = rand(distribution)
     ctx.logprob += logpdf(distribution, value)
     return value
@@ -58,7 +58,7 @@ function read(ctx::AddFactorResampleContext, s::AbstractState, node_id::Int, add
 end
 
 
-mutable struct SubstractFactorResampleContext <: AbstractFactorResampleContext
+mutable struct SubstractFactorResampleContext <: AbstractFactorRevisitContext
     trace::Dict{String,Tuple{SampleType,AbstractState}}
     logprob::Float64
     function SubstractFactorResampleContext(trace::Dict{String,Tuple{SampleType,AbstractState}})
@@ -66,7 +66,7 @@ mutable struct SubstractFactorResampleContext <: AbstractFactorResampleContext
     end
 end
 
-function resample(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+function revisit(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     value, _ = ctx.trace[address]
     ctx.logprob += logpdf(distribution, value)
     return value
@@ -91,9 +91,9 @@ function read(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::In
     return value
 end
 
-abstract type AbstractManualResampleContext end
+abstract type AbstractManualRevisitContext end
 
-mutable struct ManualResampleContext <: AbstractManualResampleContext
+mutable struct ManualResampleContext <: AbstractManualRevisitContext
     trace::Dict{String,SampleType}
     logprob::Float64
     resample_addr::String
@@ -102,7 +102,7 @@ mutable struct ManualResampleContext <: AbstractManualResampleContext
     end
 end
 
-function manual_resample(ctx::ManualResampleContext, address::String, distribution::Distribution; observed=nothing)
+function manual_revisit(ctx::ManualResampleContext, address::String, distribution::Distribution; observed=nothing)
     old_value = ctx.trace[address]
     new_value = rand(distribution)
     ctx.logprob += logpdf(distribution, new_value) - logpdf(distribution, old_value)
