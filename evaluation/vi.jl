@@ -18,25 +18,6 @@
 # 16 urn.jl                     no              no
 # 1 hmm.jl                      no              no
 
-# Poisson
-# Categorical
-# DiscreteUniform
-# Bernoulli
-
-# Dirichlet
-# MvNormal
-
-# Normal
-# InverseGamma
-# Uniform
-# Beta
-
-# include("ppl.jl")
-# bayesian_network, dirichlet_process, geometric does not work
-# captcha takes too long
-# include("benchmark/generated/bayesian_network.jl")
-# include("benchmark/generated/gmm_fixed_numclust.jl")
-
 import Distributions
 import ForwardDiff
 
@@ -457,7 +438,12 @@ function bbvi(n_iter::Int, L::Int, learning_rate::Float64, model::Function)
 
     end
 
-    avg_var = mean(mean(m) for m in values(avg_grads_var))
+    # for address in sort(collect(keys(avg_grads_var)))
+    #     println(address, ": ", avg_grads_var[address], " - ", mean(avg_grads_var[address]))
+    # end
+    all_params = reduce(vcat, values(avg_grads_var))
+    avg_var = median(all_params)
+
     return vd_store, avg_var
 end
 
@@ -596,6 +582,12 @@ function bbvi_factorised(n_iter::Int, L::Int, learning_rate::Float64, model::Fun
 
     end
 
-    avg_var = mean(mean(m) for m in values(avg_grads_var))
+    # for address in sort(collect(keys(avg_grads_var)))
+    #     println(address, ": ", avg_grads_var[address], " - ", mean(avg_grads_var[address]))
+    # end
+    all_params = reduce(vcat, values(avg_grads_var))
+    avg_var = median(all_params)
+        
+    # avg_var = mean(mean(m) for m in values(avg_grads_var))
     return vd_store, avg_var
 end
