@@ -28,7 +28,7 @@ proposers = Dict{String, Distribution}()
 
     n::Int = 1
     while n <= N
-        z = sample(ctx, "z_" * string(n), Categorical(thetas[doc[n]]))
+        z::Int = sample(ctx, "z_" * string(n), Categorical(thetas[doc[n]]))
         z = min(length(phis),z)
         sample(ctx, "w_" * string(n), Categorical(phis[z]), observed=w[n])
         n = n + 1

@@ -11,6 +11,7 @@ mutable struct State <: AbstractState
     phis::Vector{Vector{Float64}}
     theta::Vector{Float64}
     thetas::Vector{Vector{Float64}}
+    z::Int
     function State()
         return new(
             0,
@@ -21,6 +22,7 @@ mutable struct State <: AbstractState
             zero(Vector{Vector{Float64}}),
             zero(Vector{Float64}),
             zero(Vector{Vector{Float64}}),
+            zero(Int),
         )
     end
 end
@@ -34,6 +36,7 @@ function Base.copy!(dst::State, _s_::State)
     dst.phis = _s_.phis
     dst.theta = _s_.theta
     dst.thetas = _s_.thetas
+    dst.z = _s_.z
     return dst
 end
 
@@ -58,9 +61,9 @@ function lda(ctx::AbstractSampleRecordStateContext, M::Int, N::Int, V::Int, w::V
     end
     _s_.n::Int = 1
     while (_s_.n <= N)
-        z = sample_record_state(ctx, _s_, 192, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
-        z = min(length(_s_.phis), z)
-        _ = sample_record_state(ctx, _s_, 219, ("w_" * string(_s_.n)), Categorical(_s_.phis[z]), observed = w[_s_.n])
+        _s_.z::Int = sample_record_state(ctx, _s_, 192, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
+        _s_.z = min(length(_s_.phis), _s_.z)
+        _ = sample_record_state(ctx, _s_, 221, ("w_" * string(_s_.n)), Categorical(_s_.phis[_s_.z]), observed = w[_s_.n])
         _s_.n = (_s_.n + 1)
     end
 end
@@ -84,9 +87,9 @@ function lda_K_41(ctx::AbstractFactorRevisitContext, M::Int, N::Int, V::Int, w::
     end
     _s_.n = 1
     while (_s_.n <= N)
-        z = score(ctx, _s_, 192, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
-        z = min(length(_s_.phis), z)
-        score(ctx, _s_, 219, ("w_" * string(_s_.n)), Categorical(_s_.phis[z]), observed = w[_s_.n])
+        _s_.z = score(ctx, _s_, 192, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
+        _s_.z = min(length(_s_.phis), _s_.z)
+        score(ctx, _s_, 221, ("w_" * string(_s_.n)), Categorical(_s_.phis[_s_.z]), observed = w[_s_.n])
         _s_.n = (_s_.n + 1)
     end
 end
@@ -102,9 +105,9 @@ function lda_phi__144(ctx::AbstractFactorRevisitContext, M::Int, N::Int, V::Int,
     end
     _s_.n = 1
     while (_s_.n <= N)
-        z = read(ctx, _s_, 192, ("z_" * string(_s_.n)))
-        z = min(length(_s_.phis), z)
-        score(ctx, _s_, 219, ("w_" * string(_s_.n)), Categorical(_s_.phis[z]), observed = w[_s_.n])
+        _s_.z = read(ctx, _s_, 192, ("z_" * string(_s_.n)))
+        _s_.z = min(length(_s_.phis), _s_.z)
+        score(ctx, _s_, 221, ("w_" * string(_s_.n)), Categorical(_s_.phis[_s_.z]), observed = w[_s_.n])
         _s_.n = (_s_.n + 1)
     end
 end
@@ -127,17 +130,17 @@ function lda_theta__84(ctx::AbstractFactorRevisitContext, M::Int, N::Int, V::Int
     end
     _s_.n = 1
     while (_s_.n <= N)
-        z = score(ctx, _s_, 192, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
-        z = min(length(_s_.phis), z)
-        read(ctx, _s_, 219, ("w_" * string(_s_.n)), observed = w[_s_.n])
+        _s_.z = score(ctx, _s_, 192, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
+        _s_.z = min(length(_s_.phis), _s_.z)
+        read(ctx, _s_, 221, ("w_" * string(_s_.n)), observed = w[_s_.n])
         _s_.n = (_s_.n + 1)
     end
 end
 
 function lda_z__192(ctx::AbstractFactorRevisitContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State)
-    z = revisit(ctx, _s_, 192, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
-    z = min(length(_s_.phis), z)
-    score(ctx, _s_, 219, ("w_" * string(_s_.n)), Categorical(_s_.phis[z]), observed = w[_s_.n])
+    _s_.z = revisit(ctx, _s_, 192, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
+    _s_.z = min(length(_s_.phis), _s_.z)
+    score(ctx, _s_, 221, ("w_" * string(_s_.n)), Categorical(_s_.phis[_s_.z]), observed = w[_s_.n])
 end
 
 function lda_factor(ctx::AbstractFactorRevisitContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State, _addr_::String)
@@ -175,22 +178,22 @@ function lda___start__(ctx::AbstractFactorResumeContext, M::Int, N::Int, V::Int,
     end
     _s_.n = 1
     while (_s_.n <= N)
-        z = score(ctx, _s_, 192, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
-        z = min(length(_s_.phis), z)
-        score(ctx, _s_, 219, ("w_" * string(_s_.n)), Categorical(_s_.phis[z]), observed = w[_s_.n])
+        _s_.z = score(ctx, _s_, 192, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
+        _s_.z = min(length(_s_.phis), _s_.z)
+        score(ctx, _s_, 221, ("w_" * string(_s_.n)), Categorical(_s_.phis[_s_.z]), observed = w[_s_.n])
         return
     end
     _s_.node_id = -1
     return
 end
 
-function lda_w__219(ctx::AbstractFactorResumeContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State)
-    resume(ctx, _s_, 219, ("w_" * string(_s_.n)), Categorical(_s_.phis[z]), observed = w[_s_.n])
+function lda_w__221(ctx::AbstractFactorResumeContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State)
+    resume(ctx, _s_, 221, ("w_" * string(_s_.n)), Categorical(_s_.phis[_s_.z]), observed = w[_s_.n])
     _s_.n = (_s_.n + 1)
     while (_s_.n <= N)
-        z = score(ctx, _s_, 192, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
-        z = min(length(_s_.phis), z)
-        score(ctx, _s_, 219, ("w_" * string(_s_.n)), Categorical(_s_.phis[z]), observed = w[_s_.n])
+        _s_.z = score(ctx, _s_, 192, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
+        _s_.z = min(length(_s_.phis), _s_.z)
+        score(ctx, _s_, 221, ("w_" * string(_s_.n)), Categorical(_s_.phis[_s_.z]), observed = w[_s_.n])
         return
     end
     _s_.node_id = -1
@@ -201,8 +204,8 @@ function lda_resume(ctx::AbstractFactorResumeContext, M::Int, N::Int, V::Int, w:
     if _s_.node_id == 0
         return lda___start__(ctx, M, N, V, w, doc, _s_)
     end
-    if _s_.node_id == 219
-        return lda_w__219(ctx, M, N, V, w, doc, _s_)
+    if _s_.node_id == 221
+        return lda_w__221(ctx, M, N, V, w, doc, _s_)
     end
     _s_.node_id = -1 # marks termination
 end
