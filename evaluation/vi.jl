@@ -460,3 +460,142 @@ function bbvi(n_iter::Int, L::Int, learning_rate::Float64, model::Function)
     avg_var = mean(mean(m) for m in values(avg_grads_var))
     return vd_store, avg_var
 end
+
+
+mutable struct GuideRecordStateContext <: AbstractSampleRecordStateContext
+    vd_store::Dict{String,VaritationalDistribution}
+    states::Dict{String, AbstractState}
+    trace::Dict{String, SampleType}
+    log_q::Dict{String,Float64}
+    function GuideRecordStateContext(vd_store::Dict{String,VaritationalDistribution})
+        return new(vd_store, Dict{String, AbstractState}(), Dict{String, SampleType}(), Dict{String,Float64}())
+    end
+end
+
+function sample_record_state(ctx::GuideRecordStateContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+    if !isnothing(observed)
+        value = observed
+        return value
+    end
+    if !haskey(ctx.vd_store, address)
+        ctx.vd_store[address] = init_vd(distribution)
+    end
+    vd = ctx.vd_store[address]
+    value, log_q = rand_and_logpdf(vd)
+    ctx.log_q[address] = log_q
+    state = copy(s)
+    state.node_id = node_id
+    ctx.trace[address] = value
+    ctx.states[address] = state
+    return value
+end
+
+# executes model with respect to trace_proposed
+# resamples at resample_address and samples from prior for other new addresses
+mutable struct VIForwardFactorContext <: AbstractFactorRevisitContext
+    trace::Dict{String,SampleType}
+    logprob::Float64
+    function VIForwardFactorContext(trace::Dict{String,SampleType})
+        return new(trace, 0.0)
+    end
+end
+
+function revisit(ctx::VIForwardFactorContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+    value = ctx.trace[address]
+    ctx.logprob += logpdf(distribution, value)
+    return value
+end
+
+function score(ctx::VIForwardFactorContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+    if !isnothing(observed)
+        ctx.logprob += logpdf(distribution, observed)
+        return observed
+    end
+    value = ctx.trace[address]
+    ctx.logprob += logpdf(distribution, value)
+    return value
+end
+
+function read(ctx::VIForwardFactorContext, s::State, node_id::Int, address::String; observed=nothing)
+    if !isnothing(observed)
+        value = observed
+    else
+        value = ctx.trace[address]
+    end
+    return value
+end
+
+
+function bbvi_factorised(n_iter::Int, L::Int, learning_rate::Float64, model::Function)
+    vd_store = Dict{String, VaritationalDistribution}()
+
+    eps = 1e-8
+    acc = Dict{String, Vector{Float64}}()
+    pre = 1.1
+    post = 0.9
+
+    avg_grads_var = Dict{String, Vector{Float64}}()
+    for i in 1:n_iter
+        grads_mean = Dict{String, Vector{Float64}}()
+        grads_var = Dict{String, Vector{Float64}}()
+        for l in 1:L
+            ctx = GuideRecordStateContext(vd_store)
+            model(ctx, State())
+
+            for (address, value) in ctx.trace
+                vd = vd_store[address]
+                grads = logpdf_param_grads(vd, value)
+                
+                factor_ctx = VIForwardFactorContext(ctx.trace)
+                factor(factor_ctx, ctx.states[address], address)
+                elbo = factor_ctx.logprob - ctx.log_q[address]
+
+                if !haskey(grads_mean, address)
+                    grads_mean[address] = zeros(length(grads))
+                    grads_var[address] = zeros(length(grads))
+                end
+                # println(address, ": ", (elbo .* grads))
+                # grads_mean[address] = grads_mean[address] + (elbo .* grads) / L
+                # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
+                # compute grad mean and variance
+                new_value = elbo .* grads
+                old_mean = grads_mean[address]
+                delta1 = new_value .- old_mean
+                new_mean = old_mean .+ delta1 / l
+                delta2 = new_value .- new_mean
+                grads_mean[address] = new_mean
+                grads_var[address] = grads_var[address] .+ delta1 .* delta2
+            end 
+        end
+        # println()
+
+        # println(grads_mean)
+
+        for (address, v) in grads_var
+            grads_var[address] = v / (L - 1)
+
+            grads = grads_mean[address]
+            # grads = clamp.(grads, -1., 1.)
+            # println(address, ": ", grads)
+
+
+            if !haskey(avg_grads_var, address)
+                avg_grads_var[address] = zeros(length(grads))
+            end
+            avg_grads_var[address] = avg_grads_var[address] + v / ((L - 1) * n_iter)
+        
+
+            # adagrad update
+            acc_addr = get(acc, address, fill(eps,size(grads)))
+            acc_addr = post .* acc_addr .+ pre .* grads.^2
+            acc[address] = acc_addr
+            rho = learning_rate ./ (sqrt.(acc_addr) .+ eps)
+
+            vd_store[address].theta .+= (rho .* grads)
+        end
+
+    end
+
+    avg_var = mean(mean(m) for m in values(avg_grads_var))
+    return vd_store, avg_var
+end

@@ -17,7 +17,7 @@ include("vi.jl")
 name_to_N = Dict{String,Int}(
     "aircraft" => 1000,
     "bayesian_network" => 1000,
-    "captcha" => 10,
+    "captcha" => 1,
     "dirichlet_process" => 1000,
     "geometric" => 1000,
     "gmm_fixed_numclust" => 1000,
@@ -34,12 +34,14 @@ name_to_N = Dict{String,Int}(
     "lda_fixed_numtopic_unrolled" => 1000,
     "linear_regression_unrolled" => 1000,
 )
-L = 100
+L = modelname == "captcha" ? 1 : 100
 learning_rate = 0.001
-println(modelname)
+println(modelname, " n_iter=", name_to_N[modelname], " L=", L)
 Random.seed!(0)
-_, avg_var = bbvi(name_to_N[modelname], L, learning_rate, model)
-# _, avg_var = bbvi(100, 10, 0.001, model)
-println("avg_var: ", avg_var)
+_, standard_avg_var = bbvi(name_to_N[modelname], L, learning_rate, model)
+println("avg_var standard: ", standard_avg_var)
+
+_, factored_avg_var = bbvi_factorised(name_to_N[modelname], L, learning_rate, model)
+println("  avg_var factor: ", factored_avg_var, " (", standard_avg_var/factored_avg_var, ")")
 
 
