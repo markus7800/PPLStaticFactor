@@ -602,3 +602,8 @@ end
 function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
     return hmm_factor(ctx, ys, _s_, _addr_)
 end
+
+function resume(ctx::AbstractFactorResumeContext, _s_::State, _addr_::String)
+    return hmm_resume(ctx, ys, _s_, _addr_)
+end
+

@@ -73,6 +73,38 @@ function hmm_factor(ctx::AbstractFactorRevisitContext, ys::Vector{Float64}, _s_:
     error("Cannot find factor for $_addr_ $_s_")
 end
 
+function hmm___start__(ctx::AbstractFactorResumeContext, ys::Vector{Float64}, _s_::State)
+    _s_.seqlen = length(ys)
+    _s_.transition_probs = [0.1 0.2 0.7; 0.1 0.8 0.1; 0.3 0.3 0.4]
+    _s_.current = read(ctx, _s_, 53, "initial_state")
+    _s_.i = 1
+    while (_s_.i <= _s_.seqlen)
+        _s_.current = read(ctx, _s_, 79, ("state_" * string(_s_.i)))
+        score(ctx, _s_, 97, ("obs_" * string(_s_.i)), Normal(_s_.current, 1), observed = get_n(ys, _s_.i))
+        return
+    end
+end
+
+function hmm_obs__97(ctx::AbstractFactorResumeContext, ys::Vector{Float64}, _s_::State)
+    resume(ctx, _s_, 97, ("obs_" * string(_s_.i)), Normal(_s_.current, 1), observed = get_n(ys, _s_.i))
+    _s_.i = (_s_.i + 1)
+    while (_s_.i <= _s_.seqlen)
+        _s_.current = read(ctx, _s_, 79, ("state_" * string(_s_.i)))
+        score(ctx, _s_, 97, ("obs_" * string(_s_.i)), Normal(_s_.current, 1), observed = get_n(ys, _s_.i))
+        return
+    end
+end
+
+function hmm_resume(ctx::AbstractFactorResumeContext, ys::Vector{Float64}, _s_::State, _addr_::String)
+    if _s_.node_id == 0
+        return hmm___start__(ctx, ys, _s_)
+    end
+    if _s_.node_id == 97
+        return hmm_obs__97(ctx, ys, _s_)
+    end
+    error("Cannot find factor for $_addr_ $_s_")
+end
+
 function model(ctx::SampleContext)
     return hmm(ctx, ys)
 end
@@ -84,3 +116,8 @@ end
 function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
     return hmm_factor(ctx, ys, _s_, _addr_)
 end
+
+function resume(ctx::AbstractFactorResumeContext, _s_::State, _addr_::String)
+    return hmm_resume(ctx, ys, _s_, _addr_)
+end
+

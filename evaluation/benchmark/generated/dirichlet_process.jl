@@ -140,6 +140,53 @@ function dp_factor(ctx::AbstractFactorRevisitContext, xs::Vector{Float64}, _s_::
     error("Cannot find factor for $_addr_ $_s_")
 end
 
+function dp___start__(ctx::AbstractFactorResumeContext, xs::Vector{Float64}, _s_::State)
+    _s_.alpha = 5.0
+    _s_.stick = 1.0
+    _s_.beta = 0.0
+    _s_.cumprod = 1.0
+    _s_.weights = Float64[]
+    _s_.thetas = Float64[]
+    _s_.i = 0
+    while (_s_.stick > 0.01)
+        _s_.i = (_s_.i + 1)
+        _s_.cumprod = (_s_.cumprod * (1.0 - _s_.beta))
+        _s_.beta = read(ctx, _s_, 89, ("beta_" * string(_s_.i)))
+        _s_.theta = read(ctx, _s_, 105, ("theta_" * string(_s_.i)))
+        _s_.stick = (_s_.stick - (_s_.beta * _s_.cumprod))
+        _s_.weights = vcat(_s_.weights, (_s_.beta * _s_.cumprod))
+        _s_.thetas = vcat(_s_.thetas, _s_.theta)
+    end
+    _s_.j = 1
+    while (_s_.j <= length(xs))
+        _s_.z = read(ctx, _s_, 160, ("z_" * string(_s_.j)))
+        _s_.z = min(_s_.z, length(_s_.thetas))
+        score(ctx, _s_, 190, ("x_" * string(_s_.j)), Normal(get_n(_s_.thetas, _s_.z), 0.1), observed = get_n(xs, _s_.j))
+        return
+    end
+end
+
+function dp_x__190(ctx::AbstractFactorResumeContext, xs::Vector{Float64}, _s_::State)
+    resume(ctx, _s_, 190, ("x_" * string(_s_.j)), Normal(get_n(_s_.thetas, _s_.z), 0.1), observed = get_n(xs, _s_.j))
+    _s_.j = (_s_.j + 1)
+    while (_s_.j <= length(xs))
+        _s_.z = read(ctx, _s_, 160, ("z_" * string(_s_.j)))
+        _s_.z = min(_s_.z, length(_s_.thetas))
+        score(ctx, _s_, 190, ("x_" * string(_s_.j)), Normal(get_n(_s_.thetas, _s_.z), 0.1), observed = get_n(xs, _s_.j))
+        return
+    end
+end
+
+function dp_resume(ctx::AbstractFactorResumeContext, xs::Vector{Float64}, _s_::State, _addr_::String)
+    if _s_.node_id == 0
+        return dp___start__(ctx, xs, _s_)
+    end
+    if _s_.node_id == 190
+        return dp_x__190(ctx, xs, _s_)
+    end
+    error("Cannot find factor for $_addr_ $_s_")
+end
+
 function model(ctx::SampleContext)
     return dp(ctx, xs)
 end
@@ -151,3 +198,8 @@ end
 function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
     return dp_factor(ctx, xs, _s_, _addr_)
 end
+
+function resume(ctx::AbstractFactorResumeContext, _s_::State, _addr_::String)
+    return dp_resume(ctx, xs, _s_, _addr_)
+end
+

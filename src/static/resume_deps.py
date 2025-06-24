@@ -4,7 +4,7 @@ from .ir import *
 from typing import Deque, Tuple, List
 
 DEBUG_RESUME_DEPS = False
-def get_resume_deps(cfgnode: CFGNode):
+def get_resume_deps(cfgnode: CFGNode, break_at_sample: bool):
 
     marked: Set[CFGNode] = set()
     # we recursively get all data and control dependencies of random variable node
@@ -19,7 +19,9 @@ def get_resume_deps(cfgnode: CFGNode):
         
         for child in node.children:
             if child not in marked:
-                if isinstance(child, (SampleNode,FactorNode)):
+                if isinstance(child, FactorNode):
+                    resume_deps.add(child)
+                elif break_at_sample and isinstance(child, SampleNode):
                     resume_deps.add(child)
                 else:
                     queue.append(child)

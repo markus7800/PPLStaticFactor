@@ -34,15 +34,23 @@ filenames = [
     "urn.jl"
 ]
 
+build_resume = set([
+    "dirichlet_process.jl",
+    "gmm_fixed_numclust.jl",
+    "gmm_variable_numclust.jl",
+    "hmm.jl",
+    "lda_fixed_numtopic.jl",
+    "lda_variable_numtopic.jl"
+])
+
 t0 = time.time()
 for i, filename in enumerate(filenames):
     print(i+1, filename)
     ir = get_IR_for_formal("evaluation/benchmark/" + filename)
-    pw = FactorisationBuilder(filename, ir, True)
+    pw = FactorisationBuilder(filename, ir, True, filename in build_resume)
     pw.write_program()
     with open("evaluation/benchmark/generated/" + filename, "w") as f:
         f.write(pw.out)
-    exit()
 
 filenames = [
     # "gmm_fixed_numclust.jl",
@@ -53,7 +61,7 @@ filenames = [
 for i, filename in enumerate(filenames):
     print(i+1, filename)
     ir = get_IR_for_formal("evaluation/unrolled/" + filename, unroll_loops=True)
-    pw = FactorisationBuilder(filename, ir, True)
+    pw = FactorisationBuilder(filename, ir, True, False)
     pw.write_program()
     with open("evaluation/unrolled/generated/" + filename, "w") as f:
         f.write(pw.out)

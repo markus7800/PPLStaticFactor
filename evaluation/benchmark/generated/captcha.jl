@@ -154,3 +154,8 @@ end
 function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
     return captcha_factor(ctx, captcha_img, _s_, _addr_)
 end
+
+function resume(ctx::AbstractFactorResumeContext, _s_::State, _addr_::String)
+    return captcha_resume(ctx, captcha_img, _s_, _addr_)
+end
+

@@ -200,6 +200,55 @@ function gmm_factor(ctx::AbstractFactorRevisitContext, ys::Vector{Float64}, _s_:
     error("Cannot find factor for $_addr_ $_s_")
 end
 
+function gmm___start__(ctx::AbstractFactorResumeContext, ys::Vector{Float64}, _s_::State)
+    _s_.δ = 5.0
+    _s_.ξ = 0.0
+    _s_.κ = 0.01
+    _s_.α = 2.0
+    _s_.β = 10.0
+    _s_.num_clusters = read(ctx, _s_, 52, "num_clusters")
+    _s_.num_clusters = (_s_.num_clusters + 1)
+    _s_.w = read(ctx, _s_, 70, "w")
+    _s_.k = 1
+    _s_.means = Float64[]
+    _s_.vars = Float64[]
+    while (_s_.k <= _s_.num_clusters)
+        _s_.mu = read(ctx, _s_, 114, ("mu_" * string(_s_.k)))
+        _s_.var = read(ctx, _s_, 137, ("var_" * string(_s_.k)))
+        _s_.means = vcat(_s_.means, _s_.mu)
+        _s_.vars = vcat(_s_.vars, _s_.var)
+        _s_.k = (_s_.k + 1)
+    end
+    _s_.i = 1
+    while (_s_.i <= length(ys))
+        _s_.z = read(ctx, _s_, 186, ("z_" * string(_s_.i)))
+        _s_.z = min(_s_.z, length(_s_.means))
+        score(ctx, _s_, 211, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
+        return
+    end
+end
+
+function gmm_y__211(ctx::AbstractFactorResumeContext, ys::Vector{Float64}, _s_::State)
+    resume(ctx, _s_, 211, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
+    _s_.i = (_s_.i + 1)
+    while (_s_.i <= length(ys))
+        _s_.z = read(ctx, _s_, 186, ("z_" * string(_s_.i)))
+        _s_.z = min(_s_.z, length(_s_.means))
+        score(ctx, _s_, 211, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
+        return
+    end
+end
+
+function gmm_resume(ctx::AbstractFactorResumeContext, ys::Vector{Float64}, _s_::State, _addr_::String)
+    if _s_.node_id == 0
+        return gmm___start__(ctx, ys, _s_)
+    end
+    if _s_.node_id == 211
+        return gmm_y__211(ctx, ys, _s_)
+    end
+    error("Cannot find factor for $_addr_ $_s_")
+end
+
 function model(ctx::SampleContext)
     return gmm(ctx, ys)
 end
@@ -211,3 +260,8 @@ end
 function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
     return gmm_factor(ctx, ys, _s_, _addr_)
 end
+
+function resume(ctx::AbstractFactorResumeContext, _s_::State, _addr_::String)
+    return gmm_resume(ctx, ys, _s_, _addr_)
+end
+

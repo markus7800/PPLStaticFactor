@@ -555,3 +555,8 @@ end
 function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
     return bayesian_network_factor(ctx, CPTs, _s_, _addr_)
 end
+
+function resume(ctx::AbstractFactorResumeContext, _s_::State, _addr_::String)
+    return bayesian_network_resume(ctx, CPTs, _s_, _addr_)
+end
+

@@ -126,6 +126,52 @@ function lda_factor(ctx::AbstractFactorRevisitContext, M::Int, N::Int, V::Int, w
     error("Cannot find factor for $_addr_ $_s_")
 end
 
+function lda___start__(ctx::AbstractFactorResumeContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State)
+    _s_.K = 2
+    _s_.thetas = Vector{Vector{Float64}}()
+    _s_.i = 1
+    while (_s_.i <= M)
+        _s_.theta = read(ctx, _s_, 71, ("theta_" * string(_s_.i)))
+        _s_.thetas = append(_s_.thetas, _s_.theta)
+        _s_.i = (_s_.i + 1)
+    end
+    _s_.phis = Vector{Vector{Float64}}()
+    _s_.i = 1
+    while (_s_.i <= _s_.K)
+        _s_.phi = read(ctx, _s_, 131, ("phi_" * string(_s_.i)))
+        _s_.phis = append(_s_.phis, _s_.phi)
+        _s_.i = (_s_.i + 1)
+    end
+    _s_.n = 1
+    while (_s_.n <= N)
+        z = read(ctx, _s_, 179, ("z_" * string(_s_.n)))
+        z = min(length(_s_.phis), z)
+        score(ctx, _s_, 206, ("w_" * string(_s_.n)), Categorical(_s_.phis[z]), observed = w[_s_.n])
+        return
+    end
+end
+
+function lda_w__206(ctx::AbstractFactorResumeContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State)
+    resume(ctx, _s_, 206, ("w_" * string(_s_.n)), Categorical(_s_.phis[z]), observed = w[_s_.n])
+    _s_.n = (_s_.n + 1)
+    while (_s_.n <= N)
+        z = read(ctx, _s_, 179, ("z_" * string(_s_.n)))
+        z = min(length(_s_.phis), z)
+        score(ctx, _s_, 206, ("w_" * string(_s_.n)), Categorical(_s_.phis[z]), observed = w[_s_.n])
+        return
+    end
+end
+
+function lda_resume(ctx::AbstractFactorResumeContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State, _addr_::String)
+    if _s_.node_id == 0
+        return lda___start__(ctx, M, N, V, w, doc, _s_)
+    end
+    if _s_.node_id == 206
+        return lda_w__206(ctx, M, N, V, w, doc, _s_)
+    end
+    error("Cannot find factor for $_addr_ $_s_")
+end
+
 function model(ctx::SampleContext)
     return lda(ctx, M, N, V, w, doc)
 end
@@ -137,3 +183,8 @@ end
 function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
     return lda_factor(ctx, M, N, V, w, doc, _s_, _addr_)
 end
+
+function resume(ctx::AbstractFactorResumeContext, _s_::State, _addr_::String)
+    return lda_resume(ctx, M, N, V, w, doc, _s_, _addr_)
+end
+
