@@ -86,7 +86,7 @@ function urn_ball__56(ctx::AbstractFactorRevisitContext, K::Int, _s_::State)
     _s_.balls = vcat(_s_.balls, _s_.ball)
     _s_.i = (_s_.i + 1)
     while (_s_.i <= _s_.N)
-        _s_.ball = read(ctx, _s_, 56, ("ball_" * string(_s_.i)))
+        _s_.ball = read_trace(ctx, _s_, 56, ("ball_" * string(_s_.i)))
         _s_.balls = vcat(_s_.balls, _s_.ball)
         _s_.i = (_s_.i + 1)
     end
@@ -94,7 +94,7 @@ function urn_ball__56(ctx::AbstractFactorRevisitContext, K::Int, _s_::State)
     if (_s_.N > 0)
         _s_.k = 1
         while (_s_.k <= K)
-            _s_.ball_ix = read(ctx, _s_, 107, ("drawn_ball_" * string(_s_.k)))
+            _s_.ball_ix = read_trace(ctx, _s_, 107, ("drawn_ball_" * string(_s_.k)))
             _s_.n_black = (_s_.n_black + get_n(_s_.balls, min(length(_s_.balls), _s_.ball_ix)))
             _s_.k = (_s_.k + 1)
         end
@@ -107,7 +107,7 @@ function urn_drawn_ball__107(ctx::AbstractFactorRevisitContext, K::Int, _s_::Sta
     _s_.n_black = (_s_.n_black + get_n(_s_.balls, min(length(_s_.balls), _s_.ball_ix)))
     _s_.k = (_s_.k + 1)
     while (_s_.k <= K)
-        _s_.ball_ix = read(ctx, _s_, 107, ("drawn_ball_" * string(_s_.k)))
+        _s_.ball_ix = read_trace(ctx, _s_, 107, ("drawn_ball_" * string(_s_.k)))
         _s_.n_black = (_s_.n_black + get_n(_s_.balls, min(length(_s_.balls), _s_.ball_ix)))
         _s_.k = (_s_.k + 1)
     end

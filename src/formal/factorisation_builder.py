@@ -100,14 +100,18 @@ class FactorFunctionWriter():
                     assert value_sexpr[1] == ["Identifier", "sample"]
                     if current == self.root_node and not self.wrote_first:
                         self.wrote_first = True
-                        value_sexpr[1] = ["Identifier", self.context]
+                        if self.context == "resume":
+                            value_sexpr[1] = ["Identifier", "read_trace"]
+                            del value_sexpr[6] # remove distribution
+                        else:
+                            value_sexpr[1] = ["Identifier", "revisit"]
                     elif current in self.deps:
                         value_sexpr[1] = ["Identifier", "score"]
                         is_score_stmt = True
                     elif self.context == "resume":
                         value_sexpr[1] = ["Identifier", "score"]
                     else:
-                        value_sexpr[1] = ["Identifier", "read"]
+                        value_sexpr[1] = ["Identifier", "read_trace"]
                         del value_sexpr[6] # remove distribution
                 else:
                     value_sexpr =  inject_state_rec(value_sexpr, self.state_var, self.var_names, None)
@@ -142,14 +146,18 @@ class FactorFunctionWriter():
                     assert value_sexpr[1] == ["Identifier", "sample"]
                     if current == self.root_node and not self.wrote_first:
                         self.wrote_first = True
-                        value_sexpr[1] = ["Identifier", self.context]
+                        if self.context == "resume":
+                            value_sexpr[1] = ["Identifier", "read_trace"]
+                            del value_sexpr[6] # remove distribution
+                        else:
+                            value_sexpr[1] = ["Identifier", "revisit"]
                     elif current in self.deps:
                         value_sexpr[1] = ["Identifier", "score"]
                         is_score_stmt = True
                     elif self.context == "resume":
                         value_sexpr[1] = ["Identifier", "score"]
                     else:
-                        value_sexpr[1] = ["Identifier", "read"]
+                        value_sexpr[1] = ["Identifier", "read_trace"]
                         del value_sexpr[6] # remove distribution
                 else:
                     value_sexpr =  inject_state_rec(value_sexpr, self.state_var, self.var_names, None)

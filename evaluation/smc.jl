@@ -106,7 +106,7 @@ mutable struct SMCResumeContext <: AbstractFactorResumeContext
     end
 end
 
-function resume(ctx::SMCResumeContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+function read_trace(ctx::SMCResumeContext, s::State, node_id::Int, address::String; observed=nothing)
     if isnothing(observed)
         error("Should only resume from observed. $address")
     end

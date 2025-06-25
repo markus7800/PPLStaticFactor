@@ -47,7 +47,7 @@ function hmm_initial_state_53(ctx::AbstractFactorRevisitContext, ys::Vector{Floa
     _s_.i = 1
     while (_s_.i <= _s_.seqlen)
         _s_.current = score(ctx, _s_, 79, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))
-        read(ctx, _s_, 97, ("obs_" * string(_s_.i)), observed = get_n(ys, _s_.i))
+        read_trace(ctx, _s_, 97, ("obs_" * string(_s_.i)), observed = get_n(ys, _s_.i))
         _s_.i = (_s_.i + 1)
     end
 end
@@ -88,7 +88,7 @@ function hmm___start__(ctx::AbstractFactorResumeContext, ys::Vector{Float64}, _s
 end
 
 function hmm_obs__97(ctx::AbstractFactorResumeContext, ys::Vector{Float64}, _s_::State)
-    resume(ctx, _s_, 97, ("obs_" * string(_s_.i)), Normal(_s_.current, 1), observed = get_n(ys, _s_.i))
+    read_trace(ctx, _s_, 97, ("obs_" * string(_s_.i)), observed = get_n(ys, _s_.i))
     _s_.i = (_s_.i + 1)
     while (_s_.i <= _s_.seqlen)
         _s_.current = score(ctx, _s_, 79, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))

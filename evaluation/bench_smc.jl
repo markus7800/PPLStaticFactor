@@ -44,40 +44,46 @@ function runbench(N::Int, n_particles::Int, verbose::Bool)
     verbose && println(@sprintf("Standard time %.3f ms", standard_time*10^3))
     verbose && println(@sprintf("Factored time %.3f ms (%.2f)", factored_time*10^3, factored_time / standard_time))
     
+    if verbose
+        f = open("evaluation/smc_results.csv", "a")
+        println(f, modelname, ",", n_particles, ",", standard_time*10^6, ",", factored_time*10^6, ",", factored_time/standard_time)
+    end
 end
 
-test_correctness(10, 10)
+n_particles = 100
 
-runbench(10, 10, false)
-runbench(10, 10, true)
+test_correctness(10, n_particles)
 
+runbench(10, n_particles, false)
+runbench(10, n_particles, true)
 
+# 10 particles
 # dirichlet_process.jl
 # Test correctness: OK.
-# Standard time 37.834 ms
-# Factored time 20.712 ms (0.55)
+# Standard time 23.000 ms
+# Factored time 2.134 ms (0.09)
 
 # gmm_fixed_numclust.jl
 # Test correctness: OK.
-# Standard time 45.978 ms
-# Factored time 36.817 ms (0.80)
+# Standard time 18.092 ms
+# Factored time 3.189 ms (0.18)
 
 # gmm_variable_numclust.jl
 # Test correctness: OK.
-# Standard time 44.110 ms
-# Factored time 36.287 ms (0.82)
+# Standard time 16.033 ms
+# Factored time 3.053 ms (0.19)
 
 # hmm.jl
 # Test correctness: OK.
-# Standard time 10.139 ms
-# Factored time 8.386 ms (0.83)
+# Standard time 3.345 ms
+# Factored time 0.742 ms (0.22)
 
 # lda_fixed_numtopic.jl
 # Test correctness: OK.
-# Standard time 315.597 ms
-# Factored time 243.587 ms (0.77)
+# Standard time 134.384 ms
+# Factored time 40.126 ms (0.30)
 
 # lda_variable_numtopic.jl
 # Test correctness: OK.
-# Standard time 345.147 ms
-# Factored time 262.009 ms (0.76)
+# Standard time 142.840 ms
+# Factored time 41.647 ms (0.29)

@@ -96,7 +96,7 @@ function aircraft_blip__126(ctx::AbstractFactorRevisitContext, _s_::State)
     _s_.j = (_s_.j + 1)
     while (_s_.j <= _s_.num_blips)
         _s_.total_num_blibs = (_s_.total_num_blibs + 1)
-        _s_.blip = read(ctx, _s_, 126, ("blip_" * string(_s_.i) * "_" * string(_s_.j)))
+        _s_.blip = read_trace(ctx, _s_, 126, ("blip_" * string(_s_.i) * "_" * string(_s_.j)))
         if (_s_.total_num_blibs == 1)
             _s_.blip_1 = _s_.blip
         end
@@ -110,12 +110,12 @@ function aircraft_blip__126(ctx::AbstractFactorRevisitContext, _s_::State)
     end
     _s_.i = (_s_.i + 1)
     while (_s_.i <= _s_.num_aircraft)
-        _s_.position = read(ctx, _s_, 71, ("pos_" * string(_s_.i)))
-        _s_.num_blips = read(ctx, _s_, 89, ("num_blips_" * string(_s_.i)))
+        _s_.position = read_trace(ctx, _s_, 71, ("pos_" * string(_s_.i)))
+        _s_.num_blips = read_trace(ctx, _s_, 89, ("num_blips_" * string(_s_.i)))
         _s_.j = 1
         while (_s_.j <= _s_.num_blips)
             _s_.total_num_blibs = (_s_.total_num_blibs + 1)
-            _s_.blip = read(ctx, _s_, 126, ("blip_" * string(_s_.i) * "_" * string(_s_.j)))
+            _s_.blip = read_trace(ctx, _s_, 126, ("blip_" * string(_s_.i) * "_" * string(_s_.j)))
             if (_s_.total_num_blibs == 1)
                 _s_.blip_1 = _s_.blip
             end
@@ -129,7 +129,7 @@ function aircraft_blip__126(ctx::AbstractFactorRevisitContext, _s_::State)
         end
         _s_.i = (_s_.i + 1)
     end
-    read(ctx, _s_, 188, "observed_num_blips", observed = 3)
+    read_trace(ctx, _s_, 188, "observed_num_blips", observed = 3)
     score(ctx, _s_, 202, "observed_blip_2", Normal(_s_.blip_1, 1), observed = 1.0)
     score(ctx, _s_, 216, "observed_blip_2", Normal(_s_.blip_2, 1), observed = 2.0)
     score(ctx, _s_, 230, "observed_blip_3", Normal(_s_.blip_3, 1), observed = 3.0)
@@ -215,7 +215,7 @@ end
 
 function aircraft_pos__71(ctx::AbstractFactorRevisitContext, _s_::State)
     _s_.position = revisit(ctx, _s_, 71, ("pos_" * string(_s_.i)), Normal(2.0, 5.0))
-    _s_.num_blips = read(ctx, _s_, 89, ("num_blips_" * string(_s_.i)))
+    _s_.num_blips = read_trace(ctx, _s_, 89, ("num_blips_" * string(_s_.i)))
     _s_.j = 1
     while (_s_.j <= _s_.num_blips)
         _s_.total_num_blibs = (_s_.total_num_blibs + 1)

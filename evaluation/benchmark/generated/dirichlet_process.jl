@@ -106,15 +106,15 @@ function dp_theta__105(ctx::AbstractFactorRevisitContext, xs::Vector{Float64}, _
     while (_s_.stick > 0.01)
         _s_.i = (_s_.i + 1)
         _s_.cumprod = (_s_.cumprod * (1.0 - _s_.beta))
-        _s_.beta = read(ctx, _s_, 89, ("beta_" * string(_s_.i)))
-        _s_.theta = read(ctx, _s_, 105, ("theta_" * string(_s_.i)))
+        _s_.beta = read_trace(ctx, _s_, 89, ("beta_" * string(_s_.i)))
+        _s_.theta = read_trace(ctx, _s_, 105, ("theta_" * string(_s_.i)))
         _s_.stick = (_s_.stick - (_s_.beta * _s_.cumprod))
         _s_.weights = vcat(_s_.weights, (_s_.beta * _s_.cumprod))
         _s_.thetas = vcat(_s_.thetas, _s_.theta)
     end
     _s_.j = 1
     while (_s_.j <= length(xs))
-        _s_.z = read(ctx, _s_, 160, ("z_" * string(_s_.j)))
+        _s_.z = read_trace(ctx, _s_, 160, ("z_" * string(_s_.j)))
         _s_.z = min(_s_.z, length(_s_.thetas))
         score(ctx, _s_, 190, ("x_" * string(_s_.j)), Normal(get_n(_s_.thetas, _s_.z), 0.1), observed = get_n(xs, _s_.j))
         _s_.j = (_s_.j + 1)
@@ -169,7 +169,7 @@ function dp___start__(ctx::AbstractFactorResumeContext, xs::Vector{Float64}, _s_
 end
 
 function dp_x__190(ctx::AbstractFactorResumeContext, xs::Vector{Float64}, _s_::State)
-    resume(ctx, _s_, 190, ("x_" * string(_s_.j)), Normal(get_n(_s_.thetas, _s_.z), 0.1), observed = get_n(xs, _s_.j))
+    read_trace(ctx, _s_, 190, ("x_" * string(_s_.j)), observed = get_n(xs, _s_.j))
     _s_.j = (_s_.j + 1)
     while (_s_.j <= length(xs))
         _s_.z = score(ctx, _s_, 160, ("z_" * string(_s_.j)), Categorical((_s_.weights / sum(_s_.weights))))

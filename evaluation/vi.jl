@@ -423,7 +423,7 @@ function score(ctx::VIForwardFactorContext, s::State, node_id::Int, address::Str
     return value
 end
 
-function read(ctx::VIForwardFactorContext, s::State, node_id::Int, address::String; observed=nothing)
+function read_trace(ctx::VIForwardFactorContext, s::State, node_id::Int, address::String; observed=nothing)
     if !isnothing(observed)
         value = observed
     else

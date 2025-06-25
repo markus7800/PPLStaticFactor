@@ -57,7 +57,7 @@ function score(ctx::LMHForwardFactorContext, s::State, node_id::Int, address::St
     return value
 end
 
-function read(ctx::LMHForwardFactorContext, s::State, node_id::Int, address::String; observed=nothing)
+function read_trace(ctx::LMHForwardFactorContext, s::State, node_id::Int, address::String; observed=nothing)
     if !isnothing(observed)
         value = observed
     else
@@ -106,7 +106,7 @@ function score(ctx::LMHBackwardFactorContext, s::State, node_id::Int, address::S
     return value
 end
 
-function read(ctx::LMHBackwardFactorContext, s::State, node_id::Int, address::String; observed=nothing)
+function read_trace(ctx::LMHBackwardFactorContext, s::State, node_id::Int, address::String; observed=nothing)
     if !isnothing(observed)
         value = observed
     else

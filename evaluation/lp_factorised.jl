@@ -48,7 +48,7 @@ function score(ctx::AddFactorResampleContext, s::AbstractState, node_id::Int, ad
     return value
 end
 
-function read(ctx::AddFactorResampleContext, s::AbstractState, node_id::Int, address::String; observed=nothing)
+function read_trace(ctx::AddFactorResampleContext, s::AbstractState, node_id::Int, address::String; observed=nothing)
     if !isnothing(observed)
         value = observed
     else
@@ -82,7 +82,7 @@ function score(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::I
     return value
 end
 
-function read(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::Int, address::String; observed=nothing)
+function read_trace(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::Int, address::String; observed=nothing)
     if !isnothing(observed)
         value = observed
     else

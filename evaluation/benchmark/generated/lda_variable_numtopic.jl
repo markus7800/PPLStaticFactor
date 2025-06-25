@@ -99,13 +99,13 @@ function lda_phi__144(ctx::AbstractFactorRevisitContext, M::Int, N::Int, V::Int,
     _s_.phis = append(_s_.phis, _s_.phi)
     _s_.i = (_s_.i + 1)
     while (_s_.i <= _s_.K)
-        _s_.phi = read(ctx, _s_, 144, ("phi_" * string(_s_.i)))
+        _s_.phi = read_trace(ctx, _s_, 144, ("phi_" * string(_s_.i)))
         _s_.phis = append(_s_.phis, _s_.phi)
         _s_.i = (_s_.i + 1)
     end
     _s_.n = 1
     while (_s_.n <= N)
-        _s_.z = read(ctx, _s_, 192, ("z_" * string(_s_.n)))
+        _s_.z = read_trace(ctx, _s_, 192, ("z_" * string(_s_.n)))
         _s_.z = min(length(_s_.phis), _s_.z)
         score(ctx, _s_, 221, ("w_" * string(_s_.n)), Categorical(_s_.phis[_s_.z]), observed = w[_s_.n])
         _s_.n = (_s_.n + 1)
@@ -117,14 +117,14 @@ function lda_theta__84(ctx::AbstractFactorRevisitContext, M::Int, N::Int, V::Int
     _s_.thetas = append(_s_.thetas, _s_.theta)
     _s_.i = (_s_.i + 1)
     while (_s_.i <= M)
-        _s_.theta = read(ctx, _s_, 84, ("theta_" * string(_s_.i)))
+        _s_.theta = read_trace(ctx, _s_, 84, ("theta_" * string(_s_.i)))
         _s_.thetas = append(_s_.thetas, _s_.theta)
         _s_.i = (_s_.i + 1)
     end
     _s_.phis = Vector{Vector{Float64}}()
     _s_.i = 1
     while (_s_.i <= _s_.K)
-        _s_.phi = read(ctx, _s_, 144, ("phi_" * string(_s_.i)))
+        _s_.phi = read_trace(ctx, _s_, 144, ("phi_" * string(_s_.i)))
         _s_.phis = append(_s_.phis, _s_.phi)
         _s_.i = (_s_.i + 1)
     end
@@ -132,7 +132,7 @@ function lda_theta__84(ctx::AbstractFactorRevisitContext, M::Int, N::Int, V::Int
     while (_s_.n <= N)
         _s_.z = score(ctx, _s_, 192, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
         _s_.z = min(length(_s_.phis), _s_.z)
-        read(ctx, _s_, 221, ("w_" * string(_s_.n)), observed = w[_s_.n])
+        read_trace(ctx, _s_, 221, ("w_" * string(_s_.n)), observed = w[_s_.n])
         _s_.n = (_s_.n + 1)
     end
 end
@@ -188,7 +188,7 @@ function lda___start__(ctx::AbstractFactorResumeContext, M::Int, N::Int, V::Int,
 end
 
 function lda_w__221(ctx::AbstractFactorResumeContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State)
-    resume(ctx, _s_, 221, ("w_" * string(_s_.n)), Categorical(_s_.phis[_s_.z]), observed = w[_s_.n])
+    read_trace(ctx, _s_, 221, ("w_" * string(_s_.n)), observed = w[_s_.n])
     _s_.n = (_s_.n + 1)
     while (_s_.n <= N)
         _s_.z = score(ctx, _s_, 192, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))

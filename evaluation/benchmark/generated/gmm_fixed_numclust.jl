@@ -89,20 +89,20 @@ end
 
 function gmm_mu__101(ctx::AbstractFactorRevisitContext, ys::Vector{Float64}, _s_::State)
     _s_.mu = revisit(ctx, _s_, 101, ("mu_" * string(_s_.k)), Normal(_s_.ξ, (1 / sqrt(_s_.κ))))
-    _s_.var = read(ctx, _s_, 124, ("var_" * string(_s_.k)))
+    _s_.var = read_trace(ctx, _s_, 124, ("var_" * string(_s_.k)))
     _s_.means = vcat(_s_.means, _s_.mu)
     _s_.vars = vcat(_s_.vars, _s_.var)
     _s_.k = (_s_.k + 1)
     while (_s_.k <= _s_.num_clusters)
-        _s_.mu = read(ctx, _s_, 101, ("mu_" * string(_s_.k)))
-        _s_.var = read(ctx, _s_, 124, ("var_" * string(_s_.k)))
+        _s_.mu = read_trace(ctx, _s_, 101, ("mu_" * string(_s_.k)))
+        _s_.var = read_trace(ctx, _s_, 124, ("var_" * string(_s_.k)))
         _s_.means = vcat(_s_.means, _s_.mu)
         _s_.vars = vcat(_s_.vars, _s_.var)
         _s_.k = (_s_.k + 1)
     end
     _s_.i = 1
     while (_s_.i <= length(ys))
-        _s_.z = read(ctx, _s_, 173, ("z_" * string(_s_.i)))
+        _s_.z = read_trace(ctx, _s_, 173, ("z_" * string(_s_.i)))
         _s_.z = min(_s_.z, length(_s_.means))
         score(ctx, _s_, 198, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
         _s_.i = (_s_.i + 1)
@@ -115,15 +115,15 @@ function gmm_var__124(ctx::AbstractFactorRevisitContext, ys::Vector{Float64}, _s
     _s_.vars = vcat(_s_.vars, _s_.var)
     _s_.k = (_s_.k + 1)
     while (_s_.k <= _s_.num_clusters)
-        _s_.mu = read(ctx, _s_, 101, ("mu_" * string(_s_.k)))
-        _s_.var = read(ctx, _s_, 124, ("var_" * string(_s_.k)))
+        _s_.mu = read_trace(ctx, _s_, 101, ("mu_" * string(_s_.k)))
+        _s_.var = read_trace(ctx, _s_, 124, ("var_" * string(_s_.k)))
         _s_.means = vcat(_s_.means, _s_.mu)
         _s_.vars = vcat(_s_.vars, _s_.var)
         _s_.k = (_s_.k + 1)
     end
     _s_.i = 1
     while (_s_.i <= length(ys))
-        _s_.z = read(ctx, _s_, 173, ("z_" * string(_s_.i)))
+        _s_.z = read_trace(ctx, _s_, 173, ("z_" * string(_s_.i)))
         _s_.z = min(_s_.z, length(_s_.means))
         score(ctx, _s_, 198, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
         _s_.i = (_s_.i + 1)
@@ -136,8 +136,8 @@ function gmm_w_57(ctx::AbstractFactorRevisitContext, ys::Vector{Float64}, _s_::S
     _s_.means = Float64[]
     _s_.vars = Float64[]
     while (_s_.k <= _s_.num_clusters)
-        _s_.mu = read(ctx, _s_, 101, ("mu_" * string(_s_.k)))
-        _s_.var = read(ctx, _s_, 124, ("var_" * string(_s_.k)))
+        _s_.mu = read_trace(ctx, _s_, 101, ("mu_" * string(_s_.k)))
+        _s_.var = read_trace(ctx, _s_, 124, ("var_" * string(_s_.k)))
         _s_.means = vcat(_s_.means, _s_.mu)
         _s_.vars = vcat(_s_.vars, _s_.var)
         _s_.k = (_s_.k + 1)
@@ -146,7 +146,7 @@ function gmm_w_57(ctx::AbstractFactorRevisitContext, ys::Vector{Float64}, _s_::S
     while (_s_.i <= length(ys))
         _s_.z = score(ctx, _s_, 173, ("z_" * string(_s_.i)), Categorical(_s_.w))
         _s_.z = min(_s_.z, length(_s_.means))
-        read(ctx, _s_, 198, ("y_" * string(_s_.i)), observed = get_n(ys, _s_.i))
+        read_trace(ctx, _s_, 198, ("y_" * string(_s_.i)), observed = get_n(ys, _s_.i))
         _s_.i = (_s_.i + 1)
     end
 end
@@ -203,7 +203,7 @@ function gmm___start__(ctx::AbstractFactorResumeContext, ys::Vector{Float64}, _s
 end
 
 function gmm_y__198(ctx::AbstractFactorResumeContext, ys::Vector{Float64}, _s_::State)
-    resume(ctx, _s_, 198, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
+    read_trace(ctx, _s_, 198, ("y_" * string(_s_.i)), observed = get_n(ys, _s_.i))
     _s_.i = (_s_.i + 1)
     while (_s_.i <= length(ys))
         _s_.z = score(ctx, _s_, 173, ("z_" * string(_s_.i)), Categorical(_s_.w))

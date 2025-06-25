@@ -48,7 +48,7 @@ end
 
 function lr_slope_48(ctx::AbstractFactorRevisitContext, xs::Vector{Float64}, ys::Vector{Float64}, _s_::State)
     _s_.slope = revisit(ctx, _s_, 48, "slope", Normal(0.0, 3.0))
-    _s_.intercept = read(ctx, _s_, 61, "intercept")
+    _s_.intercept = read_trace(ctx, _s_, 61, "intercept")
     _s_.i = 1
     while (_s_.i <= length(xs))
         score(ctx, _s_, 87, ("y_" * string(_s_.i)), Normal(((_s_.slope * get_n(xs, _s_.i)) + _s_.intercept), 1.0), observed = get_n(ys, _s_.i))

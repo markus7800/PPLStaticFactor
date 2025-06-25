@@ -60,7 +60,7 @@ end
 
 function captcha_N_72(ctx::AbstractFactorRevisitContext, captcha_img::Vector{Float64}, _s_::State)
     _s_.N_letters = revisit(ctx, _s_, 72, "N", Poisson(7))
-    _s_.font = read(ctx, _s_, 84, "font")
+    _s_.font = read_trace(ctx, _s_, 84, "font")
     _s_.image = zeros((200 * 50))
     _s_.i = 1
     while (_s_.i <= _s_.N_letters)
@@ -79,9 +79,9 @@ function captcha_font_84(ctx::AbstractFactorRevisitContext, captcha_img::Vector{
     _s_.image = zeros((200 * 50))
     _s_.i = 1
     while (_s_.i <= _s_.N_letters)
-        _s_.fontsize = read(ctx, _s_, 120, ("fontsize_" * string(_s_.i)))
-        _s_.kerning = read(ctx, _s_, 138, ("kerning_" * string(_s_.i)))
-        _s_.letter = read(ctx, _s_, 156, ("letter_" * string(_s_.i)))
+        _s_.fontsize = read_trace(ctx, _s_, 120, ("fontsize_" * string(_s_.i)))
+        _s_.kerning = read_trace(ctx, _s_, 138, ("kerning_" * string(_s_.i)))
+        _s_.letter = read_trace(ctx, _s_, 156, ("letter_" * string(_s_.i)))
         _s_.noisy_letter_image = score(ctx, _s_, 174, ("letter_image_" * string(_s_.i)), MvNormal(vec(render_letter(_s_.letter, _s_.font, _s_.fontsize, _s_.kerning)), 0.1))
         _s_.image = (_s_.image + _s_.noisy_letter_image)
         _s_.i = (_s_.i + 1)
@@ -90,14 +90,14 @@ end
 
 function captcha_fontsize__120(ctx::AbstractFactorRevisitContext, captcha_img::Vector{Float64}, _s_::State)
     _s_.fontsize = revisit(ctx, _s_, 120, ("fontsize_" * string(_s_.i)), DiscreteUniform(38, 44))
-    _s_.kerning = read(ctx, _s_, 138, ("kerning_" * string(_s_.i)))
-    _s_.letter = read(ctx, _s_, 156, ("letter_" * string(_s_.i)))
+    _s_.kerning = read_trace(ctx, _s_, 138, ("kerning_" * string(_s_.i)))
+    _s_.letter = read_trace(ctx, _s_, 156, ("letter_" * string(_s_.i)))
     _s_.noisy_letter_image = score(ctx, _s_, 174, ("letter_image_" * string(_s_.i)), MvNormal(vec(render_letter(_s_.letter, _s_.font, _s_.fontsize, _s_.kerning)), 0.1))
 end
 
 function captcha_kerning__138(ctx::AbstractFactorRevisitContext, captcha_img::Vector{Float64}, _s_::State)
     _s_.kerning = revisit(ctx, _s_, 138, ("kerning_" * string(_s_.i)), DiscreteUniform(-2, 2))
-    _s_.letter = read(ctx, _s_, 156, ("letter_" * string(_s_.i)))
+    _s_.letter = read_trace(ctx, _s_, 156, ("letter_" * string(_s_.i)))
     _s_.noisy_letter_image = score(ctx, _s_, 174, ("letter_image_" * string(_s_.i)), MvNormal(vec(render_letter(_s_.letter, _s_.font, _s_.fontsize, _s_.kerning)), 0.1))
 end
 
@@ -111,10 +111,10 @@ function captcha_letter_image__174(ctx::AbstractFactorRevisitContext, captcha_im
     _s_.image = (_s_.image + _s_.noisy_letter_image)
     _s_.i = (_s_.i + 1)
     while (_s_.i <= _s_.N_letters)
-        _s_.fontsize = read(ctx, _s_, 120, ("fontsize_" * string(_s_.i)))
-        _s_.kerning = read(ctx, _s_, 138, ("kerning_" * string(_s_.i)))
-        _s_.letter = read(ctx, _s_, 156, ("letter_" * string(_s_.i)))
-        _s_.noisy_letter_image = read(ctx, _s_, 174, ("letter_image_" * string(_s_.i)))
+        _s_.fontsize = read_trace(ctx, _s_, 120, ("fontsize_" * string(_s_.i)))
+        _s_.kerning = read_trace(ctx, _s_, 138, ("kerning_" * string(_s_.i)))
+        _s_.letter = read_trace(ctx, _s_, 156, ("letter_" * string(_s_.i)))
+        _s_.noisy_letter_image = read_trace(ctx, _s_, 174, ("letter_image_" * string(_s_.i)))
         _s_.image = (_s_.image + _s_.noisy_letter_image)
         _s_.i = (_s_.i + 1)
     end
