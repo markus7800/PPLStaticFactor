@@ -41,13 +41,12 @@ function runbench(N::Int, n_particles::Int, verbose::Bool)
     end
     factored_time = res.time/N
 
-    verbose && println(@sprintf("Standard time %.3f μs", standard_time*10^6))
-    verbose && println(@sprintf("Factored time %.3f μs (%.2f)", factored_time*10^6, factored_time / standard_time))
+    verbose && println(@sprintf("Standard time %.3f ms", standard_time*10^3))
+    verbose && println(@sprintf("Factored time %.3f ms (%.2f)", factored_time*10^3, factored_time / standard_time))
     
 end
 
 test_correctness(10, 10)
-exit()
 
 runbench(10, 10, false)
 runbench(10, 10, true)
@@ -55,34 +54,30 @@ runbench(10, 10, true)
 
 # dirichlet_process.jl
 # Test correctness: OK.
-# Standard time 414114.879 μs
-# Factored time 223073.096 μs (0.54)
+# Standard time 37.834 ms
+# Factored time 20.712 ms (0.55)
 
 # gmm_fixed_numclust.jl
 # Test correctness: OK.
-# Standard time 451342.121 μs
-# Factored time 373635.688 μs (0.83)
+# Standard time 45.978 ms
+# Factored time 36.817 ms (0.80)
 
 # gmm_variable_numclust.jl
 # Test correctness: OK.
-# Standard time 471397.696 μs
-# Factored time 370280.692 μs (0.79)
+# Standard time 44.110 ms
+# Factored time 36.287 ms (0.82)
 
 # hmm.jl
 # Test correctness: OK.
-# Standard time 96915.671 μs
-# Factored time 84435.796 μs (0.87)
+# Standard time 10.139 ms
+# Factored time 8.386 ms (0.83)
 
 # lda_fixed_numtopic.jl
-# Test correctness: ERROR: LoadError: AssertionError: standard_logweights[i] ≈ factorised_logweights[i]
-# Stacktrace:
-#  [1] test_correctness(N::Int64, n_particles::Int64)
-#    @ Main ~/Documents/PPLStaticFactor/evaluation/bench_smc.jl:22
-#  [2] top-level scope
-#    @ ~/Documents/PPLStaticFactor/evaluation/bench_smc.jl:45
-# in expression starting at /Users/markus/Documents/PPLStaticFactor/evaluation/bench_smc.jl:45
+# Test correctness: OK.
+# Standard time 315.597 ms
+# Factored time 243.587 ms (0.77)
 
 # lda_variable_numtopic.jl
 # Test correctness: OK.
-# Standard time 3494042.204 μs
-# Factored time 2577801.150 μs (0.74)
+# Standard time 345.147 ms
+# Factored time 262.009 ms (0.76)

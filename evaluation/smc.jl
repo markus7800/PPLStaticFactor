@@ -58,9 +58,14 @@ end
 struct StandardParticle
     ctx::SMCContext
 end
+function Base.copy!(dst::StandardParticle, src::StandardParticle)
+    dst.ctx.logprob = src.ctx.logprob
+    Base.copy!(dst.ctx.trace, src.ctx.trace) # shallow copy is enough
+end
 
 function smc_standard(n_particles::Int, check::Bool)
     particles = [StandardParticle(SMCContext()) for _ in 1:n_particles]
+    newparticles = [StandardParticle(SMCContext()) for _ in 1:n_particles]
     logprob = zeros(n_particles)
     logweight = zeros(n_particles)
 
@@ -79,7 +84,10 @@ function smc_standard(n_particles::Int, check::Bool)
         end
         Ws = exp.(logweight .- logsumexp(logweight))
         ixs = rand(Categorical(Ws), n_particles)
-        particles = [deepcopy(particles[ix]) for ix in ixs]
+        for (i, ix) in enumerate(ixs)
+            Base.copy!(newparticles[i], particles[ix])
+        end
+        particles, newparticles = newparticles, particles
         logprob = logprob[ixs]
         logweight .= 0
         # println(Ws)
@@ -123,6 +131,12 @@ struct Particle
     ctx::SMCResumeContext
     state::State
 end
+function Base.copy!(dst::Particle, src::Particle)
+    Base.copy!(dst.ctx.trace, src.ctx.trace) # shallow copy is ok
+    dst.ctx.logprob = src.ctx.logprob
+    dst.ctx.last_address = src.ctx.last_address
+    Base.copy!(dst.state, src.state)
+end
 
 function logsumexp(x)
     m = maximum(x)
@@ -134,6 +148,8 @@ end
 
 function smc_factorised(n_particles::Int, check::Bool)
     particles = [Particle(SMCResumeContext(),State()) for _ in 1:n_particles]
+    newparticles = [Particle(SMCResumeContext(),State()) for _ in 1:n_particles]
+
     logprob = zeros(n_particles)
     logweight = zeros(n_particles)
     while true
@@ -158,7 +174,10 @@ function smc_factorised(n_particles::Int, check::Bool)
         end
         Ws = exp.(logweight .- logsumexp(logweight))
         ixs = rand(Categorical(Ws), n_particles)
-        particles = [deepcopy(particles[ix]) for ix in ixs]
+        for (i, ix) in enumerate(ixs)
+            Base.copy!(newparticles[i], particles[ix])
+        end
+        particles, newparticles = newparticles, particles
         logprob = logprob[ixs]
         logweight .= 0
         # println(Ws)
