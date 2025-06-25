@@ -61,16 +61,25 @@ end
 
 function smc_standard(n_particles::Int)
     particles = [StandardParticle(SMCContext()) for _ in 1:n_particles]
+    logprob = zeros(n_particles)
     logweight = zeros(n_particles)
 
-    for t in 1:N_DATA
-        for (i, particle) in enumerate(particles)
-            particle.ctx.logprob = 0
-            model_t(particle.ctx, t)
-            logweight[i] = particle.ctx.logprob
+    for t in 1:N_DATA+1 # +1 to force one last resampling
+        if t <= N_DATA
+            for (i, particle) in enumerate(particles)
+                particle.ctx.logprob = 0
+                model_t(particle.ctx, t)
+                logweight[i] = particle.ctx.logprob - logprob[i]
+                logprob[i] = particle.ctx.logprob
+            end
         end
+        Ws = exp.(logweight .- logsumexp(logweight))
+        ixs = rand(Categorical(Ws), n_particles)
+        particles = [deepcopy(particles[ix]) for ix in ixs]
+        logprob = logprob[ixs]
+        logweight .= 0
     end
-    return logweight
+    return logprob
 end
 
 mutable struct SMCResumeContext <: AbstractFactorResumeContext
@@ -118,19 +127,30 @@ end
 
 function smc_factorised(n_particles::Int)
     particles = [Particle(SMCResumeContext(),State()) for _ in 1:n_particles]
+    logprob = zeros(n_particles)
+    logweight = zeros(n_particles)
     while true
         all_terminated = true
-        for particle in particles
+        for (i, particle) in enumerate(particles)
+            particle.state.node_id == -1 && continue
+            
+            particle.ctx.logprob = 0.
             resume_from_state(particle.ctx, particle.state, particle.ctx.last_address)
-            all_terminated = all_terminated && (particle.state.node_id == -1)
+            if particle.state.node_id != -1
+                logweight[i] = particle.ctx.logprob
+                logprob[i] += particle.ctx.logprob
+            end
+            all_terminated = false
         end
         if all_terminated
             break
         end
-        # resampling ala WebPPL, compare Lunden 2021
-        # Ws = [particle.ctx.logprob for particle in particles]
-        # Ws = Ws .- logsumexp(Ws)
-        # Categ
+        # resampling
+        Ws = exp.(logweight .- logsumexp(logweight))
+        ixs = rand(Categorical(Ws), n_particles)
+        particles = [deepcopy(particles[ix]) for ix in ixs]
+        logprob = logprob[ixs]
+        logweight .= 0
     end
-    return [particle.ctx.logprob for particle in particles]
+    return logprob
 end

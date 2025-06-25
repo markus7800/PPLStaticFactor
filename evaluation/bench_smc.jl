@@ -11,7 +11,7 @@ function runbench(N::Int, n_particles::Int)
     Random.seed!(0)
     standard_logweights = smc_standard(n_particles)
 
-    @assert factorised_logweights ≈ standard_logweights
+    @assert factorised_logweights ≈ standard_logweights (factorised_logweights[1:10], standard_logweights[1:10])
 
     # println("gradient variance standard: ", standard_avg_var)
 
@@ -25,6 +25,6 @@ function runbench(N::Int, n_particles::Int)
 
 end
 
-runbench(10, 1000)
+runbench(10, 10)
 
 
