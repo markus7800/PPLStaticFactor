@@ -76,7 +76,3 @@ var model_iter = function() {
 	}, data);
 	return params;
 };
-
-
-var N = 1e4
-console.log("N:", N*10)

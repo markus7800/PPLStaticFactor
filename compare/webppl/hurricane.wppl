@@ -14,7 +14,3 @@ var model_rec = function() {
         var damage_0 = flip(prep_0 ? 0.20 : 0.80)
     }
 }
-
-
-var N = 1e5
-console.log("N:", N*10)

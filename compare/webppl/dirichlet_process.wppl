@@ -49,7 +49,3 @@ var model_iter = function() {
         observe(Gaussian({mu: thetas[z < thetas.length ? z : thetas.length - 1], sigma: 0.1}),x)
     }, xs)
 }
-
-
-var N = 1e4
-console.log("N:", N*10)

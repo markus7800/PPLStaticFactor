@@ -13,30 +13,29 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-with open("compare/gen/results.csv", "w") as f:
-    f.write("model,N,acceptancerate,base,combinator,rel\n")
-
 filenames = [
-    ("aircraft.wppl", ("rec", "iter")),
-    ("bayesian_network.wppl", ("rec",)),
-    ("captcha.wppl", ("rec", "iter")),
-    ("dirichlet_process.wppl", ("rec", "iter")),
-    ("geometric.wppl", ("rec", )),
-    ("gmm_fixed_numclust.wppl", ("rec", "iter")),
-    ("gmm_variable_numclust.wppl", ("rec", "iter")),
-    ("hmm.wppl", ("rec",)),
-    ("hurricane.wppl", ("rec",)),
-    ("lda_fixed_numtopic.wppl", ("rec",)),
-    ("lda_variable_numtopic.wppl", ("rec",)),
-    ("linear_regression.wppl", ("rec", "iter")),
-    ("pedestrian.wppl", ("rec",)),
-    ("marsaglia.wppl", ("rec",)),
-    ("pcfg.wppl", ("rec",)),
-    ("urn.wppl", ("rec", "iter"))
+    ("aircraft.wppl", 1e3, ("rec", "iter")),
+    ("bayesian_network.wppl", 1e4,  ("rec",)),
+    ("captcha.wppl", 1e2, ("rec", "iter")),
+    ("dirichlet_process.wppl", 1e4, ("rec", "iter")),
+    ("geometric.wppl", 1e5, ("rec", )),
+    ("gmm_fixed_numclust.wppl", 1e4, ("rec", "iter")),
+    ("gmm_variable_numclust.wppl", 1e4, ("rec", "iter")),
+    ("hmm.wppl", 1e4, ("rec",)),
+    ("hurricane.wppl", 1e5, ("rec",)),
+    ("lda_fixed_numtopic.wppl", 1e4, ("rec",)),
+    ("lda_variable_numtopic.wppl", 1e4, ("rec",)),
+    ("linear_regression.wppl", 1e4, ("rec", "iter")),
+    ("marsaglia.wppl", 1e5, ("rec",)),
+    ("pedestrian.wppl", 1e5, ("rec",)),
+    ("pcfg.wppl", 1e4, ("rec",)),
+    ("urn.wppl", 1e4, ("rec", "iter"))
 ]
 
 
 rec_lmh_str = """
+console.log("N:", N*10)
+
 console.time('MH rec ')
 repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model_rec) })
 console.timeEnd('MH rec ')
@@ -71,16 +70,19 @@ with open("compare/webppl/lmh_results.csv", "w") as f:
 N_repetitions = int(sys.argv[1])
 
 for _ in range(N_repetitions):
-    for filename, variants in filenames:
+    for filename, N, variants in filenames:
         print(bcolors.HEADER + filename + bcolors.ENDC)
+        
         with open("compare/webppl/" + filename, "r") as src_f:
             src = src_f.read()
+        src += "\n var N = {N}\n"
         if "rec" in variants:
             src += rec_lmh_str
         if "iter" in variants:
             src += iter_lmh_str
         with open("compare/webppl/tmp.wppl", "w") as tmp_f:
             tmp_f.write(src)
+            
         cmd = ["webppl", "--random-seed=0", "compare/webppl/tmp.wppl"]
         res = subprocess.run(cmd, capture_output=True)
         out = res.stdout.decode()

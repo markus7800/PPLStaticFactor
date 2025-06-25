@@ -32,7 +32,3 @@ var model_rec = function() {
     
     observe(Gaussian({mu: n_black, sigma: 0.1}), 5)
 }
-
-
-var N = 1e4
-console.log("N:", N*10)

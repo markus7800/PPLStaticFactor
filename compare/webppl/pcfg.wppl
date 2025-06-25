@@ -30,7 +30,3 @@ var model_rec = function() {
 	pcfgfn(current_symbol, 0);
 	return query;
 }
-
-
-var N = 1e4
-console.log("N:", N*10)

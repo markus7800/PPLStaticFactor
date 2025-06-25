@@ -57,7 +57,3 @@ var model_rec = function() {
       factor(Gaussian({mu: f(x), sigma: 1.}).score(y));
     })
 }
-
-
-var N = 1e4
-console.log("N:", N*10)

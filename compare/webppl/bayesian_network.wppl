@@ -95,6 +95,3 @@ var model_rec = function() {
     var CO = discrete(get_cpt_2("CO", HR, STROKEVOLUME))
     var BP = discrete(get_cpt_2("BP", CO, TPR))
 }
-
-var N = 1e4
-console.log("N:", N*10)

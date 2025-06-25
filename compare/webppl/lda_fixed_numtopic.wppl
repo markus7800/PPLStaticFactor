@@ -66,7 +66,3 @@ var model_rec = function() {
 	});
 	return wordDistribs;
 };
-
-
-var N = 1e4
-console.log("N:", N*10)

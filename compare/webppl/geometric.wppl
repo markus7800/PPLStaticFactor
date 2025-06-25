@@ -12,6 +12,3 @@ var geometric = function(p) {
 var model_rec = function() {
     geometric(0.5)
 }
-
-var N = 1e5
-console.log("N:", N*10)

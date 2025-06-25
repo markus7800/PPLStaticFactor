@@ -16,7 +16,3 @@ var model_rec = function() {
     var final_distance = pedestrian(start, 0)
     observe(Gaussian({mu: final_distance, sigma: 0.1}), 1.1)
 }
-
-
-var N = 1e5
-console.log("N:", N*10)

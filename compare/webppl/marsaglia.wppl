@@ -14,6 +14,3 @@ var marsaglia = function (s, x) {
 var model_rec = function() {
     return marsaglia(2, 0.)
 }
-
-var N = 1e5
-console.log("N:", N*10)

@@ -37,7 +37,3 @@ var model_rec = function() {
     var image = add_letters(zeros([WIDTH*HEIGHT,1]), font, N_letters)
     observe(MultivariateGaussian({mu: image, cov: idMatrix(WIDTH*HEIGHT)}))
 }
-
-
-var N = 1e2
-console.log("N:", N*10)
