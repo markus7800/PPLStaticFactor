@@ -17,23 +17,44 @@ with open("compare/gen/results.csv", "w") as f:
     f.write("model,N,acceptancerate,base,combinator,rel\n")
 
 filenames = [
-    "aircraft.wppl",
-    "bayesian_network.wppl",
-    "captcha.wppl",
-    "dirichlet_process.wppl",
-    "geometric.wppl",
-    "gmm_fixed_numclust.wppl",
-    "gmm_variable_numclust.wppl",
-    "hmm.wppl",
-    "hurricane.wppl",
-    "lda_fixed_numtopic.wppl",
-    "lda_variable_numtopic.wppl",
-    "linear_regression.wppl",
-    "marsaglia.wppl",
-    "pedestrian.wppl",
-    "pcfg.wppl",
-    "urn.wppl"
+    ("aircraft.wppl", ("rec", "iter")),
+    ("bayesian_network.wppl", ("rec",)),
+    ("captcha.wppl", ("rec", "iter")),
+    ("dirichlet_process.wppl", ("rec", "iter")),
+    ("geometric.wppl", ("rec", )),
+    ("gmm_fixed_numclust.wppl", ("rec", "iter")),
+    ("gmm_variable_numclust.wppl", ("rec", "iter")),
+    ("hmm.wppl", ("rec",)),
+    ("hurricane.wppl", ("rec",)),
+    ("lda_fixed_numtopic.wppl", ("rec",)),
+    ("lda_variable_numtopic.wppl", ("rec",)),
+    ("linear_regression.wppl", ("rec", "iter")),
+    ("pedestrian.wppl", ("rec",)),
+    ("marsaglia.wppl", ("rec",)),
+    ("pcfg.wppl", ("rec",)),
+    ("urn.wppl", ("rec", "iter"))
 ]
+
+
+rec_lmh_str = """
+console.time('MH rec ')
+repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model_rec) })
+console.timeEnd('MH rec ')
+
+console.time('C3 rec ')
+repeat(10, function() { Infer({method: 'incrementalMH', samples: N, burn: 0}, model_rec) })
+console.timeEnd('C3 rec ')
+"""
+
+iter_lmh_str = """
+console.time('MH iter')
+repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model_iter) })
+console.timeEnd('MH iter')
+
+console.time('C3 iter')
+repeat(10, function() { Infer({method: 'incrementalMH', samples: N, burn: 0}, model_iter) })
+console.timeEnd('C3 iter')
+"""
 
 def parse_time(s: str):
     if s.endswith("ms"):
@@ -44,15 +65,23 @@ def parse_time(s: str):
         raise ValueError()
 
 
-with open("compare/webppl/results.csv", "w") as f:
+with open("compare/webppl/lmh_results.csv", "w") as f:
     f.write("model,N,base,c3,rel\n")
 
 N_repetitions = int(sys.argv[1])
 
 for _ in range(N_repetitions):
-    for filename in filenames:
+    for filename, variants in filenames:
         print(bcolors.HEADER + filename + bcolors.ENDC)
-        cmd = ["webppl", "--random-seed=0", "compare/webppl/" + filename]
+        with open("compare/webppl/" + filename, "r") as src_f:
+            src = src_f.read()
+        if "rec" in variants:
+            src += rec_lmh_str
+        if "iter" in variants:
+            src += iter_lmh_str
+        with open("compare/webppl/tmp.wppl", "w") as tmp_f:
+            tmp_f.write(src)
+        cmd = ["webppl", "--random-seed=0", "compare/webppl/tmp.wppl"]
         res = subprocess.run(cmd, capture_output=True)
         out = res.stdout.decode()
         # print(out)
@@ -78,13 +107,13 @@ for _ in range(N_repetitions):
 
         print(f"{N=}, {c3_time=}, {mh_time=}")
 
-        with open("compare/webppl/results.csv", "a") as f:
+        with open("compare/webppl/lmh_results.csv", "a") as f:
             modelname = filename[:-5]
             f.write(f"{modelname},{N},{mh_time},{c3_time},{c3_time/mh_time}\n")
         print()
     
 import pandas as pd
-df = pd.read_csv("compare/webppl/results.csv")
+df = pd.read_csv("compare/webppl/lmh_results.csv")
 avg_df = df.groupby("model").median()
 avg_df = avg_df.reset_index()
-avg_df.to_csv("compare/webppl/results_aggregated.csv", index=False, sep=",", na_rep="NA")
+avg_df.to_csv("compare/webppl/lmh_results_aggregated.csv", index=False, sep=",", na_rep="NA")

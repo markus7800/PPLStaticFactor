@@ -34,11 +34,3 @@ var model_rec = function() {
 
 var N = 1e4
 console.log("N:", N*10)
-
-console.time('MH rec ')
-repeat(10, function() { Infer({method: 'MCMC', samples: N, burn: 0}, model_rec) })
-console.timeEnd('MH rec ')
-
-console.time('C3 rec ')
-repeat(10, function() { Infer({method: 'incrementalMH', samples: N, burn: 0}, model_rec) })
-console.timeEnd('C3 rec ')
