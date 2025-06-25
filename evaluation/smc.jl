@@ -73,11 +73,11 @@ function smc_standard(n_particles::Int)
                 logprob[i] = particle.ctx.logprob
             end
         end
-        Ws = exp.(logweight .- logsumexp(logweight))
-        ixs = rand(Categorical(Ws), n_particles)
-        particles = [deepcopy(particles[ix]) for ix in ixs]
-        logprob = logprob[ixs]
-        logweight .= 0
+        # Ws = exp.(logweight .- logsumexp(logweight))
+        # ixs = rand(Categorical(Ws), n_particles)
+        # particles = [deepcopy(particles[ix]) for ix in ixs]
+        # logprob = logprob[ixs]
+        # logweight .= 0
     end
     return logprob
 end
@@ -146,11 +146,11 @@ function smc_factorised(n_particles::Int)
             break
         end
         # resampling
-        Ws = exp.(logweight .- logsumexp(logweight))
-        ixs = rand(Categorical(Ws), n_particles)
-        particles = [deepcopy(particles[ix]) for ix in ixs]
-        logprob = logprob[ixs]
-        logweight .= 0
+        # Ws = exp.(logweight .- logsumexp(logweight))
+        # ixs = rand(Categorical(Ws), n_particles)
+        # particles = [deepcopy(particles[ix]) for ix in ixs]
+        # logprob = logprob[ixs]
+        # logweight .= 0
     end
     return logprob
 end
