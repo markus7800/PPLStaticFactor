@@ -167,5 +167,5 @@ combinator_time = res.time / N_iter
 println(@sprintf("Gen combinator time: %.3f μs", combinator_time * 10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
 
-f = open("compare/gen/results.csv", "a")
+f = open("compare/gen/lmh_results.csv", "a")
 println(f, modelname, ",", N_iter, ",", acceptance_rate, ",", base_time*10^6, ",", combinator_time*10^6, ",", combinator_time / base_time)
