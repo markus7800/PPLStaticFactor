@@ -46,7 +46,7 @@ function runbench(N::Int, n_particles::Int, verbose::Bool)
     
     if verbose
         f = open("evaluation/smc_results.csv", "a")
-        println(f, modelname, ",", n_particles, ",", standard_time*10^6, ",", factored_time*10^6, ",", factored_time/standard_time)
+        println(f, modelname, ",", N_DATA, ", ", n_particles, ",", standard_time*10^6, ",", factored_time*10^6, ",", factored_time/standard_time)
     end
 end
 
