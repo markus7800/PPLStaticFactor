@@ -75,7 +75,7 @@ for _ in range(N_repetitions):
         
         with open("compare/webppl/" + filename, "r") as src_f:
             src = src_f.read()
-        src += "\n var N = {N}\n"
+        src += f"\n var N = {N}\n"
         if "rec" in variants:
             src += rec_lmh_str
         if "iter" in variants:

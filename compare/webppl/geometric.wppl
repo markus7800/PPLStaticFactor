@@ -10,5 +10,6 @@ var geometric = function(p) {
 }
 
 var model_rec = function() {
-    geometric(0.5)
+    var i = geometric(0.5)
+    factor(Gaussian({mu: i, sigma: 1.}).score(5.))
 }
