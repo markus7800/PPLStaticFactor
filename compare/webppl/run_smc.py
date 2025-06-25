@@ -14,12 +14,12 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 filenames = [
-    ("dirichlet_process.wppl", "xs", 1),
-    ("gmm_fixed_numclust.wppl", "data", 28),
-    ("gmm_variable_numclust.wppl", "data", 28),
-    ("hmm.wppl", "data", 18),
-    ("lda_fixed_numtopic.wppl", "documents", 30),
-    ("lda_variable_numtopic.wppl", "documents", 30),
+    ("dirichlet_process.wppl", "xs", 1, 50),
+    ("gmm_fixed_numclust.wppl", "data", 28, 100),
+    ("gmm_variable_numclust.wppl", "data", 28, 100),
+    ("hmm.wppl", "data", 18, 50),
+    ("lda_fixed_numtopic.wppl", "documents", 30, 262),
+    ("lda_variable_numtopic.wppl", "documents", 30, 262),
 ]
 
 
@@ -62,7 +62,7 @@ with open("compare/webppl/smc_results.csv", "w") as f:
 N_repetitions = int(sys.argv[1])
 
 for _ in range(N_repetitions):
-    for filename, data_var, l in filenames:
+    for filename, data_var, l, n_data in filenames:
         print(bcolors.HEADER + filename + bcolors.ENDC)
         
         with open("compare/webppl/" + filename, "r") as src_f:
@@ -75,6 +75,15 @@ for _ in range(N_repetitions):
         out = res.stdout.decode()
         print(out)
         
+
+        match = re.search(r"IS all : (\d+.\d+(s|ms))", out)
+        assert match is not None
+        is_all_time = parse_time(match.group(1))
+        
+        match = re.search(r"SMC all: (\d+.\d+(s|ms))", out)
+        assert match is not None
+        smc_all_time = parse_time(match.group(1))
+        
         lines = src.splitlines()
         new_lines = lines[:l] + [lines[l] + "[0]"] + lines[l+1:]
                 
@@ -85,12 +94,25 @@ for _ in range(N_repetitions):
         res = subprocess.run(cmd, capture_output=True)
         out = res.stdout.decode()
         print(out)
+        
+        match = re.search(r"IS 1 : (\d+.\d+(s|ms))", out)
+        assert match is not None
+        is_1_time = parse_time(match.group(1))
+        
+        match = re.search(r"SMC 1: (\d+.\d+(s|ms))", out)
+        assert match is not None
+        smc_1_time = parse_time(match.group(1))
+        
+        print(is_all_time, smc_all_time, is_1_time, is_all_time)
+        smc_without_cps_est = (is_all_time + is_1_time) / 2 * n_data
+        print(smc_without_cps_est, smc_all_time / smc_without_cps_est)
 
 
         # with open("compare/webppl/smc_results.csv", "a") as f:
         #     modelname = filename[:-5]
         #     f.write(f"{modelname},{N},{mh_time},{c3_time},{c3_time/mh_time}\n")
-        # print()
+        
+        print()
     
 import pandas as pd
 df = pd.read_csv("compare/webppl/smc_results.csv")
