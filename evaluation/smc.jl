@@ -59,7 +59,7 @@ struct StandardParticle
     ctx::SMCContext
 end
 
-function smc_standard(n_particles::Int)
+function smc_standard(n_particles::Int, check::Bool)
     particles = [StandardParticle(SMCContext()) for _ in 1:n_particles]
     logprob = zeros(n_particles)
     logweight = zeros(n_particles)
@@ -73,11 +73,18 @@ function smc_standard(n_particles::Int)
                 logprob[i] = particle.ctx.logprob
             end
         end
-        # Ws = exp.(logweight .- logsumexp(logweight))
-        # ixs = rand(Categorical(Ws), n_particles)
-        # particles = [deepcopy(particles[ix]) for ix in ixs]
-        # logprob = logprob[ixs]
-        # logweight .= 0
+        # resampling
+        if check
+            logweight = round.(logweight, sigdigits=4)
+        end
+        Ws = exp.(logweight .- logsumexp(logweight))
+        ixs = rand(Categorical(Ws), n_particles)
+        particles = [deepcopy(particles[ix]) for ix in ixs]
+        logprob = logprob[ixs]
+        logweight .= 0
+        # println(Ws)
+        # println(ixs)
+        # println(logprob)
     end
     return logprob
 end
@@ -125,7 +132,7 @@ function logsumexp(x)
     return log(sum(exp, x .- m)) + m
 end
 
-function smc_factorised(n_particles::Int)
+function smc_factorised(n_particles::Int, check::Bool)
     particles = [Particle(SMCResumeContext(),State()) for _ in 1:n_particles]
     logprob = zeros(n_particles)
     logweight = zeros(n_particles)
@@ -146,11 +153,17 @@ function smc_factorised(n_particles::Int)
             break
         end
         # resampling
-        # Ws = exp.(logweight .- logsumexp(logweight))
-        # ixs = rand(Categorical(Ws), n_particles)
-        # particles = [deepcopy(particles[ix]) for ix in ixs]
-        # logprob = logprob[ixs]
-        # logweight .= 0
+        if check
+            logweight = round.(logweight, sigdigits=4)
+        end
+        Ws = exp.(logweight .- logsumexp(logweight))
+        ixs = rand(Categorical(Ws), n_particles)
+        particles = [deepcopy(particles[ix]) for ix in ixs]
+        logprob = logprob[ixs]
+        logweight .= 0
+        # println(Ws)
+        # println(ixs)
+        # println(logprob)
     end
     return logprob
 end

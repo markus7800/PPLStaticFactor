@@ -8,18 +8,22 @@ function test_correctness(N::Int, n_particles::Int)
     print("Test correctness: ")
     Random.seed!(0)
     standard_logweights = []
-    for _ in 1:N
-        push!(standard_logweights, smc_standard(n_particles))
+    for i in 1:N
+        # println(i)
+        push!(standard_logweights, smc_standard(n_particles, true))
+        # println()
     end
 
     Random.seed!(0)
     factorised_logweights = []
-    for _ in 1:N
-        push!(factorised_logweights, smc_factorised(n_particles))
+    for i in 1:N
+        # println(i)
+        push!(factorised_logweights, smc_factorised(n_particles, true))
+        # println()
     end
 
     for i in 1:N
-        @assert standard_logweights[i] ≈ factorised_logweights[i]
+        @assert standard_logweights[i] ≈ factorised_logweights[i] (i, standard_logweights[i], factorised_logweights[i])
     end
 
     println("OK.")
@@ -28,12 +32,12 @@ end
 function runbench(N::Int, n_particles::Int, verbose::Bool)
     Random.seed!(0)
     res = @timed for _ in 1:N
-        smc_standard(n_particles)
+        smc_standard(n_particles, false)
     end
     standard_time = res.time/N
     Random.seed!(0)
     res = @timed for _ in 1:N
-        smc_factorised(n_particles)
+        smc_factorised(n_particles, false)
     end
     factored_time = res.time/N
 
@@ -42,10 +46,11 @@ function runbench(N::Int, n_particles::Int, verbose::Bool)
     
 end
 
-test_correctness(10, 100)
+test_correctness(10, 10)
+exit()
 
-runbench(10, 100, false)
-runbench(10, 100, true)
+runbench(10, 10, false)
+runbench(10, 10, true)
 
 
 # dirichlet_process.jl
