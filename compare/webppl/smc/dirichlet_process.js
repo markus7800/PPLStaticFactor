@@ -5,9 +5,9 @@ var xs = [0.42, 0.29, -0.01, 0.37, 0.23, 0.54, 0.95, 0.9, 0.48, 0.82, 0.88, 0.61
 var break_stick = function(ctx, i, alpha, stick, b, cumprod) {
     if (stick > 0.01) {
         var new_cumprod = cumprod * (1. - b)
-        var new_b = ppl.beta_sample(1., alpha)
+        var new_b = (ctx["b_" + i] !== undefined) ? ctx["b_" + i] : ppl.beta_sample(1., alpha)
         ctx["b_" + i] = new_b;
-        var theta = ppl.gaussian_sample(0., 1.)
+        var theta = (ctx["theta_" + i] !== undefined) ? ctx["theta_" + i] : ppl.gaussian_sample(0., 1.)
         ctx["theta_" + i] = theta;
         var new_stick = stick - b * cumprod
         var res = break_stick(ctx, i + 1, alpha, new_stick, new_b, new_cumprod)
@@ -29,23 +29,28 @@ var foreach = function(lst, fn) {
     foreach_(0);
 };
 
-var model_rec = function(data, ctx) {
+var model_rec = function(ctx, data) {
     var res = break_stick(ctx, 0, 5., 1., 0., 1.)
     var weights = ppl.Vector(res.weights).div(ppl.sum(res.weights))
     var thetas = res.thetas
     foreach(data, function(x, i) {
-        var z = ppl.discrete_sample(weights.data, 1.0)
+        var z = (ctx["z_" + i] !== undefined) ? ctx["z_" + i] : ppl.discrete_sample(weights.data, 1.0)
         ctx["z_" + i] = z
-        ctx["lp"] += ppl.gaussian_score(thetas[z < thetas.length ? z : thetas.length - 1], 0.1, x)
+        ctx.lp += ppl.gaussian_score(thetas[z < thetas.length ? z : thetas.length - 1], 0.1, x)
 
     })
 
 }
 
-// ctx = {"lp": 0.}
-// model_rec(xs.slice(0,0), ctx)
-// console.log(shallow_copy_ctx(ctx))
+var model_data_annealed = function(ctx, i) {
+    return model_rec(ctx, xs.slice(0,i))
+}
+
+// ctx = {lp: 0.}
+// model_data_annealed(ctx, 10)
+// console.log(ctx)
+// console.log(ctx.lp)
 
 console.time('SMC')
-ppl.smc(model_rec, 100, xs)
+ppl.smc(model_data_annealed, 100, xs.length)
 console.timeEnd('SMC')

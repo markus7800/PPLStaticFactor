@@ -1,7 +1,9 @@
-var LOG_PI = 1.1447298858494002;
+// copied from webppl
+
 var LOG_2PI = 1.8378770664093453;
 
 var ad = require('adnn/ad');
+var Tensor = require('adnn/tensor');
 
 var rng = Math.random;
 
@@ -78,11 +80,68 @@ function discrete_sample(theta, thetaSum) {
     return k - 1;
 }
 
+function uniform_sample(a, b) {
+    return random() * (b - a) + a
+}
+
+function random_integer_sample(n) {
+    return Math.floor(random() * n);
+}
+
+function gamma_sample(shape, scale) {
+    if (shape < 1) {
+        var r;
+        r = gamma_sample(1 + shape, scale) * Math.pow(random(), 1 / shape);
+        if (r === 0) {
+            return Number.MIN_VALUE;
+        }
+        return r;
+    }
+    var x, v, u;
+    var d = shape - 1 / 3;
+    var c = 1 / Math.sqrt(9 * d);
+    while (true) {
+        do {
+            x = gaussian_sample(0, 1);
+            v = 1 + c * x;
+        } while (v <= 0);
+        v = v * v * v;
+        u = random();
+        if (u < 1 - 0.331 * x * x * x * x || Math.log(u) < 0.5 * x * x + d * (1 - v + Math.log(v))) {
+            return scale * d * v;
+        }
+    }
+}
+function dirichlet_sample(alpha) {
+    var n = alpha.dims[0];
+    var ssum = 0;
+    var theta = new Tensor([
+        n,
+        1
+    ]);
+    var t;
+    for (var i = 0; i < n; i++) {
+        t = gamma_sample(alpha.data[i], 1);
+        theta.data[i] = t;
+        ssum += t;
+    }
+    for (var j = 0; j < n; j++) {
+        theta.data[j] /= ssum;
+        if (theta.data[j] === 0) {
+            theta.data[j] = Number.MIN_VALUE;
+        }
+        if (theta.data[j] === 1) {
+            theta.data[j] = 1 - Number.EPSILON / 2;
+        }
+    }
+    return theta;
+}
+
 var Vector = function(arr) {
     var n = arr.length;
     var t = ad.tensor.fromScalars(arr);
     return ad.tensor.reshape(t, [n, 1]);
-  };
+};
 
 var reduce = function(fn, init, ar) {
     var n = ar.length;
@@ -114,7 +173,7 @@ var shallow_copy_ctx = function(ctx) {
     return {...ctx}
 }
 
-var smc = function(model, n_particles, data) {
+var smc = function(model, n_particles, n_data) {
     particles = []
     new_particles = []
 
@@ -123,12 +182,12 @@ var smc = function(model, n_particles, data) {
         new_particles.push({lp: 0.})
     }
 
-    for (var t = 0; t < data.length; t++) {
+    for (var t = 0; t < n_data; t++) {
         var log_weights = []
         for (var i = 0; i < n_particles; i++) {
             var current_lp = particles[i].lp
             particles[i].lp = 0.
-            model(data.slice(0,i), particles[i])
+            model(particles[i], i)
             log_weights.push(particles[i].lp - current_lp)
         }
         var log_normalizer = logsumexp(log_weights)
@@ -155,6 +214,9 @@ module.exports = {
     gaussian_sample: gaussian_sample,
     gaussian_score: gaussian_score,
     discrete_sample: discrete_sample,
+    uniform_sample: uniform_sample,
+    random_integer_sample: random_integer_sample,
+    dirichlet_sample: dirichlet_sample,
     Vector: Vector,
     sum: sum,
     smc: smc,
