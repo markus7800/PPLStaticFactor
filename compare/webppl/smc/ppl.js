@@ -4,12 +4,18 @@ var LOG_2PI = 1.8378770664093453;
 
 var ad = require('adnn/ad');
 var Tensor = require('adnn/tensor');
+var seedrandom = require('seedrandom');
 
 var rng = Math.random;
 
 function random() {
     return rng();
-  }
+}
+
+function seedRNG(seed) {
+    rng = seedrandom(seed);
+}
+  
 
 function gaussian_sample(mu, sigma) {
     var u, v, x, y, q;
@@ -136,7 +142,53 @@ function dirichlet_sample(alpha) {
     }
     return theta;
 }
+function binomial_sample(p, n) {
+    var k = 0;
+    var N = 10;
+    var a, b;
+    while (n > N) {
+        a = Math.floor(1 + n / 2);
+        b = 1 + n - a;
+        var x = beta_sample(a, b);
+        if (x >= p) {
+            n = a - 1;
+            p /= x;
+        } else {
+            k += a;
+            n = b - 1;
+            p = (p - x) / (1 - x);
+        }
+    }
+    var u;
+    for (var i = 0; i < n; i++) {
+        u = random();
+        if (u < p) {
+            k++;
+        }
+    }
+    return k || 0;
+}
 
+function poisson_sample(mu) {
+    var k = 0;
+    while (mu > 10) {
+        var m = Math.floor(7 / 8 * mu);
+        var x = gamma_sample(m, 1);
+        if (x >= mu) {
+            return k + binomia_sample(mu / x, m - 1);
+        } else {
+            mu -= x;
+            k += m;
+        }
+    }
+    var emu = Math.exp(-mu);
+    var p = 1;
+    do {
+        p *= random();
+        k++;
+    } while (p > emu);
+    return k - 1;
+}
 var Vector = function(arr) {
     var n = arr.length;
     var t = ad.tensor.fromScalars(arr);
@@ -217,7 +269,10 @@ module.exports = {
     uniform_sample: uniform_sample,
     random_integer_sample: random_integer_sample,
     dirichlet_sample: dirichlet_sample,
+    binomial_sample: binomial_sample,
+    poisson_sample: poisson_sample,
     Vector: Vector,
     sum: sum,
     smc: smc,
+    seedRNG: seedRNG
 }

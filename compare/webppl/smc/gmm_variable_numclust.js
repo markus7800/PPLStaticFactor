@@ -64,7 +64,8 @@ var gaussFactor = function(ctx, x, params) {
 };
 
 var model_rec = function(ctx, data) {
-	var nComponents = 4
+	var nComponents = (ctx["K"] !== undefined) ? ctx["K"] : ppl.poisson_sample(3) + 1
+    ctx["K"] = nComponents
 	var params = repeat_n(nComponents, function(i) {
         var m = (ctx["m_" + i] !== undefined) ? ctx["m_" + i] : ppl.gaussian_sample(0, 10)
         ctx["m_" + i] = m

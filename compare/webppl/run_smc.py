@@ -14,38 +14,38 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 filenames = [
-    ("dirichlet_process.wppl", "xs", 1, 50),
-    ("gmm_fixed_numclust.wppl", "data", 28, 100),
-    ("gmm_variable_numclust.wppl", "data", 28, 100),
-    ("hmm.wppl", "data", 18, 50),
-    ("lda_fixed_numtopic.wppl", "documents", 30, 262),
-    ("lda_variable_numtopic.wppl", "documents", 30, 262),
+    "dirichlet_process.wppl",
+    "gmm_fixed_numclust.wppl",
+    "gmm_variable_numclust.wppl",
+    "hmm.wppl",
+    "lda_fixed_numtopic.wppl",
+    "lda_variable_numtopic.wppl",
 ]
 
 
 infer_1_str = """
 var N_PARTICLES = 100
 
-console.time('IS all ')
+console.time('IS ')
 repeat(10, function() { Infer({method: 'forward', samples: N_PARTICLES}, model_rec) })
-console.timeEnd('IS all ')
+console.timeEnd('IS ')
 
-console.time('SMC all')
+console.time('SMC')
 repeat(10, function() { Infer({method: 'SMC', particles: N_PARTICLES}, model_rec) })
-console.timeEnd('SMC all')
+console.timeEnd('SMC')
 """
 
 infer_2_str = """
 var N_PARTICLES = 100
 
-console.time('IS 1 ')
-repeat(10, function() { Infer({method: 'forward', samples: N_PARTICLES}, model_rec) })
-console.timeEnd('IS 1 ')
-
-console.time('SMC 1')
-repeat(10, function() { Infer({method: 'SMC', particles: N_PARTICLES}, model_rec) })
-console.timeEnd('SMC 1')
+ppl.seedRNG(0)
+console.time('SMC')
+for (var i = 0; i < 10; i++) {
+    ppl.smc(model_data_annealed, N_PARTICLES, N_DATA)
+}
+console.timeEnd('SMC')
 """
+
 
 def parse_time(s: str):
     if s.endswith("ms"):
@@ -57,12 +57,12 @@ def parse_time(s: str):
 
 
 with open("compare/webppl/smc_results.csv", "w") as f:
-    f.write("model,smc_all_time,is_all_time\n")
+    f.write("model,smc_standard,smc_cps,cps_rel,is_cps\n")
 
 N_repetitions = int(sys.argv[1])
 
 for _ in range(N_repetitions):
-    for filename, data_var, l, n_data in filenames:
+    for filename in filenames:
         print(bcolors.HEADER + filename + bcolors.ENDC)
         
         with open("compare/webppl/" + filename, "r") as src_f:
@@ -73,43 +73,37 @@ for _ in range(N_repetitions):
         cmd = ["webppl", "--random-seed=0", "compare/webppl/tmp.wppl"]
         res = subprocess.run(cmd, capture_output=True)
         out = res.stdout.decode()
-        print(out)
+        # print(out)
         
-
-        match = re.search(r"IS all : (\d+.\d+(s|ms))", out)
+        match = re.search(r"IS : (\d+.\d+(s|ms))", out)
         assert match is not None
-        is_all_time = parse_time(match.group(1))
+        is_time = parse_time(match.group(1))
         
-        match = re.search(r"SMC all: (\d+.\d+(s|ms))", out)
+        match = re.search(r"SMC: (\d+.\d+(s|ms))", out)
         assert match is not None
-        smc_all_time = parse_time(match.group(1))
+        smc_time = parse_time(match.group(1))
         
-        lines = src.splitlines()
-        new_lines = lines[:l] + [lines[l] + "[0]"] + lines[l+1:]
-                
-        with open("compare/webppl/tmp.wppl", "w") as tmp_f:
-            tmp_f.write("\r\n".join(new_lines) + infer_2_str)
         
-        cmd = ["webppl", "--random-seed=0", "compare/webppl/tmp.wppl"]
+        with open("compare/webppl/smc/" + filename[:-5] + ".js", "r") as src_f:
+            src = src_f.read()
+            
+        with open("compare/webppl/smc/tmp.js", "w") as tmp_f:
+            tmp_f.write(src + infer_2_str)
+            
+        cmd = ["node", "compare/webppl/smc/tmp.js"]
         res = subprocess.run(cmd, capture_output=True)
         out = res.stdout.decode()
-        print(out)
+        # print(out)
         
-        match = re.search(r"IS 1 : (\d+.\d+(s|ms))", out)
+        match = re.search(r"SMC: (\d+.\d+(s|ms))", out)
         assert match is not None
-        is_1_time = parse_time(match.group(1))
+        smc_standard_time = parse_time(match.group(1))
         
-        match = re.search(r"SMC 1: (\d+.\d+(s|ms))", out)
-        assert match is not None
-        smc_1_time = parse_time(match.group(1))
-        
-        print(is_all_time, smc_all_time, is_1_time, is_all_time)
-        smc_without_cps_est = (is_all_time + is_1_time) / 2 * n_data
-        print(smc_without_cps_est, smc_all_time / smc_without_cps_est)
+        print(smc_standard_time, "vs", smc_time, f"{smc_time/smc_standard_time}")
 
         with open("compare/webppl/smc_results.csv", "a") as f:
             modelname = filename[:-5]
-            f.write(f"{modelname},{smc_all_time},{is_all_time}\n")
+            f.write(f"{modelname},{smc_standard_time},{smc_time},{smc_time/smc_standard_time},{is_time}\n")
         
         print()
     

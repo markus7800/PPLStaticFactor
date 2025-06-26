@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "adnn": "^2.0.10"
+    "adnn": "^2.0.10",
+    "seedrandom": "^3.0.5"
   }
 }

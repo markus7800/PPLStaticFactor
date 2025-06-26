@@ -44,12 +44,13 @@ var model_data_annealed = function(ctx, i) {
 	hmmfn(ctx, ys, i);
 }
 
+var N_DATA = ys.length
+
 // ctx = {lp: 0.}
 // model_data_annealed(ctx, 10)
 // console.log(ctx)
 // console.log(ctx.lp)
 
-
-console.time('SMC')
-ppl.smc(model_data_annealed, 100, ys.length)
-console.timeEnd('SMC')
+// console.time('SMC')
+// ppl.smc(model_data_annealed, 100, ys.length)
+// console.timeEnd('SMC')

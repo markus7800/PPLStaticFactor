@@ -55,7 +55,8 @@ var repeat_n = function(n, fn) {
 };
 
 var model_rec = function(ctx, data) {
-	var nTopics = 2
+	var nTopics = (ctx["K"] !== undefined) ? ctx["K"] : ppl.poisson_sample(2) + 1
+	ctx["K"] = nTopics
 	var topicDistribPrior = ppl.Vector(repeat_n(nTopics, function(i) { return 1; }));
 	var wordDistribPrior = ppl.Vector(repeat_n(5, function(i) { return 1; }));
 	var wordDistribs = repeat_n(nTopics, function(i) {
@@ -98,7 +99,6 @@ var N_DATA = 262
 // model_data_annealed(ctx, 100)
 // console.log(ctx)
 // console.log(ctx.lp)
-
 
 // console.time('SMC')
 // ppl.smc(model_data_annealed, 100, 262)

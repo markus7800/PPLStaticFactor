@@ -46,11 +46,13 @@ var model_data_annealed = function(ctx, i) {
     return model_rec(ctx, xs.slice(0,i))
 }
 
+var N_DATA = xs.length
+
 // ctx = {lp: 0.}
 // model_data_annealed(ctx, 10)
 // console.log(ctx)
 // console.log(ctx.lp)
 
-console.time('SMC')
-ppl.smc(model_data_annealed, 100, xs.length)
-console.timeEnd('SMC')
+// console.time('SMC')
+// ppl.smc(model_data_annealed, 100, xs.length)
+// console.timeEnd('SMC')
