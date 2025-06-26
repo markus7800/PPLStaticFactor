@@ -57,7 +57,7 @@ def parse_time(s: str):
 
 
 with open("compare/webppl/smc_results.csv", "w") as f:
-    f.write("model,N,base,c3,rel\n")
+    f.write("model,smc_all_time,is_all_time\n")
 
 N_repetitions = int(sys.argv[1])
 
@@ -107,10 +107,9 @@ for _ in range(N_repetitions):
         smc_without_cps_est = (is_all_time + is_1_time) / 2 * n_data
         print(smc_without_cps_est, smc_all_time / smc_without_cps_est)
 
-
-        # with open("compare/webppl/smc_results.csv", "a") as f:
-        #     modelname = filename[:-5]
-        #     f.write(f"{modelname},{N},{mh_time},{c3_time},{c3_time/mh_time}\n")
+        with open("compare/webppl/smc_results.csv", "a") as f:
+            modelname = filename[:-5]
+            f.write(f"{modelname},{smc_all_time},{is_all_time}\n")
         
         print()
     

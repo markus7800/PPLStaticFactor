@@ -1,1 +1,7 @@
-model,N,base,c3,rel
+model,smc_all_time,is_all_time
+dirichlet_process,119.879,103.611
+gmm_fixed_numclust,120.369,67.958
+gmm_variable_numclust,123.192,69.897
+hmm,82.006,49.023
+lda_fixed_numtopic,409.849,225.457
+lda_variable_numtopic,403.659,231.621
