@@ -17,8 +17,8 @@ row_start = {
     "lda_variable_numtopic": "LDA (variable \\#topics) & $\\infty$ & $1\\mathrm{e}{4}$",
     "linear_regression": "Linear regression & 102 & $1\\mathrm{e}{5}$",
     "marsaglia": "Marsaglia & $\\infty$ & $5\\mathrm{e}{5}$",
-    "pedestrian": "Pedestrian & $\\infty$ & $1\\mathrm{e}{5}$",
     "pcfg": "PCFG & $\\infty$ & $1\\mathrm{e}{5}$",
+    "pedestrian": "Pedestrian & $\\infty$ & $1\\mathrm{e}{5}$",
     "urn": "Urn & $\\infty$ & $1\\mathrm{e}{5}$",
     "hmm_unrolled": "HMM (unrolled loop) & 101 & $1\\mathrm{e}{5}$"
 }

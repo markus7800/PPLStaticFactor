@@ -4,10 +4,10 @@ import pandas as pd
 df_ours = pd.read_csv("evaluation/paper_lmh_results.csv", sep=",")
 df_ours.set_index("model", inplace=True)
 
-df_gen = pd.read_csv("compare/gen/paper_results.csv", sep=",")
+df_gen = pd.read_csv("compare/gen/paper_lmh_results.csv", sep=",")
 df_gen.set_index("model", inplace=True)
 
-df_webppl = pd.read_csv("compare/webppl/paper_results.csv", sep=",")
+df_webppl = pd.read_csv("compare/webppl/paper_lmh_results.csv", sep=",")
 df_webppl.set_index("model", inplace=True)
 
 
@@ -25,8 +25,8 @@ models = {
     "lda_variable_numtopic": "LDA (variable \\#topics)",
     "linear_regression": "Linear regression",
     "marsaglia": "Marsaglia",
-    "pedestrian": "Pedestrian",
     "pcfg": "PCFG",
+    "pedestrian": "Pedestrian",
     "urn": "Urn",
 }
 
