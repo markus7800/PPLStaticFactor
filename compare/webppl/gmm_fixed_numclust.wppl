@@ -50,7 +50,7 @@ var gaussFactor = function(x, params) {
 };
 
 var model_rec = function() {
-	var nComponents = poisson(3) + 1
+	var nComponents = 4
 	var params = repeat(nComponents, function() {
 		return [gaussian(0, 10), uniform(0, 5)];
 	});
