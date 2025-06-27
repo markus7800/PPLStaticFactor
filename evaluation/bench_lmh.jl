@@ -110,7 +110,7 @@ include("N_iters.jl")
 N_iter = name_to_N[modelname]
 
 
-test_correctness(10, N_iter ÷ 10, proposers)
+test_correctness(N_seeds, N_iter, proposers)
 
-runbench(10, N_iter ÷ 10, proposers, false) # to JIT compile everything
-runbench(10, N_iter ÷ 10, proposers, true) # this will produce times without compilation
+runbench(N_seeds, N_iter, proposers, false) # to JIT compile everything
+runbench(N_seeds, N_iter, proposers, true) # this will produce times without compilation

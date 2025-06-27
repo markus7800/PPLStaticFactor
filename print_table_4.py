@@ -41,7 +41,7 @@ for _, row in df.iterrows():
         color = "\\textcolor{OrangeRed}"
 
     rel_str = color + "{" + f"{1/ratio:.2f}" + "} & " + color + "{" + arrow + "}"
-    print(models[row.model], "&", f"{int(row.n_data):d}", "&", f"{row.none/1000:.3f} & {row.static/1000:.3f} & {rel_str} \\\\")
+    print(models[row.model], "&", f"{int(row.n_data):d}", "&", f"{row.none:.3f} & {row.static:.3f} & {rel_str} \\\\")
 
 
 

@@ -76,21 +76,4 @@ function lmh(N::Int, n_iter::Int, selector::LMHSelector, model, args, observatio
     return n_accepted / (n_iter*N)
 end
 
-name_to_N = Dict{String,Int}(
-    "aircraft" => 100_000,
-    "bayesian_network" => 100_000,
-    "captcha" => 1_000,
-    "dirichlet_process" => 10_000,
-    "geometric" => 500_000,
-    "gmm_fixed_numclust" => 50_000,
-    "gmm_variable_numclust" => 50_000,
-    "hmm" => 100_000,
-    "hurricane" => 1_000_000,
-    "lda_fixed_numtopic" => 10_000,
-    "lda_variable_numtopic" => 10_000,
-    "linear_regression" => 100_000,
-    "pcfg" => 100_000,
-    "marsaglia" => 500_000,
-    "pedestrian" => 100_000,
-    "urn" => 100_000,
-)
+include("../../evaluation/N_iters.jl")

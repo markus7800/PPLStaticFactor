@@ -63,7 +63,7 @@ function Base.copy!(dst::StandardParticle, src::StandardParticle)
     Base.copy!(dst.ctx.trace, src.ctx.trace) # shallow copy is enough
 end
 
-function smc_standard(n_particles::Int, check::Bool)
+function smc_standard(n_particles::Int, resampling::Bool, check::Bool)
     particles = [StandardParticle(SMCContext()) for _ in 1:n_particles]
     newparticles = [StandardParticle(SMCContext()) for _ in 1:n_particles]
     logprob = zeros(n_particles)
@@ -78,18 +78,20 @@ function smc_standard(n_particles::Int, check::Bool)
                 logprob[i] = particle.ctx.logprob
             end
         end
-        # resampling
-        if check
-            logweight = round.(logweight, sigdigits=4)
+
+        if resampling
+            if check
+                logweight = round.(logweight, sigdigits=4)
+            end
+            Ws = exp.(logweight .- logsumexp(logweight))
+            ixs = rand(Categorical(Ws), n_particles)
+            for (i, ix) in enumerate(ixs)
+                Base.copy!(newparticles[i], particles[ix])
+            end
+            particles, newparticles = newparticles, particles
+            logprob = logprob[ixs]
+            logweight .= 0
         end
-        Ws = exp.(logweight .- logsumexp(logweight))
-        ixs = rand(Categorical(Ws), n_particles)
-        for (i, ix) in enumerate(ixs)
-            Base.copy!(newparticles[i], particles[ix])
-        end
-        particles, newparticles = newparticles, particles
-        logprob = logprob[ixs]
-        logweight .= 0
         # println(Ws)
         # println(ixs)
         # println(logprob)
@@ -146,7 +148,7 @@ function logsumexp(x)
     return log(sum(exp, x .- m)) + m
 end
 
-function smc_factorised(n_particles::Int, check::Bool)
+function smc_factorised(n_particles::Int, resampling::Bool, check::Bool)
     particles = [Particle(SMCResumeContext(),State()) for _ in 1:n_particles]
     newparticles = [Particle(SMCResumeContext(),State()) for _ in 1:n_particles]
 
@@ -168,18 +170,20 @@ function smc_factorised(n_particles::Int, check::Bool)
         if all_terminated
             break
         end
-        # resampling
-        if check
-            logweight = round.(logweight, sigdigits=4)
+
+        if resampling
+            if check
+                logweight = round.(logweight, sigdigits=4)
+            end
+            Ws = exp.(logweight .- logsumexp(logweight))
+            ixs = rand(Categorical(Ws), n_particles)
+            for (i, ix) in enumerate(ixs)
+                Base.copy!(newparticles[i], particles[ix])
+            end
+            particles, newparticles = newparticles, particles
+            logprob = logprob[ixs]
+            logweight .= 0
         end
-        Ws = exp.(logweight .- logsumexp(logweight))
-        ixs = rand(Categorical(Ws), n_particles)
-        for (i, ix) in enumerate(ixs)
-            Base.copy!(newparticles[i], particles[ix])
-        end
-        particles, newparticles = newparticles, particles
-        logprob = logprob[ixs]
-        logweight .= 0
         # println(Ws)
         # println(ixs)
         # println(logprob)

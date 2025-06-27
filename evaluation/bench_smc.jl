@@ -2,24 +2,23 @@ using Printf
 
 include("ppl.jl")
 include("parse_args.jl")
+include("N_iters.jl")
 include("smc.jl")
+
+const RESAMPLING = true
 
 function test_correctness(N::Int, n_particles::Int)
     print("Test correctness: ")
     Random.seed!(0)
     standard_logweights = []
-    for i in 1:N
-        # println(i)
-        push!(standard_logweights, smc_standard(n_particles, true))
-        # println()
+    for _ in 1:N
+        push!(standard_logweights, smc_standard(n_particles, RESAMPLING, true))
     end
 
     Random.seed!(0)
     factorised_logweights = []
-    for i in 1:N
-        # println(i)
-        push!(factorised_logweights, smc_factorised(n_particles, true))
-        # println()
+    for _ in 1:N
+        push!(factorised_logweights, smc_factorised(n_particles, RESAMPLING, true))
     end
 
     for i in 1:N
@@ -32,12 +31,13 @@ end
 function runbench(N::Int, n_particles::Int, verbose::Bool)
     Random.seed!(0)
     res = @timed for _ in 1:N
-        smc_standard(n_particles, false)
+        smc_standard(n_particles, RESAMPLING, false)
     end
     standard_time = res.time/N
+
     Random.seed!(0)
     res = @timed for _ in 1:N
-        smc_factorised(n_particles, false)
+        smc_factorised(n_particles, RESAMPLING, false)
     end
     factored_time = res.time/N
 
@@ -52,7 +52,7 @@ end
 
 n_particles = 100
 
-test_correctness(10, n_particles)
+test_correctness(N_seeds, n_particles)
 
-runbench(10, n_particles, false)
-runbench(10, n_particles, true)
+runbench(N_seeds, n_particles, false)
+runbench(N_seeds, n_particles, true)

@@ -1,6 +1,7 @@
 using Printf
 
 include("ppl.jl")
+include("N_iters.jl")
 include("parse_args.jl")
 
 
@@ -49,5 +50,5 @@ end
 
 n_particles = 100
 
-runbench(10, n_particles, false)
-runbench(10, n_particles, true)
+runbench(N_seeds, n_particles, false)
+runbench(N_seeds, n_particles, true)

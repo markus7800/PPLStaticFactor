@@ -225,7 +225,7 @@ var shallow_copy_ctx = function(ctx) {
     return {...ctx}
 }
 
-var smc = function(model, n_particles, n_data) {
+var smc = function(model, n_particles, n_data, resampling) {
     particles = []
     new_particles = []
 
@@ -242,20 +242,22 @@ var smc = function(model, n_particles, n_data) {
             model(particles[i], i)
             log_weights.push(particles[i].lp - current_lp)
         }
-        var log_normalizer = logsumexp(log_weights)
-        var weights = []
-        for (var i = 0; i < n_particles; i++) {
-            weights[i] = Math.exp(log_weights[i] - log_normalizer)
-        }
+        if (resampling) {
+            var log_normalizer = logsumexp(log_weights)
+            var weights = []
+            for (var i = 0; i < n_particles; i++) {
+                weights[i] = Math.exp(log_weights[i] - log_normalizer)
+            }
 
-        for (var i = 0; i < n_particles; i++) {
-            var ix = discrete_sample(weights, 1.)
-            new_particles[i] = shallow_copy_ctx(particles[ix])
-        }
+            for (var i = 0; i < n_particles; i++) {
+                var ix = discrete_sample(weights, 1.)
+                new_particles[i] = shallow_copy_ctx(particles[ix])
+            }
 
-        var tmp = particles;
-        particles = new_particles;
-        new_particles = tmp;
+            var tmp = particles;
+            particles = new_particles;
+            new_particles = tmp;
+        }
     }
 
     return particles;

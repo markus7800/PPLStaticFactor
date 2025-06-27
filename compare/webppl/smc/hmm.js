@@ -52,5 +52,5 @@ var N_DATA = ys.length
 // console.log(ctx.lp)
 
 // console.time('SMC')
-// ppl.smc(model_data_annealed, 100, ys.length)
+// ppl.smc(model_data_annealed, 100, ys.length, true)
 // console.timeEnd('SMC')

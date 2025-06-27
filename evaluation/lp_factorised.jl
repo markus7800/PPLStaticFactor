@@ -91,7 +91,7 @@ function read_trace(ctx::SubstractFactorResampleContext, s::AbstractState, node_
     return value
 end
 
-mutable struct ManualResampleContext <: AbstractManualRevisitContext
+mutable struct ManualResampleContext <: AbstractManualResampleContext
     trace::Dict{String,SampleType}
     logprob::Float64
     resample_addr::String

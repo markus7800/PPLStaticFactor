@@ -39,9 +39,9 @@ observations[:final_distance] = 1.1
 
 selector = PedestrianLMHSelector()
 
-acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
-res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
-base_time = res.time / N_iter # total of N_iter / 10 * 10 iterations
+acceptance_rate = lmh(N_seeds, N_iter, selector, model, args, observations, check=true)
+res = @timed lmh(N_seeds, N_iter, selector, model, args, observations)
+base_time = res.time / (N_iter * N_seeds)
 println(@sprintf("Gen time: %.3f μs", base_time*10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
 

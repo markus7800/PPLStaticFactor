@@ -125,9 +125,9 @@ for i in eachindex(gt_ys)
 end
 selector = GMMLMHSelector()
 
-acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
-res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
-base_time = res.time / N_iter # total of N_iter / 10 * 10 iterations
+acceptance_rate = lmh(N_seeds, N_iter, selector, model, args, observations, check=true)
+res = @timed lmh(N_seeds, N_iter, selector, model, args, observations)
+base_time = res.time / (N_iter * N_seeds)
 println(@sprintf("Gen time: %.3f μs", base_time*10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
 
@@ -219,12 +219,12 @@ end
 selector = GMMCombinatorLMHSelector()
 
 
-acceptance_rate = lmh(10, N_iter ÷ 10, selector, model, args, observations, check=true)
-res = @timed lmh(10, N_iter ÷ 10, selector, model, args, observations)
-combinator_time = res.time / N_iter
+acceptance_rate = lmh(N_seeds, N_iter, selector, model, args, observations, check=true)
+res = @timed lmh(N_seeds, N_iter, selector, model, args, observations)
+combinator_time = res.time / (N_iter * N_seeds)
 println(@sprintf("Gen combinator time: %.3f μs", combinator_time * 10^6))
 println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
 
 
 f = open("compare/gen/lmh_results.csv", "a")
-println(f, modelname, ",", N_iter, ",", acceptance_rate, ",", base_time*10^6, ",", combinator_time*10^6, ",", combinator_time / base_time)
+println(f, modelname, ",", N_iter*N_seeds, ",", acceptance_rate, ",", base_time*10^6, ",", combinator_time*10^6, ",", combinator_time / base_time)

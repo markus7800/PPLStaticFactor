@@ -1,16 +1,6 @@
 import subprocess
 import sys
-
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+from bcolors import bcolors
 
 with open("evaluation/is_results.csv", "w") as f:
     f.write("model,n_particles,time\n")
@@ -39,7 +29,7 @@ N_repetitions = int(sys.argv[1])
 for i in range(N_repetitions):
     for filename in filenames:
         print(bcolors.HEADER + filename + bcolors.ENDC)
-        cmd = ["julia", "--project=.", "evaluation/bench_is.jl", "benchmark", filename, str(i)]
+        cmd = ["julia", "--project=.", "evaluation/bench_is.jl", "benchmark", filename]
         subprocess.run(cmd, capture_output=False)
         print()
         
