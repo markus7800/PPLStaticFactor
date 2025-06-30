@@ -117,7 +117,60 @@ def model():
     pyro.sample("obs_48", dist.Normal(current, 1), obs=ys[48])
     current = pyro.sample("state_49", dist.Categorical(transition_probs[current]))
     pyro.sample("obs_49", dist.Normal(current, 1), obs=ys[49])
-        
+    
+def guide():
+    discrete_vd("initial_state", 3)
+    discrete_vd("state_0", 3)
+    discrete_vd("state_1", 3)
+    discrete_vd("state_2", 3)
+    discrete_vd("state_3", 3)
+    discrete_vd("state_4", 3)
+    discrete_vd("state_5", 3)
+    discrete_vd("state_6", 3)
+    discrete_vd("state_7", 3)
+    discrete_vd("state_8", 3)
+    discrete_vd("state_9", 3)
+    discrete_vd("state_10", 3)
+    discrete_vd("state_11", 3)
+    discrete_vd("state_12", 3)
+    discrete_vd("state_13", 3)
+    discrete_vd("state_14", 3)
+    discrete_vd("state_15", 3)
+    discrete_vd("state_16", 3)
+    discrete_vd("state_17", 3)
+    discrete_vd("state_18", 3)
+    discrete_vd("state_19", 3)
+    discrete_vd("state_20", 3)
+    discrete_vd("state_21", 3)
+    discrete_vd("state_22", 3)
+    discrete_vd("state_23", 3)
+    discrete_vd("state_24", 3)
+    discrete_vd("state_25", 3)
+    discrete_vd("state_26", 3)
+    discrete_vd("state_27", 3)
+    discrete_vd("state_28", 3)
+    discrete_vd("state_29", 3)
+    discrete_vd("state_30", 3)
+    discrete_vd("state_31", 3)
+    discrete_vd("state_32", 3)
+    discrete_vd("state_33", 3)
+    discrete_vd("state_34", 3)
+    discrete_vd("state_35", 3)
+    discrete_vd("state_36", 3)
+    discrete_vd("state_37", 3)
+    discrete_vd("state_38", 3)
+    discrete_vd("state_39", 3)
+    discrete_vd("state_40", 3)
+    discrete_vd("state_41", 3)
+    discrete_vd("state_42", 3)
+    discrete_vd("state_43", 3)
+    discrete_vd("state_44", 3)
+    discrete_vd("state_45", 3)
+    discrete_vd("state_46", 3)
+    discrete_vd("state_47", 3)
+    discrete_vd("state_48", 3)
+    discrete_vd("state_49", 3)
+    
 ys = torch.tensor([
     3.36, 2.87, 1.54, 1.13, 2.05, 2.55, 3.08, 1.23, 2.37, 2.5,
     1.42, 1.46, 0.65, 1.15, 0.31, 2.89, 0.96, 2.23, 1.55, 1.52,
@@ -127,6 +180,6 @@ ys = torch.tensor([
 ])
 
 
-import pyro.poutine as poutine
-from pprint import pprint
-pprint({name: site["value"] for name, site in poutine.trace(model).get_trace().nodes.items() if site["type"] == "sample"}) # type: ignore
+# import pyro.poutine as poutine
+# from pprint import pprint
+# pprint({name: site["value"] for name, site in poutine.trace(model).get_trace().nodes.items() if site["type"] == "sample"}) # type: ignore

@@ -64,6 +64,46 @@ def model():
     STROKEVOLUME = pyro.sample("STROKEVOLUME", dist.Categorical(get_cpt_2(CPTs, "STROKEVOLUME", HYPOVOLEMIA, LVFAILURE)))
     CO = pyro.sample("CO", dist.Categorical(get_cpt_2(CPTs, "CO", HR, STROKEVOLUME)))
     BP = pyro.sample("BP", dist.Categorical(get_cpt_2(CPTs, "BP", CO, TPR)))
+    
+
+def guide():
+    discrete_vd("MINVOLSET", len(get_cpt_0(CPTs, "MINVOLSET")))
+    discrete_vd("VENTMACH", len(get_cpt_1(CPTs, "VENTMACH", 0)))
+    discrete_vd("DISCONNECT", len(get_cpt_0(CPTs, "DISCONNECT")))
+    discrete_vd("VENTTUBE", len(get_cpt_2(CPTs, "VENTTUBE", 0, 0)))
+    discrete_vd("INTUBATION", len(get_cpt_0(CPTs, "INTUBATION")))
+    discrete_vd("PULMEMBOLUS", len(get_cpt_0(CPTs, "PULMEMBOLUS")))
+    discrete_vd("PAP", len(get_cpt_1(CPTs, "PAP", 0)))
+    discrete_vd("SHUNT", len(get_cpt_2(CPTs, "SHUNT", 0, 0)))
+    discrete_vd("FIO2", len(get_cpt_0(CPTs, "FIO2")))
+    discrete_vd("KINKEDTUBE", len(get_cpt_0(CPTs, "KINKEDTUBE")))
+    discrete_vd("PRESS", len(get_cpt_3(CPTs, "PRESS", 0, 0, 0)))
+    discrete_vd("VENTLUNG", len(get_cpt_3(CPTs, "VENTLUNG", 0, 0, 0)))
+    discrete_vd("MINVOL", len(get_cpt_2(CPTs, "MINVOL", 0, 0)))
+    discrete_vd("VENTALV", len(get_cpt_2(CPTs, "VENTALV", 0, 0)))
+    discrete_vd("ARTCO2", len(get_cpt_1(CPTs, "ARTCO2", 0)))
+    discrete_vd("EXPCO2", len(get_cpt_2(CPTs, "EXPCO2", 0, 0)))
+    discrete_vd("PVSAT", len(get_cpt_2(CPTs, "PVSAT", 0, 0)))
+    discrete_vd("SAO2", len(get_cpt_2(CPTs, "SAO2", 0, 0)))
+    discrete_vd("ANAPHYLAXIS", len(get_cpt_0(CPTs, "ANAPHYLAXIS")))
+    discrete_vd("TPR", len(get_cpt_1(CPTs, "TPR", 0)))
+    discrete_vd("INSUFFANESTH", len(get_cpt_0(CPTs, "INSUFFANESTH")))
+    discrete_vd("CATECHOL", len(get_cpt_4(CPTs, "CATECHOL", 0, 0, 0, 0)))
+    discrete_vd("HR", len(get_cpt_1(CPTs, "HR", 0)))
+    discrete_vd("ERRCAUTER", len(get_cpt_0(CPTs, "ERRCAUTER")))
+    discrete_vd("HREKG", len(get_cpt_2(CPTs, "HREKG", 0, 0)))
+    discrete_vd("HRSAT", len(get_cpt_2(CPTs, "HRSAT", 0, 0)))
+    discrete_vd("ERRLOWOUTPUT", len(get_cpt_0(CPTs, "ERRLOWOUTPUT")))
+    discrete_vd("HRBP", len(get_cpt_2(CPTs, "HRBP", 0, 0)))
+    discrete_vd("LVFAILURE", len(get_cpt_0(CPTs, "LVFAILURE")))
+    discrete_vd("HISTORY", len(get_cpt_1(CPTs, "HISTORY", 0)))
+    discrete_vd("HYPOVOLEMIA", len(get_cpt_0(CPTs, "HYPOVOLEMIA")))
+    discrete_vd("LVEDVOLUME", len(get_cpt_2(CPTs, "LVEDVOLUME", 0, 0)))
+    discrete_vd("PCWP", len(get_cpt_1(CPTs, "PCWP", 0)))
+    discrete_vd("CVP", len(get_cpt_1(CPTs, "CVP", 0)))
+    discrete_vd("STROKEVOLUME", len(get_cpt_2(CPTs, "STROKEVOLUME", 0, 0)))
+    discrete_vd("CO", len(get_cpt_2(CPTs, "CO", 0, 0)))
+    discrete_vd("BP", len(get_cpt_2(CPTs, "BP", 0, 0)))
 
 CPTs = {
     "MINVOLSET": torch.tensor([0.05, 0.9, 0.05]),
@@ -107,6 +147,6 @@ CPTs = {
 
 
 
-import pyro.poutine as poutine
-from pprint import pprint
-pprint({name: site["value"] for name, site in poutine.trace(model).get_trace().nodes.items() if site["type"] == "sample"}) # type: ignore
+# import pyro.poutine as poutine
+# from pprint import pprint
+# pprint({name: site["value"] for name, site in poutine.trace(model).get_trace().nodes.items() if site["type"] == "sample"}) # type: ignore

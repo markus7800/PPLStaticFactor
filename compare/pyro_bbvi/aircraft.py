@@ -39,7 +39,20 @@ def model():
     pyro.sample("observed_blip_1", dist.Normal(blip_1, 1), obs=torch.tensor(1.))
     pyro.sample("observed_blip_2", dist.Normal(blip_2, 1), obs=torch.tensor(2.))
     pyro.sample("observed_blip_3", dist.Normal(blip_3, 1), obs=torch.tensor(3.))
+    
+def guide():
+    num_aircraft = discrete_vd("num_aircraft", 11)
+    num_aircraft = num_aircraft + 1
 
+    i = 1
+    while i <= num_aircraft:
+        position = continuous_vd(f"pos_{i}", 1)
+        num_blips = discrete_vd(f"num_blips_{i}", 3)
+        j = 1
+        while j <= num_blips:
+            blip = continuous_vd(f"blip_{i}_{j}", 1)
+            j = j + 1
+        i = i + 1
 
 # import pyro.poutine as poutine
 # from pprint import pprint

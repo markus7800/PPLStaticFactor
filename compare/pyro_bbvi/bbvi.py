@@ -196,3 +196,9 @@ def discrete_vd(name: str, N: int):
     t = transforms.StickBreakingTransform()
     p = t(up)
     return pyro.sample(name, dist.Categorical(p))
+
+def bernoulli_vd(name: str):
+    up = pyro.param(f"{name}_up", torch.tensor(0.), constraints.real)
+    t = transforms.SigmoidTransform()
+    p = t(up)
+    return pyro.sample(name, dist.Bernoulli(p))

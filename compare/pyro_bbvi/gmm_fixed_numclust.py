@@ -85,36 +85,6 @@ def guide():
         discrete_vd(f"z_{i}", num_clusters)
         i = i + 1
  
-
-n_iter = 10
-L = 10
-
-pyro.set_rng_seed(0)
-
-# no adagrad in pyro
-adam_params = {"lr": 0.005, "betas": (0.95, 0.999)}
-optimizer = Adam(adam_params)        
-
-bbvi = VarTracking_SVI(model, guide, optimizer, loss=VarTracking_Trace_ELBO(num_particles=L), L=L, n_iter=n_iter)
-for step in tqdm(range(n_iter)):
-    loss = bbvi.step()
-
-# for name in sorted(list(bbvi.avg_grads_var.keys())):
-#     print(name, bbvi.avg_grads_var[name])
-avg_var_standard = torch.median(torch.hstack(list(bbvi.avg_grads_var.values())))
-print(f"{avg_var_standard=:.4g}")
-
-adam_params = {"lr": 0.005, "betas": (0.95, 0.999)}
-optimizer = Adam(adam_params)        
-
-bbvi = VarTracking_SVI(model, guide, optimizer, loss=VarTracking_TraceGraph_ELBO(num_particles=L), L=L, n_iter=n_iter)
-for step in tqdm(range(n_iter)):
-    loss = bbvi.step()
-
-# for name in sorted(list(bbvi.avg_grads_var.keys())):
-#     print(name, bbvi.avg_grads_var[name])
-avg_var_graph = torch.median(torch.hstack(list(bbvi.avg_grads_var.values())))
-print(f"{avg_var_graph=:.4g}")
-print()
-
-print("reduction", avg_var_standard / avg_var_graph)
+# import pyro.poutine as poutine
+# from pprint import pprint
+# pprint({name: site["value"] for name, site in poutine.trace(model).get_trace().nodes.items() if site["type"] == "sample"}) # type: ignore

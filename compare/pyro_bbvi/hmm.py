@@ -25,6 +25,16 @@ def model():
         pyro.sample(f"obs_{i}", dist.Normal(current, 1), obs=ys[i])
         i = i + 1
         
+def guide():
+    seqlen = len(ys)
+
+    current = discrete_vd("initial_state", 3)
+    i = 0
+    while i < seqlen:
+        current = discrete_vd(f"state_{i}", 3)
+        i = i + 1
+    
+        
 ys = torch.tensor([
     3.36, 2.87, 1.54, 1.13, 2.05, 2.55, 3.08, 1.23, 2.37, 2.5,
     1.42, 1.46, 0.65, 1.15, 0.31, 2.89, 0.96, 2.23, 1.55, 1.52,
@@ -34,6 +44,6 @@ ys = torch.tensor([
 ])
 
 
-import pyro.poutine as poutine
-from pprint import pprint
-pprint({name: site["value"] for name, site in poutine.trace(model).get_trace().nodes.items() if site["type"] == "sample"}) # type: ignore
+# import pyro.poutine as poutine
+# from pprint import pprint
+# pprint({name: site["value"] for name, site in poutine.trace(model).get_trace().nodes.items() if site["type"] == "sample"}) # type: ignore

@@ -23,7 +23,16 @@ def model():
     while current != TERMINAL_SYMBOL:
         current = pyro.sample(f"symbol_{i}", dist.Categorical(production_probs[current]))
         i = i + 1
+        
 
-import pyro.poutine as poutine
-from pprint import pprint
-pprint({name: site["value"] for name, site in poutine.trace(model).get_trace().nodes.items() if site["type"] == "sample"}) # type: ignore
+def guide():
+    TERMINAL_SYMBOL = 3
+    current = discrete_vd("initial_symbol", 3)
+    i = 1
+    while current != TERMINAL_SYMBOL:
+        current = discrete_vd(f"symbol_{i}", 4)
+        i = i + 1
+
+# import pyro.poutine as poutine
+# from pprint import pprint
+# pprint({name: site["value"] for name, site in poutine.trace(model).get_trace().nodes.items() if site["type"] == "sample"}) # type: ignore

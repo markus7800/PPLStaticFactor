@@ -17,7 +17,12 @@ def model():
     i = 0
     while i < len(xs):
         pyro.sample(f"y_{i}", dist.Normal(slope * xs[i] + intercept, 1.), obs=ys[i])
-        i = i + 1
+        i = i + 1  
+
+def guide():
+    slope = continuous_vd("slope", 1)
+    intercept = continuous_vd("intercept", 1)
+
 
 xs = torch.tensor([
     0.85, 0.52, -0.96, -0.3, -0.89, 1.45, -0.63, -1.57, 0.43, -1.06, 0.98, 0.86, 0.2, 0.29, 2.25,
@@ -38,6 +43,6 @@ ys = torch.tensor([
     -3.54, 0.96, 1.39, 1.66, -1.04, 1.32, 0.97, -2.62, -3.53, 2.96, 2.63
 ])
 
-import pyro.poutine as poutine
-from pprint import pprint
-pprint({name: site["value"] for name, site in poutine.trace(model).get_trace().nodes.items() if site["type"] == "sample"}) # type: ignore
+# import pyro.poutine as poutine
+# from pprint import pprint
+# pprint({name: site["value"] for name, site in poutine.trace(model).get_trace().nodes.items() if site["type"] == "sample"}) # type: ignore
