@@ -7,6 +7,8 @@ import math
 from pyro.optim import Adam # type: ignore
 from tqdm.auto import tqdm
 
+modelname = "gmm_fixed_numclust"
+
 ys = torch.tensor(
 [-7.87951290075215, -23.251364738213493, -5.34679518882793, -3.163770449770572,
 10.524424782864525, 5.911987013277482, -19.228378698266436, 0.3898087330050574,

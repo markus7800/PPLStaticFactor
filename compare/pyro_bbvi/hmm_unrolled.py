@@ -1,0 +1,132 @@
+import torch
+from bbvi import continuous_vd, discrete_vd, VarTracking_SVI, VarTracking_Trace_ELBO, VarTracking_TraceGraph_ELBO
+import pyro
+import pyro.distributions as dist
+import pyro.distributions.transforms as transforms
+import math
+from pyro.optim import Adam # type: ignore
+from tqdm.auto import tqdm
+
+modelname = "hmm_unrolled"
+
+transition_probs = torch.tensor([
+    [0.1, 0.2, 0.7],
+    [0.1, 0.8, 0.1],
+    [0.3, 0.3, 0.4]
+])
+
+def model():
+    current = pyro.sample("initial_state", dist.Categorical(torch.tensor([0.33, 0.33, 0.34])))
+    current = pyro.sample("state_0", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_0", dist.Normal(current, 1), obs=ys[0])
+    current = pyro.sample("state_1", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_1", dist.Normal(current, 1), obs=ys[1])
+    current = pyro.sample("state_2", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_2", dist.Normal(current, 1), obs=ys[2])
+    current = pyro.sample("state_3", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_3", dist.Normal(current, 1), obs=ys[3])
+    current = pyro.sample("state_4", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_4", dist.Normal(current, 1), obs=ys[4])
+    current = pyro.sample("state_5", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_5", dist.Normal(current, 1), obs=ys[5])
+    current = pyro.sample("state_6", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_6", dist.Normal(current, 1), obs=ys[6])
+    current = pyro.sample("state_7", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_7", dist.Normal(current, 1), obs=ys[7])
+    current = pyro.sample("state_8", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_8", dist.Normal(current, 1), obs=ys[8])
+    current = pyro.sample("state_9", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_9", dist.Normal(current, 1), obs=ys[9])
+    current = pyro.sample("state_10", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_10", dist.Normal(current, 1), obs=ys[10])
+    current = pyro.sample("state_11", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_11", dist.Normal(current, 1), obs=ys[11])
+    current = pyro.sample("state_12", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_12", dist.Normal(current, 1), obs=ys[12])
+    current = pyro.sample("state_13", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_13", dist.Normal(current, 1), obs=ys[13])
+    current = pyro.sample("state_14", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_14", dist.Normal(current, 1), obs=ys[14])
+    current = pyro.sample("state_15", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_15", dist.Normal(current, 1), obs=ys[15])
+    current = pyro.sample("state_16", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_16", dist.Normal(current, 1), obs=ys[16])
+    current = pyro.sample("state_17", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_17", dist.Normal(current, 1), obs=ys[17])
+    current = pyro.sample("state_18", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_18", dist.Normal(current, 1), obs=ys[18])
+    current = pyro.sample("state_19", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_19", dist.Normal(current, 1), obs=ys[19])
+    current = pyro.sample("state_20", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_20", dist.Normal(current, 1), obs=ys[20])
+    current = pyro.sample("state_21", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_21", dist.Normal(current, 1), obs=ys[21])
+    current = pyro.sample("state_22", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_22", dist.Normal(current, 1), obs=ys[22])
+    current = pyro.sample("state_23", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_23", dist.Normal(current, 1), obs=ys[23])
+    current = pyro.sample("state_24", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_24", dist.Normal(current, 1), obs=ys[24])
+    current = pyro.sample("state_25", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_25", dist.Normal(current, 1), obs=ys[25])
+    current = pyro.sample("state_26", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_26", dist.Normal(current, 1), obs=ys[26])
+    current = pyro.sample("state_27", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_27", dist.Normal(current, 1), obs=ys[27])
+    current = pyro.sample("state_28", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_28", dist.Normal(current, 1), obs=ys[28])
+    current = pyro.sample("state_29", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_29", dist.Normal(current, 1), obs=ys[29])
+    current = pyro.sample("state_30", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_30", dist.Normal(current, 1), obs=ys[30])
+    current = pyro.sample("state_31", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_31", dist.Normal(current, 1), obs=ys[31])
+    current = pyro.sample("state_32", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_32", dist.Normal(current, 1), obs=ys[32])
+    current = pyro.sample("state_33", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_33", dist.Normal(current, 1), obs=ys[33])
+    current = pyro.sample("state_34", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_34", dist.Normal(current, 1), obs=ys[34])
+    current = pyro.sample("state_35", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_35", dist.Normal(current, 1), obs=ys[35])
+    current = pyro.sample("state_36", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_36", dist.Normal(current, 1), obs=ys[36])
+    current = pyro.sample("state_37", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_37", dist.Normal(current, 1), obs=ys[37])
+    current = pyro.sample("state_38", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_38", dist.Normal(current, 1), obs=ys[38])
+    current = pyro.sample("state_39", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_39", dist.Normal(current, 1), obs=ys[39])
+    current = pyro.sample("state_40", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_40", dist.Normal(current, 1), obs=ys[40])
+    current = pyro.sample("state_41", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_41", dist.Normal(current, 1), obs=ys[41])
+    current = pyro.sample("state_42", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_42", dist.Normal(current, 1), obs=ys[42])
+    current = pyro.sample("state_43", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_43", dist.Normal(current, 1), obs=ys[43])
+    current = pyro.sample("state_44", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_44", dist.Normal(current, 1), obs=ys[44])
+    current = pyro.sample("state_45", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_45", dist.Normal(current, 1), obs=ys[45])
+    current = pyro.sample("state_46", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_46", dist.Normal(current, 1), obs=ys[46])
+    current = pyro.sample("state_47", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_47", dist.Normal(current, 1), obs=ys[47])
+    current = pyro.sample("state_48", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_48", dist.Normal(current, 1), obs=ys[48])
+    current = pyro.sample("state_49", dist.Categorical(transition_probs[current]))
+    pyro.sample("obs_49", dist.Normal(current, 1), obs=ys[49])
+        
+ys = torch.tensor([
+    3.36, 2.87, 1.54, 1.13, 2.05, 2.55, 3.08, 1.23, 2.37, 2.5,
+    1.42, 1.46, 0.65, 1.15, 0.31, 2.89, 0.96, 2.23, 1.55, 1.52,
+    2.72, 4.16, 2.4, 2.41, 1.05, 3.05, 2.04, 3.47, 1.08, 0.63,
+    3.87, 0.08, 2.06, 2.21, 2.24, 1.77, 0.67, 2.45, 4.05, 2.95,
+    1.65, 3.01, 3.74, 1.54, 2.47, 1.54, 3.7, 4.29, 0.93, 1.95, 
+])
+
+
+import pyro.poutine as poutine
+from pprint import pprint
+pprint({name: site["value"] for name, site in poutine.trace(model).get_trace().nodes.items() if site["type"] == "sample"}) # type: ignore
