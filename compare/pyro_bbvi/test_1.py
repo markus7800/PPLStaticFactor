@@ -1,18 +1,13 @@
 from bbvi import *
-from pyro.optim import Adam, AdagradRMSProp
-
-from torchviz import make_dot
+from pyro.optim import Adam
 
 def model():
     x = pyro.sample("x", dist.Normal(1.,0.1))
 
-# m = torch.tensor(0., requires_grad=True)
-# s = torch.tensor(0., requires_grad=True)
-
 def guide():
     m = pyro.param("m", torch.tensor(0.))
     s = pyro.param("s", torch.tensor(0.))
-    pyro.sample("x", dist.Normal(m, torch.exp(s)).has_rsample_(True))
+    pyro.sample("x", dist.Normal(m, torch.exp(s)).has_rsample_(False)) # controls advi vs bbvi for site
 
 pyro.set_rng_seed(0)
         
@@ -24,11 +19,8 @@ optimizer = Adam(adam_params)
 
 vi = VarTracking_SVI(model, guide, optimizer, loss=VarTracking_Trace_ELBO(num_particles=L), L=L, n_iter=n_iter)
 
-print(vi, vi.loss)
 for step in range(n_iter):
     loss = vi.step()
-
-
 print()
 
 pyro.set_rng_seed(0)
@@ -46,12 +38,9 @@ print("log_r", p.log_prob(x) - q.log_prob(x))
 
 
 elbo = p.log_prob(x) - q.log_prob(x)
-# elbo = q.log_prob(x)
 print("elbo", elbo)
-# print(make_dot(elbo, show_attrs=False, show_saved=False))
 elbo.backward()
 print("advi grads", m.grad, s.grad)
-# getBack(elbo.grad_fn)
 
 print()
 

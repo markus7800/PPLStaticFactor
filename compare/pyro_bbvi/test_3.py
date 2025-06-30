@@ -1,8 +1,6 @@
 from bbvi import *
 from pyro.optim import Adam
 
-from torchviz import make_dot
-
 def model():
     x = pyro.sample("x", dist.Normal(1.,1.))
     y = pyro.sample("y", dist.Normal(x,0.5))
@@ -21,8 +19,6 @@ adam_params = {"lr": 0.005, "betas": (0.95, 0.999)}
 optimizer = Adam(adam_params)
 
 vi = VarTracking_SVI(model, guide, optimizer, loss=VarTracking_TraceGraph_ELBO(num_particles=L), L=L, n_iter=n_iter)
-
-print(vi, vi.loss)
 for step in range(n_iter):
     loss = vi.step()
 print()
