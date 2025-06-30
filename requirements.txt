@@ -1,2 +1,6 @@
 sexpdata==1.0.2
 pandas==2.2.3
+numpy==2.2.4
+pyro-ppl==1.9.1
+torch==2.7.1
+tqdm==4.67.1
