@@ -41,7 +41,7 @@ t1 = time()
 
 avg_var_standard = torch.median(torch.hstack(list(bbvi.avg_grads_var.values())))
 standard_time = t1 - t0
-print(f"{avg_var_standard=:.4g} in {standard_time:.3f}s")
+print(f"{avg_var_standard=:.3e} in {standard_time:.3f}s")
 
 clear_param_store()
 
@@ -56,7 +56,7 @@ t1 = time()
 
 avg_var_graph = torch.median(torch.hstack(list(bbvi.avg_grads_var.values())))
 graph_time = t1 - t0
-print(f"{avg_var_graph=:.4g} in {graph_time:.3f}s")
+print(f"{avg_var_graph=:.3e} in {graph_time:.3f}s")
 
 print("reduction", avg_var_standard / avg_var_graph)
 print()
@@ -66,7 +66,7 @@ with open("compare/pyro_bbvi/vi_results.csv", "a") as f:
 """
 
 N_ITER = 100
-L = 10
+L = 100
 
 for _ in range(N_repetitions):
     for filename in filenames:
