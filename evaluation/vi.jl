@@ -1,23 +1,4 @@
 
-#                       is differentiable   is smc compat
-# 1 aircraft.jl                 no              no
-# 2 bayesian_network.jl         no              no
-# 3 captcha.jl                  no              no
-# 4 dirichlet_process.jl        no              yes
-# 5 geometric.jl                no              no
-# 6 gmm_fixed_numclust.jl       no              yes
-# 7 gmm_variable_numclust.jl    no              yes
-# 8 hmm.jl                      no              yes
-# 9 hurricane.jl                no              no
-# 10 lda_fixed_numtopic.jl      no              yes
-# 11 lda_variable_numtopic.jl   no              yes
-# 12 linear_regression.jl       yes             ~yes
-# 13 marsaglia.jl               yes             no
-# 14 pcfg.jl                    no              no
-# 15 pedestrian.jl              yes             no
-# 16 urn.jl                     no              no
-# 1 hmm.jl                      no              no
-
 import Distributions
 import ForwardDiff
 
@@ -188,6 +169,9 @@ struct DiscreteVD <: VaritationalDistribution
     theta::Vector{Float64}
     support::Vector{Int}
     support_to_ix::Dict{Int,Int}
+    function DiscreteVD(theta::Vector{Float64}, support::Vector{Int}, support_to_ix::Dict{Int,Int})
+        return new(theta, support, support_to_ix)
+    end
     function DiscreteVD(support::Vector{Int})
         support_to_ix = Dict{Int,Int}()
         for (i, s) in enumerate(support)
@@ -401,25 +385,26 @@ end
 # resamples at resample_address and samples from prior for other new addresses
 mutable struct VIForwardFactorContext <: AbstractFactorRevisitContext
     trace::Dict{String,SampleType}
-    logprob::Float64
-    function VIForwardFactorContext(trace::Dict{String,SampleType})
-        return new(trace, 0.0)
+    log_q::Dict{String,Float64}
+    elbo:: Float64
+    function VIForwardFactorContext(trace::Dict{String,SampleType}, log_q::Dict{String,Float64})
+        return new(trace, log_q, 0.0)
     end
 end
 
 function revisit(ctx::VIForwardFactorContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     value = ctx.trace[address]
-    ctx.logprob += logpdf(distribution, value)
+    ctx.elbo += logpdf(distribution, value) - ctx.log_q[address]
     return value
 end
 
 function score(ctx::VIForwardFactorContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     if !isnothing(observed)
-        ctx.logprob += logpdf(distribution, observed)
+        ctx.elbo += logpdf(distribution, observed)
         return observed
     end
     value = ctx.trace[address]
-    ctx.logprob += logpdf(distribution, value)
+    ctx.elbo += logpdf(distribution, value) # - ctx.log_q[address]
     return value
 end
 
@@ -459,14 +444,13 @@ function _bbvi(n_iter::Int, L::Int, learning_rate::Float64, model::Function, fac
                 grads = logpdf_param_grads(vd, value)
 
                 if factorised
-                    factor_ctx = VIForwardFactorContext(ctx.trace)
+                    factor_ctx = VIForwardFactorContext(ctx.trace, ctx.log_q)
                     factor(factor_ctx, ctx.states[address], address)
-                    elbo = factor_ctx.logprob - ctx.log_q[address]
+                    elbo = factor_ctx.elbo
                 else
                     elbo = ctx.elbo
                 end
                 @assert isfinite(elbo)
-
                 
                 if !haskey(grads_mean, address)
                     grads_mean[address] = zeros(length(grads))
@@ -485,8 +469,6 @@ function _bbvi(n_iter::Int, L::Int, learning_rate::Float64, model::Function, fac
             end 
         end
         # println()
-
-        # println(grads_mean)
 
         for (address, v) in grads_var
             grads_var[address] = v / (L - 1)
@@ -513,10 +495,14 @@ function _bbvi(n_iter::Int, L::Int, learning_rate::Float64, model::Function, fac
 
     end
 
+    all_params = reduce(vcat, values(avg_grads_var))
+
     # for address in sort(collect(keys(avg_grads_var)))
     #     println(address, ": ", avg_grads_var[address], " - ", mean(avg_grads_var[address]))
     # end
-    all_params = reduce(vcat, values(avg_grads_var))
+    # println(median(all_params), ", ", mean(all_params), ", ", maximum(all_params))
+
+    # println(vd_store)
     avg_var = median(all_params)
 
     return vd_store, avg_var

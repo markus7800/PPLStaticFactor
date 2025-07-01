@@ -4,7 +4,7 @@ from bcolors import bcolors
 
 
 with open("evaluation/vi_results.csv", "w") as f:
-    f.write("model,N,L,none,static,rel_static\n")
+    f.write("model,N,L,none,time_none,static,time_static,rel_static\n")
 
 filenames = [
     "aircraft.jl",

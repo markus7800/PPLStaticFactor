@@ -36,7 +36,7 @@ proposers = Dict{String, Distribution}()
     end
 
     sample(ctx, "observed_num_blips", Normal(total_num_blibs, 1), observed=3)
-    sample(ctx, "observed_blip_2", Normal(blip_1, 1), observed= 1.)
+    sample(ctx, "observed_blip_1", Normal(blip_1, 1), observed= 1.)
     sample(ctx, "observed_blip_2", Normal(blip_2, 1); observed= 2.)
     sample(ctx, "observed_blip_3", Normal(blip_3, 1), observed= 3.)
 end

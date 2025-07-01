@@ -77,7 +77,7 @@ function aircraft(ctx::AbstractSampleRecordStateContext, _s_::State)
         _s_.i = (_s_.i + 1)
     end
     _ = sample_record_state(ctx, _s_, 188, "observed_num_blips", Normal(_s_.total_num_blibs, 1), observed = 3)
-    _ = sample_record_state(ctx, _s_, 202, "observed_blip_2", Normal(_s_.blip_1, 1), observed = 1.0)
+    _ = sample_record_state(ctx, _s_, 202, "observed_blip_1", Normal(_s_.blip_1, 1), observed = 1.0)
     _ = sample_record_state(ctx, _s_, 216, "observed_blip_2", Normal(_s_.blip_2, 1), observed = 2.0)
     _ = sample_record_state(ctx, _s_, 230, "observed_blip_3", Normal(_s_.blip_3, 1), observed = 3.0)
 end
@@ -130,7 +130,7 @@ function aircraft_blip__126(ctx::AbstractFactorRevisitContext, _s_::State)
         _s_.i = (_s_.i + 1)
     end
     read_trace(ctx, _s_, 188, "observed_num_blips", observed = 3)
-    score(ctx, _s_, 202, "observed_blip_2", Normal(_s_.blip_1, 1), observed = 1.0)
+    score(ctx, _s_, 202, "observed_blip_1", Normal(_s_.blip_1, 1), observed = 1.0)
     score(ctx, _s_, 216, "observed_blip_2", Normal(_s_.blip_2, 1), observed = 2.0)
     score(ctx, _s_, 230, "observed_blip_3", Normal(_s_.blip_3, 1), observed = 3.0)
 end
@@ -164,7 +164,7 @@ function aircraft_num_aircraft_22(ctx::AbstractFactorRevisitContext, _s_::State)
         _s_.i = (_s_.i + 1)
     end
     score(ctx, _s_, 188, "observed_num_blips", Normal(_s_.total_num_blibs, 1), observed = 3)
-    score(ctx, _s_, 202, "observed_blip_2", Normal(_s_.blip_1, 1), observed = 1.0)
+    score(ctx, _s_, 202, "observed_blip_1", Normal(_s_.blip_1, 1), observed = 1.0)
     score(ctx, _s_, 216, "observed_blip_2", Normal(_s_.blip_2, 1), observed = 2.0)
     score(ctx, _s_, 230, "observed_blip_3", Normal(_s_.blip_3, 1), observed = 3.0)
 end
@@ -208,7 +208,7 @@ function aircraft_num_blips__89(ctx::AbstractFactorRevisitContext, _s_::State)
         _s_.i = (_s_.i + 1)
     end
     score(ctx, _s_, 188, "observed_num_blips", Normal(_s_.total_num_blibs, 1), observed = 3)
-    score(ctx, _s_, 202, "observed_blip_2", Normal(_s_.blip_1, 1), observed = 1.0)
+    score(ctx, _s_, 202, "observed_blip_1", Normal(_s_.blip_1, 1), observed = 1.0)
     score(ctx, _s_, 216, "observed_blip_2", Normal(_s_.blip_2, 1), observed = 2.0)
     score(ctx, _s_, 230, "observed_blip_3", Normal(_s_.blip_3, 1), observed = 3.0)
 end

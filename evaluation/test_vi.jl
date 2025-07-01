@@ -1,3 +1,5 @@
+include("ppl.jl")
+include("benchmark/generated/gmm_fixed_numclust.jl")
 include("vi.jl")
 
 import StatsPlots
