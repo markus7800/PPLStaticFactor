@@ -115,7 +115,79 @@ class VarTracking_Trace_ELBO(Trace_ELBO):
         warn_if_nan(loss, "loss")
         return loss, grads_var
 
+
+from pyro.infer.tracegraph_elbo import defaultdict, MultiFrameTensor, get_provenance, is_identically_zero, _construct_baseline, detach_provenance # type: ignore
+def verbose_compute_elbo(model_trace, guide_trace):
+    # In ref [1], section 3.2, the part of the surrogate loss computed here is
+    # \sum{cost}, which in this case is the ELBO. Instead of using the ELBO,
+    # this implementation uses a surrogate ELBO which modifies some entropy
+    # terms depending on the parameterization. This reduces the variance of the
+    # gradient under some conditions.
+
+    elbo = 0.0
+    surrogate_elbo = 0.0
+    baseline_loss = 0.0
+    # mapping from non-reparameterizable sample sites to cost terms influenced by each of them
+    downstream_costs = defaultdict(lambda: MultiFrameTensor())
+
+    # Bring log p(x, z|...) terms into both the ELBO and the surrogate
+    print("Model")
+    for name, site in model_trace.nodes.items():
+        if site["type"] == "sample":
+            elbo += site["log_prob_sum"]
+            surrogate_elbo += site["log_prob_sum"]
+            # add the log_prob to each non-reparam sample site upstream
+            print(name, get_provenance(site["log_prob_sum"]))
+            for key in get_provenance(site["log_prob_sum"]):
+                downstream_costs[key].add((site["cond_indep_stack"], site["log_prob"]))
+
+    # Bring log q(z|...) terms into the ELBO, and effective terms into the
+    # surrogate. Depending on the parameterization of a site, its log q(z|...)
+    # cost term may not contribute (in expectation) to the gradient. To reduce
+    # the variance under some conditions, the default entropy terms from
+    # site[`score_parts`] are used.
+    print("Guide")
+    for name, site in guide_trace.nodes.items():
+        if site["type"] == "sample":
+            elbo -= site["log_prob_sum"]
+            entropy_term = site["score_parts"].entropy_term
+            # For fully reparameterized terms, this entropy_term is log q(z|...)
+            # For fully non-reparameterized terms, it is zero
+            if not is_identically_zero(entropy_term):
+                surrogate_elbo -= entropy_term.sum()
+            # add the -log_prob to each non-reparam sample site upstream
+            print(name, get_provenance(site["log_prob_sum"]))
+            for key in get_provenance(site["log_prob_sum"]):
+                downstream_costs[key].add((site["cond_indep_stack"], -site["log_prob"]))
+
+    # construct all the reinforce-like terms.
+    # we include only downstream costs to reduce variance
+    # optionally include baselines to further reduce variance
+    for node, downstream_cost in downstream_costs.items():
+        guide_site = guide_trace.nodes[node]
+        downstream_cost = downstream_cost.sum_to(guide_site["cond_indep_stack"])
+        score_function = guide_site["score_parts"].score_function
+
+        use_baseline, baseline_loss_term, baseline = _construct_baseline(
+            node, guide_site, downstream_cost
+        )
+
+        if use_baseline:
+            downstream_cost = downstream_cost - baseline
+            baseline_loss = baseline_loss + baseline_loss_term
+
+        surrogate_elbo += (score_function * downstream_cost.detach()).sum()
+
+    surrogate_loss = -surrogate_elbo + baseline_loss
+    return detach_provenance(elbo), detach_provenance(surrogate_loss)
+
 class VarTracking_TraceGraph_ELBO(TraceGraph_ELBO):
+    
+    # def _loss_and_surrogate_loss_particle(self, model_trace, guide_trace):
+    #     elbo, surrogate_loss = verbose_compute_elbo(model_trace, guide_trace)
+    #     exit()
+    #     return elbo, surrogate_loss
+    
     def loss_and_grads(self, model, guide, *args, **kwargs):
         """
         :returns: returns an estimate of the ELBO

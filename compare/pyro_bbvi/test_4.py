@@ -14,6 +14,19 @@ def guide():
     continuous_vd("z", 1)
     continuous_vd("a", 1)
     continuous_vd("b", 1)
+    
+# def vd(name, n_dim):
+#     mu = pyro.param(f"{name}_m", torch.zeros((n_dim,)))
+#     omega = pyro.param(f"{name}_omega", torch.zeros((n_dim,)))
+#     return pyro.sample(name, dist.Normal(mu, torch.exp(omega)).has_rsample_(True))
+# def guide():
+#     vd("x", 1)
+#     vd("y", 1)
+#     vd("z", 1)
+#     vd("a", 1)
+#     vd("b", 1)
+# provenance is empty for rsampled sites
+
 
 pyro.set_rng_seed(0)
         

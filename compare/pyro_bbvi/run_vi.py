@@ -30,7 +30,7 @@ from time import time
 pyro.set_rng_seed(0)
 
 # no adagrad in pyro
-adam_params = {"lr": 0.005, "betas": (0.95, 0.999)}
+adam_params = {"lr": 0.001, "betas": (0.95, 0.999)}
 optimizer = Adam(adam_params)        
 
 bbvi = VarTracking_SVI(model, guide, optimizer, loss=VarTracking_Trace_ELBO(num_particles=L), L=L, n_iter=N_ITER)
@@ -45,7 +45,9 @@ print(f"{avg_var_standard=:.3e} in {standard_time:.3f}s")
 
 clear_param_store()
 
-adam_params = {"lr": 0.005, "betas": (0.95, 0.999)}
+pyro.set_rng_seed(0)
+
+adam_params = {"lr": 0.001, "betas": (0.95, 0.999)}
 optimizer = Adam(adam_params)        
 
 bbvi = VarTracking_SVI(model, guide, optimizer, loss=VarTracking_TraceGraph_ELBO(num_particles=L), L=L, n_iter=N_ITER)
