@@ -9,6 +9,7 @@ filenames = [
     "gmm_fixed_numclust.wppl",
     "gmm_variable_numclust.wppl",
     "hmm.wppl",
+    "hmm_unrolled.wppl",
     "lda_fixed_numtopic.wppl",
     "lda_variable_numtopic.wppl",
 ]
@@ -67,6 +68,7 @@ for _ in range(N_repetitions):
         res = subprocess.run(cmd, capture_output=True)
         out = res.stdout.decode()
         # print(out)
+        # print(res.stderr.decode())
         
         match = re.search(r"IS : (\d+.\d+(s|ms))", out)
         assert match is not None

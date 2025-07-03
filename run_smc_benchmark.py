@@ -25,12 +25,27 @@ filenames = [
     # "urn.jl"
 ]
 
+filenames_unrolled = [
+    # "gmm_fixed_numclust.jl",
+    "hmm.jl",
+    # "lda_fixed_numtopic.jl",
+    # "linear_regression.jl",
+]
+
 N_repetitions = int(sys.argv[1])
 
 for i in range(N_repetitions):
     for filename in filenames:
         print(bcolors.HEADER + filename + bcolors.ENDC)
         cmd = ["julia", "--project=.", "evaluation/bench_smc.jl", "benchmark", filename]
+        subprocess.run(cmd, capture_output=False)
+        print()
+
+    print("\nUnrolled programs:\n")
+
+    for filename in filenames_unrolled:
+        print(bcolors.HEADER + filename + bcolors.ENDC)
+        cmd = ["julia", "--project=.", "evaluation/bench_smc.jl", "unrolled", filename]
         subprocess.run(cmd, capture_output=False)
         print()
 

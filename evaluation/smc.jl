@@ -19,6 +19,21 @@ function get_data_annealed_model(modelname::String)
             return hmm(ctx, ys[1:t])
         end
         return hmm_t, N_DATA
+    elseif modelname == "hmm_unrolled"
+        N_DATA = length(ys)
+        function hmm_t_2(ctx::SampleContext, t::Int)
+            transition_probs::Matrix{Float64} = [
+                0.1 0.2 0.7;
+                0.1 0.8 0.1;
+                0.3 0.3 0.4;
+            ]
+            current::Int = sample(ctx, "initial_state", Categorical([0.33, 0.33, 0.34]))
+            for i in 1:t # change here
+                current = sample(ctx, "state_" * string(i), Categorical(get_row(transition_probs, current)))
+                sample(ctx, "obs_" * string(i), Normal(current, 1), observed=get_n(ys,i))
+            end
+        end
+        return hmm_t_2, N_DATA
     elseif modelname == "lda_fixed_numtopic" || modelname == "lda_variable_numtopic"
         N_DATA = length(w)
         function lda_t(ctx::SampleContext, t::Int)
