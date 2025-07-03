@@ -10,7 +10,7 @@ mutable struct LMHManualContext <: AbstractManualResampleContext
     end
 end
 
-function manual_revisit(ctx::LMHManualContext, address::String, distribution::Distribution; observed=nothing)
+function manual_visit(ctx::LMHManualContext, address::String, distribution::Distribution; observed=nothing)
     proposer = get(ctx.proposers, address, distribution)
     old_value = ctx.trace[address]
     new_value = rand(proposer)

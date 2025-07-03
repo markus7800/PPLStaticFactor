@@ -35,8 +35,8 @@ function geometric(ctx::AbstractSampleRecordStateContext, _s_::State)
     return _s_.i
 end
 
-function geometric_b__41(ctx::AbstractFactorRevisitContext, _s_::State)
-    _s_.b = revisit(ctx, _s_, 41, ("b_" * string(_s_.i)), Bernoulli(0.5))
+function geometric_b__41(ctx::AbstractFactorVisitContext, _s_::State)
+    _s_.b = visit(ctx, _s_, 41, ("b_" * string(_s_.i)), Bernoulli(0.5))
     while _s_.b
         _s_.i = (_s_.i + 1)
         _s_.b = score(ctx, _s_, 41, ("b_" * string(_s_.i)), Bernoulli(0.5))
@@ -44,7 +44,7 @@ function geometric_b__41(ctx::AbstractFactorRevisitContext, _s_::State)
     score(ctx, _s_, 56, "x", Normal(_s_.i, 1.0), observed = 5.0)
 end
 
-function geometric_factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
+function geometric_factor(ctx::AbstractFactorVisitContext, _s_::State, _addr_::String)
     if _s_.node_id == 41
         return geometric_b__41(ctx, _s_)
     end
@@ -59,7 +59,7 @@ function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return geometric(ctx, _s_)
 end
 
-function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
+function factor(ctx::AbstractFactorVisitContext, _s_::State, _addr_::String)
     return geometric_factor(ctx, _s_, _addr_)
 end
 

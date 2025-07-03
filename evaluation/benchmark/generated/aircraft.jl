@@ -82,8 +82,8 @@ function aircraft(ctx::AbstractSampleRecordStateContext, _s_::State)
     _ = sample_record_state(ctx, _s_, 230, "observed_blip_3", Normal(_s_.blip_3, 1), observed = 3.0)
 end
 
-function aircraft_blip__126(ctx::AbstractFactorRevisitContext, _s_::State)
-    _s_.blip = revisit(ctx, _s_, 126, ("blip_" * string(_s_.i) * "_" * string(_s_.j)), Normal(_s_.position, 1.0))
+function aircraft_blip__126(ctx::AbstractFactorVisitContext, _s_::State)
+    _s_.blip = visit(ctx, _s_, 126, ("blip_" * string(_s_.i) * "_" * string(_s_.j)), Normal(_s_.position, 1.0))
     if (_s_.total_num_blibs == 1)
         _s_.blip_1 = _s_.blip
     end
@@ -135,8 +135,8 @@ function aircraft_blip__126(ctx::AbstractFactorRevisitContext, _s_::State)
     score(ctx, _s_, 230, "observed_blip_3", Normal(_s_.blip_3, 1), observed = 3.0)
 end
 
-function aircraft_num_aircraft_22(ctx::AbstractFactorRevisitContext, _s_::State)
-    _s_.num_aircraft = revisit(ctx, _s_, 22, "num_aircraft", Poisson(5))
+function aircraft_num_aircraft_22(ctx::AbstractFactorVisitContext, _s_::State)
+    _s_.num_aircraft = visit(ctx, _s_, 22, "num_aircraft", Poisson(5))
     _s_.num_aircraft = (_s_.num_aircraft + 1)
     _s_.total_num_blibs = 0
     _s_.blip_1 = 0.0
@@ -169,8 +169,8 @@ function aircraft_num_aircraft_22(ctx::AbstractFactorRevisitContext, _s_::State)
     score(ctx, _s_, 230, "observed_blip_3", Normal(_s_.blip_3, 1), observed = 3.0)
 end
 
-function aircraft_num_blips__89(ctx::AbstractFactorRevisitContext, _s_::State)
-    _s_.num_blips = revisit(ctx, _s_, 89, ("num_blips_" * string(_s_.i)), Categorical([0.1, 0.4, 0.5]))
+function aircraft_num_blips__89(ctx::AbstractFactorVisitContext, _s_::State)
+    _s_.num_blips = visit(ctx, _s_, 89, ("num_blips_" * string(_s_.i)), Categorical([0.1, 0.4, 0.5]))
     _s_.j = 1
     while (_s_.j <= _s_.num_blips)
         _s_.total_num_blibs = (_s_.total_num_blibs + 1)
@@ -213,8 +213,8 @@ function aircraft_num_blips__89(ctx::AbstractFactorRevisitContext, _s_::State)
     score(ctx, _s_, 230, "observed_blip_3", Normal(_s_.blip_3, 1), observed = 3.0)
 end
 
-function aircraft_pos__71(ctx::AbstractFactorRevisitContext, _s_::State)
-    _s_.position = revisit(ctx, _s_, 71, ("pos_" * string(_s_.i)), Normal(2.0, 5.0))
+function aircraft_pos__71(ctx::AbstractFactorVisitContext, _s_::State)
+    _s_.position = visit(ctx, _s_, 71, ("pos_" * string(_s_.i)), Normal(2.0, 5.0))
     _s_.num_blips = read_trace(ctx, _s_, 89, ("num_blips_" * string(_s_.i)))
     _s_.j = 1
     while (_s_.j <= _s_.num_blips)
@@ -233,7 +233,7 @@ function aircraft_pos__71(ctx::AbstractFactorRevisitContext, _s_::State)
     end
 end
 
-function aircraft_factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
+function aircraft_factor(ctx::AbstractFactorVisitContext, _s_::State, _addr_::String)
     if _s_.node_id == 126
         return aircraft_blip__126(ctx, _s_)
     end
@@ -257,7 +257,7 @@ function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return aircraft(ctx, _s_)
 end
 
-function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
+function factor(ctx::AbstractFactorVisitContext, _s_::State, _addr_::String)
     return aircraft_factor(ctx, _s_, _addr_)
 end
 

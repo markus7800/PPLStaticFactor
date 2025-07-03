@@ -41,8 +41,8 @@ function pcfg(ctx::AbstractSampleRecordStateContext, _s_::State)
     end
 end
 
-function pcfg_initial_symbol_49(ctx::AbstractFactorRevisitContext, _s_::State)
-    _s_.current = revisit(ctx, _s_, 49, "initial_symbol", Categorical([0.33, 0.33, 0.34]))
+function pcfg_initial_symbol_49(ctx::AbstractFactorVisitContext, _s_::State)
+    _s_.current = visit(ctx, _s_, 49, "initial_symbol", Categorical([0.33, 0.33, 0.34]))
     _s_.i = 1
     while (_s_.current != _s_.TERMINAL_SYMBOL)
         _s_.current = score(ctx, _s_, 75, ("symbol_" * string(_s_.i)), Categorical(get_row(_s_.production_probs, _s_.current)))
@@ -50,8 +50,8 @@ function pcfg_initial_symbol_49(ctx::AbstractFactorRevisitContext, _s_::State)
     end
 end
 
-function pcfg_symbol__75(ctx::AbstractFactorRevisitContext, _s_::State)
-    _s_.current = revisit(ctx, _s_, 75, ("symbol_" * string(_s_.i)), Categorical(get_row(_s_.production_probs, _s_.current)))
+function pcfg_symbol__75(ctx::AbstractFactorVisitContext, _s_::State)
+    _s_.current = visit(ctx, _s_, 75, ("symbol_" * string(_s_.i)), Categorical(get_row(_s_.production_probs, _s_.current)))
     _s_.i = (_s_.i + 1)
     while (_s_.current != _s_.TERMINAL_SYMBOL)
         _s_.current = score(ctx, _s_, 75, ("symbol_" * string(_s_.i)), Categorical(get_row(_s_.production_probs, _s_.current)))
@@ -59,7 +59,7 @@ function pcfg_symbol__75(ctx::AbstractFactorRevisitContext, _s_::State)
     end
 end
 
-function pcfg_factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
+function pcfg_factor(ctx::AbstractFactorVisitContext, _s_::State, _addr_::String)
     if _s_.node_id == 49
         return pcfg_initial_symbol_49(ctx, _s_)
     end
@@ -77,7 +77,7 @@ function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return pcfg(ctx, _s_)
 end
 
-function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
+function factor(ctx::AbstractFactorVisitContext, _s_::State, _addr_::String)
     return pcfg_factor(ctx, _s_, _addr_)
 end
 

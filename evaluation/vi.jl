@@ -383,7 +383,7 @@ end
 
 # executes model with respect to trace_proposed
 # resamples at resample_address and samples from prior for other new addresses
-mutable struct VIForwardFactorContext <: AbstractFactorRevisitContext
+mutable struct VIForwardFactorContext <: AbstractFactorVisitContext
     trace::Dict{String,SampleType}
     log_q::Dict{String,Float64}
     elbo:: Float64
@@ -392,7 +392,7 @@ mutable struct VIForwardFactorContext <: AbstractFactorRevisitContext
     end
 end
 
-function revisit(ctx::VIForwardFactorContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+function visit(ctx::VIForwardFactorContext, s::State, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     value = ctx.trace[address]
     ctx.elbo += logpdf(distribution, value) - ctx.log_q[address]
     return value

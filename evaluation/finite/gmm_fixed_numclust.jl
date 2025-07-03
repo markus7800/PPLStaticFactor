@@ -1,10 +1,10 @@
 
-function gmm_mu(ctx::AbstractManualRevisitContext, ys::Vector{Float64}, addr::String)
+function gmm_mu(ctx::AbstractManualVisitContext, ys::Vector{Float64}, addr::String)
     ξ::Float64 = 0.0
     κ::Float64 = 0.01
 
     old_value::Float64 = manual_read(ctx, addr)
-    new_value::Float64 = manual_revisit(ctx, addr, Normal(ξ, (1 / sqrt(κ))))
+    new_value::Float64 = manual_visit(ctx, addr, Normal(ξ, (1 / sqrt(κ))))
 
     cluster_ix::Int = parse(Int, addr[4:end])
 
@@ -21,12 +21,12 @@ function gmm_mu(ctx::AbstractManualRevisitContext, ys::Vector{Float64}, addr::St
     end
 end
 
-function gmm_var(ctx::AbstractManualRevisitContext, ys::Vector{Float64}, addr::String)
+function gmm_var(ctx::AbstractManualVisitContext, ys::Vector{Float64}, addr::String)
     α::Float64 = 2.0
     β::Float64 = 10.0
     
     old_value::Float64 = manual_read(ctx, addr)
-    new_value::Float64 = manual_revisit(ctx, addr, InverseGamma(α, β))
+    new_value::Float64 = manual_visit(ctx, addr, InverseGamma(α, β))
 
     cluster_ix::Int = parse(Int, addr[5:end])
     var1::Vector{Float64} = [manual_read(ctx, "var_"*string(z)) for z in 1:4]
@@ -41,12 +41,12 @@ function gmm_var(ctx::AbstractManualRevisitContext, ys::Vector{Float64}, addr::S
         manual_sub_logpdf(ctx, "y_" * string(i), Normal(mu, var2[z]), observed=get_n(ys, i))
     end
 end
-function gmm_w(ctx::AbstractManualRevisitContext, ys::Vector{Float64}, addr::String)
+function gmm_w(ctx::AbstractManualVisitContext, ys::Vector{Float64}, addr::String)
     δ::Float64 = 5.0
     num_clusters::Int = 4
 
     old_value::Vector{Float64} = manual_read(ctx, addr)
-    new_value::Vector{Float64} = manual_revisit(ctx, addr, Dirichlet(fill(δ, num_clusters)))
+    new_value::Vector{Float64} = manual_visit(ctx, addr, Dirichlet(fill(δ, num_clusters)))
 
     for i in 1:length(ys)
         manual_add_logpdf(ctx, "z_" * string(i), Categorical(new_value))
@@ -54,13 +54,13 @@ function gmm_w(ctx::AbstractManualRevisitContext, ys::Vector{Float64}, addr::Str
     end
 end
 
-function gmm_z(ctx::AbstractManualRevisitContext, ys::Vector{Float64}, addr::String)
+function gmm_z(ctx::AbstractManualVisitContext, ys::Vector{Float64}, addr::String)
     w::Vector{Float64} = manual_read(ctx, "w")
 
     i::Int = parse(Int, addr[3:end])
 
     old_value::Int = manual_read(ctx, addr)
-    new_value::Int = manual_revisit(ctx, addr, Categorical(w))
+    new_value::Int = manual_visit(ctx, addr, Categorical(w))
 
     mu::Float64 = manual_read(ctx, "mu_"*string(new_value))
     var::Float64 = manual_read(ctx, "var_"*string(new_value))
@@ -85,6 +85,6 @@ function gmm_manual_factor(ctx::AbstractManualResampleContext, ys::Vector{Float6
     end
 end
 
-function finite_factor(ctx::AbstractManualRevisitContext)
+function finite_factor(ctx::AbstractManualVisitContext)
     gmm_manual_factor(ctx, ys)
 end

@@ -37,8 +37,8 @@ function lr(ctx::AbstractSampleRecordStateContext, xs::Vector{Float64}, ys::Vect
     end
 end
 
-function lr_intercept_61(ctx::AbstractFactorRevisitContext, xs::Vector{Float64}, ys::Vector{Float64}, _s_::State)
-    _s_.intercept = revisit(ctx, _s_, 61, "intercept", Normal(0.0, 3.0))
+function lr_intercept_61(ctx::AbstractFactorVisitContext, xs::Vector{Float64}, ys::Vector{Float64}, _s_::State)
+    _s_.intercept = visit(ctx, _s_, 61, "intercept", Normal(0.0, 3.0))
     _s_.i = 1
     while (_s_.i <= length(xs))
         score(ctx, _s_, 87, ("y_" * string(_s_.i)), Normal(((_s_.slope * get_n(xs, _s_.i)) + _s_.intercept), 1.0), observed = get_n(ys, _s_.i))
@@ -46,8 +46,8 @@ function lr_intercept_61(ctx::AbstractFactorRevisitContext, xs::Vector{Float64},
     end
 end
 
-function lr_slope_48(ctx::AbstractFactorRevisitContext, xs::Vector{Float64}, ys::Vector{Float64}, _s_::State)
-    _s_.slope = revisit(ctx, _s_, 48, "slope", Normal(0.0, 3.0))
+function lr_slope_48(ctx::AbstractFactorVisitContext, xs::Vector{Float64}, ys::Vector{Float64}, _s_::State)
+    _s_.slope = visit(ctx, _s_, 48, "slope", Normal(0.0, 3.0))
     _s_.intercept = read_trace(ctx, _s_, 61, "intercept")
     _s_.i = 1
     while (_s_.i <= length(xs))
@@ -56,7 +56,7 @@ function lr_slope_48(ctx::AbstractFactorRevisitContext, xs::Vector{Float64}, ys:
     end
 end
 
-function lr_factor(ctx::AbstractFactorRevisitContext, xs::Vector{Float64}, ys::Vector{Float64}, _s_::State, _addr_::String)
+function lr_factor(ctx::AbstractFactorVisitContext, xs::Vector{Float64}, ys::Vector{Float64}, _s_::State, _addr_::String)
     if _s_.node_id == 61
         return lr_intercept_61(ctx, xs, ys, _s_)
     end
@@ -74,7 +74,7 @@ function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return lr(ctx, xs, ys, _s_)
 end
 
-function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
+function factor(ctx::AbstractFactorVisitContext, _s_::State, _addr_::String)
     return lr_factor(ctx, xs, ys, _s_, _addr_)
 end
 

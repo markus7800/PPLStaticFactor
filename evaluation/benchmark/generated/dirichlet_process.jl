@@ -74,8 +74,8 @@ function dp(ctx::AbstractSampleRecordStateContext, xs::Vector{Float64}, _s_::Sta
     end
 end
 
-function dp_beta__89(ctx::AbstractFactorRevisitContext, xs::Vector{Float64}, _s_::State)
-    _s_.beta = revisit(ctx, _s_, 89, ("beta_" * string(_s_.i)), Beta(1, _s_.alpha))
+function dp_beta__89(ctx::AbstractFactorVisitContext, xs::Vector{Float64}, _s_::State)
+    _s_.beta = visit(ctx, _s_, 89, ("beta_" * string(_s_.i)), Beta(1, _s_.alpha))
     _s_.theta = score(ctx, _s_, 105, ("theta_" * string(_s_.i)), Normal(0.0, 1.0))
     _s_.stick = (_s_.stick - (_s_.beta * _s_.cumprod))
     _s_.weights = vcat(_s_.weights, (_s_.beta * _s_.cumprod))
@@ -98,8 +98,8 @@ function dp_beta__89(ctx::AbstractFactorRevisitContext, xs::Vector{Float64}, _s_
     end
 end
 
-function dp_theta__105(ctx::AbstractFactorRevisitContext, xs::Vector{Float64}, _s_::State)
-    _s_.theta = revisit(ctx, _s_, 105, ("theta_" * string(_s_.i)), Normal(0.0, 1.0))
+function dp_theta__105(ctx::AbstractFactorVisitContext, xs::Vector{Float64}, _s_::State)
+    _s_.theta = visit(ctx, _s_, 105, ("theta_" * string(_s_.i)), Normal(0.0, 1.0))
     _s_.stick = (_s_.stick - (_s_.beta * _s_.cumprod))
     _s_.weights = vcat(_s_.weights, (_s_.beta * _s_.cumprod))
     _s_.thetas = vcat(_s_.thetas, _s_.theta)
@@ -121,13 +121,13 @@ function dp_theta__105(ctx::AbstractFactorRevisitContext, xs::Vector{Float64}, _
     end
 end
 
-function dp_z__160(ctx::AbstractFactorRevisitContext, xs::Vector{Float64}, _s_::State)
-    _s_.z = revisit(ctx, _s_, 160, ("z_" * string(_s_.j)), Categorical((_s_.weights / sum(_s_.weights))))
+function dp_z__160(ctx::AbstractFactorVisitContext, xs::Vector{Float64}, _s_::State)
+    _s_.z = visit(ctx, _s_, 160, ("z_" * string(_s_.j)), Categorical((_s_.weights / sum(_s_.weights))))
     _s_.z = min(_s_.z, length(_s_.thetas))
     score(ctx, _s_, 190, ("x_" * string(_s_.j)), Normal(get_n(_s_.thetas, _s_.z), 0.1), observed = get_n(xs, _s_.j))
 end
 
-function dp_factor(ctx::AbstractFactorRevisitContext, xs::Vector{Float64}, _s_::State, _addr_::String)
+function dp_factor(ctx::AbstractFactorVisitContext, xs::Vector{Float64}, _s_::State, _addr_::String)
     if _s_.node_id == 89
         return dp_beta__89(ctx, xs, _s_)
     end
@@ -199,7 +199,7 @@ function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return dp(ctx, xs, _s_)
 end
 
-function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
+function factor(ctx::AbstractFactorVisitContext, _s_::State, _addr_::String)
     return dp_factor(ctx, xs, _s_, _addr_)
 end
 

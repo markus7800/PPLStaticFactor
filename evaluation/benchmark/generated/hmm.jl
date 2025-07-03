@@ -42,8 +42,8 @@ function hmm(ctx::AbstractSampleRecordStateContext, ys::Vector{Float64}, _s_::St
     end
 end
 
-function hmm_initial_state_53(ctx::AbstractFactorRevisitContext, ys::Vector{Float64}, _s_::State)
-    _s_.current = revisit(ctx, _s_, 53, "initial_state", Categorical([0.33, 0.33, 0.34]))
+function hmm_initial_state_53(ctx::AbstractFactorVisitContext, ys::Vector{Float64}, _s_::State)
+    _s_.current = visit(ctx, _s_, 53, "initial_state", Categorical([0.33, 0.33, 0.34]))
     _s_.i = 1
     while (_s_.i <= _s_.seqlen)
         _s_.current = score(ctx, _s_, 79, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))
@@ -52,8 +52,8 @@ function hmm_initial_state_53(ctx::AbstractFactorRevisitContext, ys::Vector{Floa
     end
 end
 
-function hmm_state__79(ctx::AbstractFactorRevisitContext, ys::Vector{Float64}, _s_::State)
-    _s_.current = revisit(ctx, _s_, 79, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))
+function hmm_state__79(ctx::AbstractFactorVisitContext, ys::Vector{Float64}, _s_::State)
+    _s_.current = visit(ctx, _s_, 79, ("state_" * string(_s_.i)), Categorical(get_row(_s_.transition_probs, _s_.current)))
     score(ctx, _s_, 97, ("obs_" * string(_s_.i)), Normal(_s_.current, 1), observed = get_n(ys, _s_.i))
     _s_.i = (_s_.i + 1)
     while (_s_.i <= _s_.seqlen)
@@ -63,7 +63,7 @@ function hmm_state__79(ctx::AbstractFactorRevisitContext, ys::Vector{Float64}, _
     end
 end
 
-function hmm_factor(ctx::AbstractFactorRevisitContext, ys::Vector{Float64}, _s_::State, _addr_::String)
+function hmm_factor(ctx::AbstractFactorVisitContext, ys::Vector{Float64}, _s_::State, _addr_::String)
     if _s_.node_id == 53
         return hmm_initial_state_53(ctx, ys, _s_)
     end
@@ -117,7 +117,7 @@ function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return hmm(ctx, ys, _s_)
 end
 
-function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
+function factor(ctx::AbstractFactorVisitContext, _s_::State, _addr_::String)
     return hmm_factor(ctx, ys, _s_, _addr_)
 end
 

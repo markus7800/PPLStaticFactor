@@ -87,8 +87,8 @@ function gmm(ctx::AbstractSampleRecordStateContext, ys::Vector{Float64}, _s_::St
     end
 end
 
-function gmm_mu__101(ctx::AbstractFactorRevisitContext, ys::Vector{Float64}, _s_::State)
-    _s_.mu = revisit(ctx, _s_, 101, ("mu_" * string(_s_.k)), Normal(_s_.ξ, (1 / sqrt(_s_.κ))))
+function gmm_mu__101(ctx::AbstractFactorVisitContext, ys::Vector{Float64}, _s_::State)
+    _s_.mu = visit(ctx, _s_, 101, ("mu_" * string(_s_.k)), Normal(_s_.ξ, (1 / sqrt(_s_.κ))))
     _s_.var = read_trace(ctx, _s_, 124, ("var_" * string(_s_.k)))
     _s_.means = vcat(_s_.means, _s_.mu)
     _s_.vars = vcat(_s_.vars, _s_.var)
@@ -109,8 +109,8 @@ function gmm_mu__101(ctx::AbstractFactorRevisitContext, ys::Vector{Float64}, _s_
     end
 end
 
-function gmm_var__124(ctx::AbstractFactorRevisitContext, ys::Vector{Float64}, _s_::State)
-    _s_.var = revisit(ctx, _s_, 124, ("var_" * string(_s_.k)), InverseGamma(_s_.α, _s_.β))
+function gmm_var__124(ctx::AbstractFactorVisitContext, ys::Vector{Float64}, _s_::State)
+    _s_.var = visit(ctx, _s_, 124, ("var_" * string(_s_.k)), InverseGamma(_s_.α, _s_.β))
     _s_.means = vcat(_s_.means, _s_.mu)
     _s_.vars = vcat(_s_.vars, _s_.var)
     _s_.k = (_s_.k + 1)
@@ -130,8 +130,8 @@ function gmm_var__124(ctx::AbstractFactorRevisitContext, ys::Vector{Float64}, _s
     end
 end
 
-function gmm_w_57(ctx::AbstractFactorRevisitContext, ys::Vector{Float64}, _s_::State)
-    _s_.w = revisit(ctx, _s_, 57, "w", Dirichlet(fill(_s_.δ, _s_.num_clusters)))
+function gmm_w_57(ctx::AbstractFactorVisitContext, ys::Vector{Float64}, _s_::State)
+    _s_.w = visit(ctx, _s_, 57, "w", Dirichlet(fill(_s_.δ, _s_.num_clusters)))
     _s_.k = 1
     _s_.means = Float64[]
     _s_.vars = Float64[]
@@ -151,13 +151,13 @@ function gmm_w_57(ctx::AbstractFactorRevisitContext, ys::Vector{Float64}, _s_::S
     end
 end
 
-function gmm_z__173(ctx::AbstractFactorRevisitContext, ys::Vector{Float64}, _s_::State)
-    _s_.z = revisit(ctx, _s_, 173, ("z_" * string(_s_.i)), Categorical(_s_.w))
+function gmm_z__173(ctx::AbstractFactorVisitContext, ys::Vector{Float64}, _s_::State)
+    _s_.z = visit(ctx, _s_, 173, ("z_" * string(_s_.i)), Categorical(_s_.w))
     _s_.z = min(_s_.z, length(_s_.means))
     score(ctx, _s_, 198, ("y_" * string(_s_.i)), Normal(get_n(_s_.means, _s_.z), get_n(_s_.vars, _s_.z)), observed = get_n(ys, _s_.i))
 end
 
-function gmm_factor(ctx::AbstractFactorRevisitContext, ys::Vector{Float64}, _s_::State, _addr_::String)
+function gmm_factor(ctx::AbstractFactorVisitContext, ys::Vector{Float64}, _s_::State, _addr_::String)
     if _s_.node_id == 101
         return gmm_mu__101(ctx, ys, _s_)
     end
@@ -233,7 +233,7 @@ function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return gmm(ctx, ys, _s_)
 end
 
-function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
+function factor(ctx::AbstractFactorVisitContext, _s_::State, _addr_::String)
     return gmm_factor(ctx, ys, _s_, _addr_)
 end
 

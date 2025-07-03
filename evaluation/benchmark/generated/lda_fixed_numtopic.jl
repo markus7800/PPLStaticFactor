@@ -67,8 +67,8 @@ function lda(ctx::AbstractSampleRecordStateContext, M::Int, N::Int, V::Int, w::V
     end
 end
 
-function lda_phi__131(ctx::AbstractFactorRevisitContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State)
-    _s_.phi = revisit(ctx, _s_, 131, ("phi_" * string(_s_.i)), Dirichlet(fill((1 / V), V)))
+function lda_phi__131(ctx::AbstractFactorVisitContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State)
+    _s_.phi = visit(ctx, _s_, 131, ("phi_" * string(_s_.i)), Dirichlet(fill((1 / V), V)))
     _s_.phis = append(_s_.phis, _s_.phi)
     _s_.i = (_s_.i + 1)
     while (_s_.i <= _s_.K)
@@ -85,8 +85,8 @@ function lda_phi__131(ctx::AbstractFactorRevisitContext, M::Int, N::Int, V::Int,
     end
 end
 
-function lda_theta__71(ctx::AbstractFactorRevisitContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State)
-    _s_.theta = revisit(ctx, _s_, 71, ("theta_" * string(_s_.i)), Dirichlet(fill((1 / _s_.K), _s_.K)))
+function lda_theta__71(ctx::AbstractFactorVisitContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State)
+    _s_.theta = visit(ctx, _s_, 71, ("theta_" * string(_s_.i)), Dirichlet(fill((1 / _s_.K), _s_.K)))
     _s_.thetas = append(_s_.thetas, _s_.theta)
     _s_.i = (_s_.i + 1)
     while (_s_.i <= M)
@@ -110,13 +110,13 @@ function lda_theta__71(ctx::AbstractFactorRevisitContext, M::Int, N::Int, V::Int
     end
 end
 
-function lda_z__179(ctx::AbstractFactorRevisitContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State)
-    _s_.z = revisit(ctx, _s_, 179, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
+function lda_z__179(ctx::AbstractFactorVisitContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State)
+    _s_.z = visit(ctx, _s_, 179, ("z_" * string(_s_.n)), Categorical(_s_.thetas[doc[_s_.n]]))
     _s_.z = min(length(_s_.phis), _s_.z)
     score(ctx, _s_, 208, ("w_" * string(_s_.n)), Categorical(_s_.phis[_s_.z]), observed = w[_s_.n])
 end
 
-function lda_factor(ctx::AbstractFactorRevisitContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State, _addr_::String)
+function lda_factor(ctx::AbstractFactorVisitContext, M::Int, N::Int, V::Int, w::Vector{Int}, doc::Vector{Int}, _s_::State, _addr_::String)
     if _s_.node_id == 131
         return lda_phi__131(ctx, M, N, V, w, doc, _s_)
     end
@@ -187,7 +187,7 @@ function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return lda(ctx, M, N, V, w, doc, _s_)
 end
 
-function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
+function factor(ctx::AbstractFactorVisitContext, _s_::State, _addr_::String)
     return lda_factor(ctx, M, N, V, w, doc, _s_, _addr_)
 end
 

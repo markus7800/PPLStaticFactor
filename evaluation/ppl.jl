@@ -77,10 +77,10 @@ function sample_record_state(ctx::GenerateRecordStateContext, s::AbstractState, 
     return value
 end
 
-abstract type AbstractFactorRevisitContext end
+abstract type AbstractFactorVisitContext end
 abstract type AbstractFactorResumeContext end
-abstract type AbstractManualRevisitContext end
-abstract type AbstractManualResampleContext <: AbstractManualRevisitContext end
+abstract type AbstractManualVisitContext end
+abstract type AbstractManualResampleContext <: AbstractManualVisitContext end
 
 function append(x::AbstractArray, el)
     x = copy(x)

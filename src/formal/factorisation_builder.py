@@ -42,7 +42,7 @@ def inject_state_rec(sexpr: list, state_var, var_names, node: SampleNode | Facto
 class FactorFunctionWriter():
     def __init__(self, model: CFG, root_node: CFGNode, deps: Set[SampleNode|FactorNode|EndNode], direct_paths: bool, context: str) -> None:
         self.direct_paths = direct_paths
-        assert context in ("revisit", "resume")
+        assert context in ("visit", "resume")
         self.context = context
         self.return_after_score = self.context == "resume"
         
@@ -104,7 +104,7 @@ class FactorFunctionWriter():
                             value_sexpr[1] = ["Identifier", "read_trace"]
                             del value_sexpr[6] # remove distribution
                         else:
-                            value_sexpr[1] = ["Identifier", "revisit"]
+                            value_sexpr[1] = ["Identifier", "visit"]
                     elif current in self.deps:
                         value_sexpr[1] = ["Identifier", "score"]
                         is_score_stmt = True
@@ -150,7 +150,7 @@ class FactorFunctionWriter():
                             value_sexpr[1] = ["Identifier", "read_trace"]
                             del value_sexpr[6] # remove distribution
                         else:
-                            value_sexpr[1] = ["Identifier", "revisit"]
+                            value_sexpr[1] = ["Identifier", "visit"]
                     elif current in self.deps:
                         value_sexpr[1] = ["Identifier", "score"]
                         is_score_stmt = True
@@ -406,13 +406,13 @@ class FactorisationBuilder():
         return node
     
     def write_combined_factors(self, context: str, prefixed_nodes):
-        assert context in ("resume", "revisit")
+        assert context in ("resume", "visit")
         
         if context == "resume":
             ctx_type = "AbstractFactorResumeContext"
             suffix = "resume"
         else:
-            ctx_type = "AbstractFactorRevisitContext"
+            ctx_type = "AbstractFactorVisitContext"
             suffix = "factor"
         
         addr_var = "_addr_"
@@ -472,7 +472,7 @@ class FactorisationBuilder():
         prog += "    return " + unparse(signature) + "\n"
         prog += "end\n\n"
 
-        fs = [("factor", "factor", "AbstractFactorRevisitContext")]
+        fs = [("factor", "factor", "AbstractFactorVisitContext")]
         if self.build_resume:
             fs.append(("resume_from_state", "resume", "AbstractFactorResumeContext"))
 
@@ -520,7 +520,7 @@ class FactorisationBuilder():
             assert signature[0] == "call"
             assert signature[2] == ["::-i", ["Identifier", "ctx"], ["Identifier", "SampleContext"]]
             signature[1] = ["Identifier", signature[1][1] + "_" + prefix] # name
-            signature[2][2][1] = "AbstractFactorRevisitContext"
+            signature[2][2][1] = "AbstractFactorVisitContext"
             signature.append(['::-i', ['Identifier', self.state_var], ['Identifier', 'State']])
 
             prog = "function "
@@ -530,7 +530,7 @@ class FactorisationBuilder():
             # header_prog = tab + f"\n{tab}".join(map(unparse, self.header)) + "\n\n"
             # prog += header_prog
 
-            writer = FactorFunctionWriter(self.model, samplenode, deps, self.direct_paths, "revisit")
+            writer = FactorFunctionWriter(self.model, samplenode, deps, self.direct_paths, "visit")
             writer.write_factor_function(samplenode, tab=tab)
             prog += writer.out
 
@@ -539,7 +539,7 @@ class FactorisationBuilder():
             self.out += prog
 
 
-        self.write_combined_factors("revisit", self.prefixed_sample_nodes)
+        self.write_combined_factors("visit", self.prefixed_sample_nodes)
         
         if self.build_resume:
             prefixed_factor_nodes = []

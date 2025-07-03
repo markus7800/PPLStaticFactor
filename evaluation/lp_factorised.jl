@@ -22,7 +22,7 @@ function sample(ctx::ResampleContext, address::String, distribution::Distributio
     return value
 end
 
-mutable struct AddFactorResampleContext <: AbstractFactorRevisitContext
+mutable struct AddFactorResampleContext <: AbstractFactorVisitContext
     trace::Dict{String,Tuple{SampleType,AbstractState}}
     logprob::Float64
     function AddFactorResampleContext(trace::Dict{String,Tuple{SampleType,AbstractState}})
@@ -30,7 +30,7 @@ mutable struct AddFactorResampleContext <: AbstractFactorRevisitContext
     end
 end
 
-function revisit(ctx::AddFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+function visit(ctx::AddFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     value = rand(distribution)
     ctx.logprob += logpdf(distribution, value)
     return value
@@ -58,7 +58,7 @@ function read_trace(ctx::AddFactorResampleContext, s::AbstractState, node_id::In
 end
 
 
-mutable struct SubstractFactorResampleContext <: AbstractFactorRevisitContext
+mutable struct SubstractFactorResampleContext <: AbstractFactorVisitContext
     trace::Dict{String,Tuple{SampleType,AbstractState}}
     logprob::Float64
     function SubstractFactorResampleContext(trace::Dict{String,Tuple{SampleType,AbstractState}})
@@ -66,7 +66,7 @@ mutable struct SubstractFactorResampleContext <: AbstractFactorRevisitContext
     end
 end
 
-function revisit(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
+function visit(ctx::SubstractFactorResampleContext, s::AbstractState, node_id::Int, address::String, distribution::Distribution; observed=nothing)
     value, _ = ctx.trace[address]
     ctx.logprob += logpdf(distribution, value)
     return value
@@ -100,7 +100,7 @@ mutable struct ManualResampleContext <: AbstractManualResampleContext
     end
 end
 
-function manual_revisit(ctx::ManualResampleContext, address::String, distribution::Distribution; observed=nothing)
+function manual_visit(ctx::ManualResampleContext, address::String, distribution::Distribution; observed=nothing)
     old_value = ctx.trace[address]
     new_value = rand(distribution)
     ctx.logprob += logpdf(distribution, new_value) - logpdf(distribution, old_value)

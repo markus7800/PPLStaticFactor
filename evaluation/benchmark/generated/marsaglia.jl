@@ -48,8 +48,8 @@ function marsaglia(ctx::AbstractSampleRecordStateContext, _s_::State)
     return _s_.z
 end
 
-function marsaglia_x__48(ctx::AbstractFactorRevisitContext, _s_::State)
-    _s_.x = revisit(ctx, _s_, 48, ("x_" * string(_s_.i)), Uniform(-1.0, 1.0))
+function marsaglia_x__48(ctx::AbstractFactorVisitContext, _s_::State)
+    _s_.x = visit(ctx, _s_, 48, ("x_" * string(_s_.i)), Uniform(-1.0, 1.0))
     _s_.y = score(ctx, _s_, 64, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
     _s_.s = ((_s_.x ^ 2) + (_s_.y ^ 2))
     _s_.i = (_s_.i + 1)
@@ -61,8 +61,8 @@ function marsaglia_x__48(ctx::AbstractFactorRevisitContext, _s_::State)
     end
 end
 
-function marsaglia_y__64(ctx::AbstractFactorRevisitContext, _s_::State)
-    _s_.y = revisit(ctx, _s_, 64, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
+function marsaglia_y__64(ctx::AbstractFactorVisitContext, _s_::State)
+    _s_.y = visit(ctx, _s_, 64, ("y_" * string(_s_.i)), Uniform(-1.0, 1.0))
     _s_.s = ((_s_.x ^ 2) + (_s_.y ^ 2))
     _s_.i = (_s_.i + 1)
     while (_s_.s > 1)
@@ -73,7 +73,7 @@ function marsaglia_y__64(ctx::AbstractFactorRevisitContext, _s_::State)
     end
 end
 
-function marsaglia_factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
+function marsaglia_factor(ctx::AbstractFactorVisitContext, _s_::State, _addr_::String)
     if _s_.node_id == 48
         return marsaglia_x__48(ctx, _s_)
     end
@@ -91,7 +91,7 @@ function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return marsaglia(ctx, _s_)
 end
 
-function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
+function factor(ctx::AbstractFactorVisitContext, _s_::State, _addr_::String)
     return marsaglia_factor(ctx, _s_, _addr_)
 end
 

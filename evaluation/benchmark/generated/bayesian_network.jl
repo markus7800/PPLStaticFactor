@@ -169,13 +169,13 @@ function bayesian_network(ctx::AbstractSampleRecordStateContext, CPTs::CPTsDict,
     _s_.BP::Int = sample_record_state(ctx, _s_, 879, "BP", Categorical(get_cpt(CPTs, "BP", _s_.CO, _s_.TPR), check_args = false))
 end
 
-function bayesian_network_ANAPHYLAXIS_516(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.ANAPHYLAXIS = revisit(ctx, _s_, 516, "ANAPHYLAXIS", Categorical(get_cpt(CPTs, "ANAPHYLAXIS"), check_args = false))
+function bayesian_network_ANAPHYLAXIS_516(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.ANAPHYLAXIS = visit(ctx, _s_, 516, "ANAPHYLAXIS", Categorical(get_cpt(CPTs, "ANAPHYLAXIS"), check_args = false))
     _s_.TPR = score(ctx, _s_, 535, "TPR", Categorical(get_cpt(CPTs, "TPR", _s_.ANAPHYLAXIS), check_args = false))
 end
 
-function bayesian_network_ARTCO2_433(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.ARTCO2 = revisit(ctx, _s_, 433, "ARTCO2", Categorical(get_cpt(CPTs, "ARTCO2", _s_.VENTALV), check_args = false))
+function bayesian_network_ARTCO2_433(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.ARTCO2 = visit(ctx, _s_, 433, "ARTCO2", Categorical(get_cpt(CPTs, "ARTCO2", _s_.VENTALV), check_args = false))
     _s_.EXPCO2 = score(ctx, _s_, 453, "EXPCO2", Categorical(get_cpt(CPTs, "EXPCO2", _s_.ARTCO2, _s_.VENTLUNG), check_args = false))
     _s_.PVSAT = read_trace(ctx, _s_, 474, "PVSAT")
     _s_.SAO2 = read_trace(ctx, _s_, 495, "SAO2")
@@ -185,46 +185,46 @@ function bayesian_network_ARTCO2_433(ctx::AbstractFactorRevisitContext, CPTs::CP
     _s_.CATECHOL = score(ctx, _s_, 574, "CATECHOL", Categorical(get_cpt(CPTs, "CATECHOL", _s_.ARTCO2, _s_.INSUFFANESTH, _s_.SAO2, _s_.TPR), check_args = false))
 end
 
-function bayesian_network_BP_879(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.BP = revisit(ctx, _s_, 879, "BP", Categorical(get_cpt(CPTs, "BP", _s_.CO, _s_.TPR), check_args = false))
+function bayesian_network_BP_879(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.BP = visit(ctx, _s_, 879, "BP", Categorical(get_cpt(CPTs, "BP", _s_.CO, _s_.TPR), check_args = false))
 end
 
-function bayesian_network_CATECHOL_574(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.CATECHOL = revisit(ctx, _s_, 574, "CATECHOL", Categorical(get_cpt(CPTs, "CATECHOL", _s_.ARTCO2, _s_.INSUFFANESTH, _s_.SAO2, _s_.TPR), check_args = false))
+function bayesian_network_CATECHOL_574(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.CATECHOL = visit(ctx, _s_, 574, "CATECHOL", Categorical(get_cpt(CPTs, "CATECHOL", _s_.ARTCO2, _s_.INSUFFANESTH, _s_.SAO2, _s_.TPR), check_args = false))
     _s_.HR = score(ctx, _s_, 597, "HR", Categorical(get_cpt(CPTs, "HR", _s_.CATECHOL), check_args = false))
 end
 
-function bayesian_network_CO_858(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.CO = revisit(ctx, _s_, 858, "CO", Categorical(get_cpt(CPTs, "CO", _s_.HR, _s_.STROKEVOLUME), check_args = false))
+function bayesian_network_CO_858(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.CO = visit(ctx, _s_, 858, "CO", Categorical(get_cpt(CPTs, "CO", _s_.HR, _s_.STROKEVOLUME), check_args = false))
     _s_.BP = score(ctx, _s_, 879, "BP", Categorical(get_cpt(CPTs, "BP", _s_.CO, _s_.TPR), check_args = false))
 end
 
-function bayesian_network_CVP_817(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.CVP = revisit(ctx, _s_, 817, "CVP", Categorical(get_cpt(CPTs, "CVP", _s_.LVEDVOLUME), check_args = false))
+function bayesian_network_CVP_817(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.CVP = visit(ctx, _s_, 817, "CVP", Categorical(get_cpt(CPTs, "CVP", _s_.LVEDVOLUME), check_args = false))
 end
 
-function bayesian_network_DISCONNECT_190(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.DISCONNECT = revisit(ctx, _s_, 190, "DISCONNECT", Categorical(get_cpt(CPTs, "DISCONNECT"), check_args = false))
+function bayesian_network_DISCONNECT_190(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.DISCONNECT = visit(ctx, _s_, 190, "DISCONNECT", Categorical(get_cpt(CPTs, "DISCONNECT"), check_args = false))
     _s_.VENTTUBE = score(ctx, _s_, 209, "VENTTUBE", Categorical(get_cpt(CPTs, "VENTTUBE", _s_.DISCONNECT, _s_.VENTMACH), check_args = false))
 end
 
-function bayesian_network_ERRCAUTER_617(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.ERRCAUTER = revisit(ctx, _s_, 617, "ERRCAUTER", Categorical(get_cpt(CPTs, "ERRCAUTER"), check_args = false))
+function bayesian_network_ERRCAUTER_617(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.ERRCAUTER = visit(ctx, _s_, 617, "ERRCAUTER", Categorical(get_cpt(CPTs, "ERRCAUTER"), check_args = false))
     _s_.HREKG = score(ctx, _s_, 636, "HREKG", Categorical(get_cpt(CPTs, "HREKG", _s_.ERRCAUTER, _s_.HR), check_args = false))
     _s_.HRSAT = score(ctx, _s_, 657, "HRSAT", Categorical(get_cpt(CPTs, "HRSAT", _s_.ERRCAUTER, _s_.HR), check_args = false))
 end
 
-function bayesian_network_ERRLOWOUTPUT_678(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.ERRLOWOUTPUT = revisit(ctx, _s_, 678, "ERRLOWOUTPUT", Categorical(get_cpt(CPTs, "ERRLOWOUTPUT"), check_args = false))
+function bayesian_network_ERRLOWOUTPUT_678(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.ERRLOWOUTPUT = visit(ctx, _s_, 678, "ERRLOWOUTPUT", Categorical(get_cpt(CPTs, "ERRLOWOUTPUT"), check_args = false))
     _s_.HRBP = score(ctx, _s_, 697, "HRBP", Categorical(get_cpt(CPTs, "HRBP", _s_.ERRLOWOUTPUT, _s_.HR), check_args = false))
 end
 
-function bayesian_network_EXPCO2_453(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.EXPCO2 = revisit(ctx, _s_, 453, "EXPCO2", Categorical(get_cpt(CPTs, "EXPCO2", _s_.ARTCO2, _s_.VENTLUNG), check_args = false))
+function bayesian_network_EXPCO2_453(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.EXPCO2 = visit(ctx, _s_, 453, "EXPCO2", Categorical(get_cpt(CPTs, "EXPCO2", _s_.ARTCO2, _s_.VENTLUNG), check_args = false))
 end
 
-function bayesian_network_FIO2_309(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.FIO2 = revisit(ctx, _s_, 309, "FIO2", Categorical(get_cpt(CPTs, "FIO2"), check_args = false))
+function bayesian_network_FIO2_309(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.FIO2 = visit(ctx, _s_, 309, "FIO2", Categorical(get_cpt(CPTs, "FIO2"), check_args = false))
     _s_.KINKEDTUBE = read_trace(ctx, _s_, 328, "KINKEDTUBE")
     _s_.PRESS = read_trace(ctx, _s_, 347, "PRESS")
     _s_.VENTLUNG = read_trace(ctx, _s_, 369, "VENTLUNG")
@@ -235,24 +235,24 @@ function bayesian_network_FIO2_309(ctx::AbstractFactorRevisitContext, CPTs::CPTs
     _s_.PVSAT = score(ctx, _s_, 474, "PVSAT", Categorical(get_cpt(CPTs, "PVSAT", _s_.FIO2, _s_.VENTALV), check_args = false))
 end
 
-function bayesian_network_HISTORY_737(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.HISTORY = revisit(ctx, _s_, 737, "HISTORY", Categorical(get_cpt(CPTs, "HISTORY", _s_.LVFAILURE), check_args = false))
+function bayesian_network_HISTORY_737(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.HISTORY = visit(ctx, _s_, 737, "HISTORY", Categorical(get_cpt(CPTs, "HISTORY", _s_.LVFAILURE), check_args = false))
 end
 
-function bayesian_network_HRBP_697(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.HRBP = revisit(ctx, _s_, 697, "HRBP", Categorical(get_cpt(CPTs, "HRBP", _s_.ERRLOWOUTPUT, _s_.HR), check_args = false))
+function bayesian_network_HRBP_697(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.HRBP = visit(ctx, _s_, 697, "HRBP", Categorical(get_cpt(CPTs, "HRBP", _s_.ERRLOWOUTPUT, _s_.HR), check_args = false))
 end
 
-function bayesian_network_HREKG_636(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.HREKG = revisit(ctx, _s_, 636, "HREKG", Categorical(get_cpt(CPTs, "HREKG", _s_.ERRCAUTER, _s_.HR), check_args = false))
+function bayesian_network_HREKG_636(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.HREKG = visit(ctx, _s_, 636, "HREKG", Categorical(get_cpt(CPTs, "HREKG", _s_.ERRCAUTER, _s_.HR), check_args = false))
 end
 
-function bayesian_network_HRSAT_657(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.HRSAT = revisit(ctx, _s_, 657, "HRSAT", Categorical(get_cpt(CPTs, "HRSAT", _s_.ERRCAUTER, _s_.HR), check_args = false))
+function bayesian_network_HRSAT_657(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.HRSAT = visit(ctx, _s_, 657, "HRSAT", Categorical(get_cpt(CPTs, "HRSAT", _s_.ERRCAUTER, _s_.HR), check_args = false))
 end
 
-function bayesian_network_HR_597(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.HR = revisit(ctx, _s_, 597, "HR", Categorical(get_cpt(CPTs, "HR", _s_.CATECHOL), check_args = false))
+function bayesian_network_HR_597(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.HR = visit(ctx, _s_, 597, "HR", Categorical(get_cpt(CPTs, "HR", _s_.CATECHOL), check_args = false))
     _s_.ERRCAUTER = read_trace(ctx, _s_, 617, "ERRCAUTER")
     _s_.HREKG = score(ctx, _s_, 636, "HREKG", Categorical(get_cpt(CPTs, "HREKG", _s_.ERRCAUTER, _s_.HR), check_args = false))
     _s_.HRSAT = score(ctx, _s_, 657, "HRSAT", Categorical(get_cpt(CPTs, "HRSAT", _s_.ERRCAUTER, _s_.HR), check_args = false))
@@ -268,21 +268,21 @@ function bayesian_network_HR_597(ctx::AbstractFactorRevisitContext, CPTs::CPTsDi
     _s_.CO = score(ctx, _s_, 858, "CO", Categorical(get_cpt(CPTs, "CO", _s_.HR, _s_.STROKEVOLUME), check_args = false))
 end
 
-function bayesian_network_HYPOVOLEMIA_757(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.HYPOVOLEMIA = revisit(ctx, _s_, 757, "HYPOVOLEMIA", Categorical(get_cpt(CPTs, "HYPOVOLEMIA"), check_args = false))
+function bayesian_network_HYPOVOLEMIA_757(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.HYPOVOLEMIA = visit(ctx, _s_, 757, "HYPOVOLEMIA", Categorical(get_cpt(CPTs, "HYPOVOLEMIA"), check_args = false))
     _s_.LVEDVOLUME = score(ctx, _s_, 776, "LVEDVOLUME", Categorical(get_cpt(CPTs, "LVEDVOLUME", _s_.HYPOVOLEMIA, _s_.LVFAILURE), check_args = false))
     _s_.PCWP = read_trace(ctx, _s_, 797, "PCWP")
     _s_.CVP = read_trace(ctx, _s_, 817, "CVP")
     _s_.STROKEVOLUME = score(ctx, _s_, 837, "STROKEVOLUME", Categorical(get_cpt(CPTs, "STROKEVOLUME", _s_.HYPOVOLEMIA, _s_.LVFAILURE), check_args = false))
 end
 
-function bayesian_network_INSUFFANESTH_555(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.INSUFFANESTH = revisit(ctx, _s_, 555, "INSUFFANESTH", Categorical(get_cpt(CPTs, "INSUFFANESTH"), check_args = false))
+function bayesian_network_INSUFFANESTH_555(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.INSUFFANESTH = visit(ctx, _s_, 555, "INSUFFANESTH", Categorical(get_cpt(CPTs, "INSUFFANESTH"), check_args = false))
     _s_.CATECHOL = score(ctx, _s_, 574, "CATECHOL", Categorical(get_cpt(CPTs, "CATECHOL", _s_.ARTCO2, _s_.INSUFFANESTH, _s_.SAO2, _s_.TPR), check_args = false))
 end
 
-function bayesian_network_INTUBATION_230(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.INTUBATION = revisit(ctx, _s_, 230, "INTUBATION", Categorical(get_cpt(CPTs, "INTUBATION"), check_args = false))
+function bayesian_network_INTUBATION_230(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.INTUBATION = visit(ctx, _s_, 230, "INTUBATION", Categorical(get_cpt(CPTs, "INTUBATION"), check_args = false))
     _s_.PULMEMBOLUS = read_trace(ctx, _s_, 249, "PULMEMBOLUS")
     _s_.PAP = read_trace(ctx, _s_, 268, "PAP")
     _s_.SHUNT = score(ctx, _s_, 288, "SHUNT", Categorical(get_cpt(CPTs, "SHUNT", _s_.INTUBATION, _s_.PULMEMBOLUS), check_args = false))
@@ -294,20 +294,20 @@ function bayesian_network_INTUBATION_230(ctx::AbstractFactorRevisitContext, CPTs
     _s_.VENTALV = score(ctx, _s_, 412, "VENTALV", Categorical(get_cpt(CPTs, "VENTALV", _s_.INTUBATION, _s_.VENTLUNG), check_args = false))
 end
 
-function bayesian_network_KINKEDTUBE_328(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.KINKEDTUBE = revisit(ctx, _s_, 328, "KINKEDTUBE", Categorical(get_cpt(CPTs, "KINKEDTUBE"), check_args = false))
+function bayesian_network_KINKEDTUBE_328(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.KINKEDTUBE = visit(ctx, _s_, 328, "KINKEDTUBE", Categorical(get_cpt(CPTs, "KINKEDTUBE"), check_args = false))
     _s_.PRESS = score(ctx, _s_, 347, "PRESS", Categorical(get_cpt(CPTs, "PRESS", _s_.INTUBATION, _s_.KINKEDTUBE, _s_.VENTTUBE), check_args = false))
     _s_.VENTLUNG = score(ctx, _s_, 369, "VENTLUNG", Categorical(get_cpt(CPTs, "VENTLUNG", _s_.INTUBATION, _s_.KINKEDTUBE, _s_.VENTTUBE), check_args = false))
 end
 
-function bayesian_network_LVEDVOLUME_776(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.LVEDVOLUME = revisit(ctx, _s_, 776, "LVEDVOLUME", Categorical(get_cpt(CPTs, "LVEDVOLUME", _s_.HYPOVOLEMIA, _s_.LVFAILURE), check_args = false))
+function bayesian_network_LVEDVOLUME_776(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.LVEDVOLUME = visit(ctx, _s_, 776, "LVEDVOLUME", Categorical(get_cpt(CPTs, "LVEDVOLUME", _s_.HYPOVOLEMIA, _s_.LVFAILURE), check_args = false))
     _s_.PCWP = score(ctx, _s_, 797, "PCWP", Categorical(get_cpt(CPTs, "PCWP", _s_.LVEDVOLUME), check_args = false))
     _s_.CVP = score(ctx, _s_, 817, "CVP", Categorical(get_cpt(CPTs, "CVP", _s_.LVEDVOLUME), check_args = false))
 end
 
-function bayesian_network_LVFAILURE_718(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.LVFAILURE = revisit(ctx, _s_, 718, "LVFAILURE", Categorical(get_cpt(CPTs, "LVFAILURE"), check_args = false))
+function bayesian_network_LVFAILURE_718(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.LVFAILURE = visit(ctx, _s_, 718, "LVFAILURE", Categorical(get_cpt(CPTs, "LVFAILURE"), check_args = false))
     _s_.HISTORY = score(ctx, _s_, 737, "HISTORY", Categorical(get_cpt(CPTs, "HISTORY", _s_.LVFAILURE), check_args = false))
     _s_.HYPOVOLEMIA = read_trace(ctx, _s_, 757, "HYPOVOLEMIA")
     _s_.LVEDVOLUME = score(ctx, _s_, 776, "LVEDVOLUME", Categorical(get_cpt(CPTs, "LVEDVOLUME", _s_.HYPOVOLEMIA, _s_.LVFAILURE), check_args = false))
@@ -316,48 +316,48 @@ function bayesian_network_LVFAILURE_718(ctx::AbstractFactorRevisitContext, CPTs:
     _s_.STROKEVOLUME = score(ctx, _s_, 837, "STROKEVOLUME", Categorical(get_cpt(CPTs, "STROKEVOLUME", _s_.HYPOVOLEMIA, _s_.LVFAILURE), check_args = false))
 end
 
-function bayesian_network_MINVOLSET_151(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.MINVOLSET = revisit(ctx, _s_, 151, "MINVOLSET", Categorical(get_cpt(CPTs, "MINVOLSET"), check_args = false))
+function bayesian_network_MINVOLSET_151(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.MINVOLSET = visit(ctx, _s_, 151, "MINVOLSET", Categorical(get_cpt(CPTs, "MINVOLSET"), check_args = false))
     _s_.VENTMACH = score(ctx, _s_, 170, "VENTMACH", Categorical(get_cpt(CPTs, "VENTMACH", _s_.MINVOLSET), check_args = false))
 end
 
-function bayesian_network_MINVOL_391(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.MINVOL = revisit(ctx, _s_, 391, "MINVOL", Categorical(get_cpt(CPTs, "MINVOL", _s_.INTUBATION, _s_.VENTLUNG), check_args = false))
+function bayesian_network_MINVOL_391(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.MINVOL = visit(ctx, _s_, 391, "MINVOL", Categorical(get_cpt(CPTs, "MINVOL", _s_.INTUBATION, _s_.VENTLUNG), check_args = false))
 end
 
-function bayesian_network_PAP_268(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.PAP = revisit(ctx, _s_, 268, "PAP", Categorical(get_cpt(CPTs, "PAP", _s_.PULMEMBOLUS), check_args = false))
+function bayesian_network_PAP_268(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.PAP = visit(ctx, _s_, 268, "PAP", Categorical(get_cpt(CPTs, "PAP", _s_.PULMEMBOLUS), check_args = false))
 end
 
-function bayesian_network_PCWP_797(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.PCWP = revisit(ctx, _s_, 797, "PCWP", Categorical(get_cpt(CPTs, "PCWP", _s_.LVEDVOLUME), check_args = false))
+function bayesian_network_PCWP_797(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.PCWP = visit(ctx, _s_, 797, "PCWP", Categorical(get_cpt(CPTs, "PCWP", _s_.LVEDVOLUME), check_args = false))
 end
 
-function bayesian_network_PRESS_347(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.PRESS = revisit(ctx, _s_, 347, "PRESS", Categorical(get_cpt(CPTs, "PRESS", _s_.INTUBATION, _s_.KINKEDTUBE, _s_.VENTTUBE), check_args = false))
+function bayesian_network_PRESS_347(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.PRESS = visit(ctx, _s_, 347, "PRESS", Categorical(get_cpt(CPTs, "PRESS", _s_.INTUBATION, _s_.KINKEDTUBE, _s_.VENTTUBE), check_args = false))
 end
 
-function bayesian_network_PULMEMBOLUS_249(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.PULMEMBOLUS = revisit(ctx, _s_, 249, "PULMEMBOLUS", Categorical(get_cpt(CPTs, "PULMEMBOLUS"), check_args = false))
+function bayesian_network_PULMEMBOLUS_249(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.PULMEMBOLUS = visit(ctx, _s_, 249, "PULMEMBOLUS", Categorical(get_cpt(CPTs, "PULMEMBOLUS"), check_args = false))
     _s_.PAP = score(ctx, _s_, 268, "PAP", Categorical(get_cpt(CPTs, "PAP", _s_.PULMEMBOLUS), check_args = false))
     _s_.SHUNT = score(ctx, _s_, 288, "SHUNT", Categorical(get_cpt(CPTs, "SHUNT", _s_.INTUBATION, _s_.PULMEMBOLUS), check_args = false))
 end
 
-function bayesian_network_PVSAT_474(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.PVSAT = revisit(ctx, _s_, 474, "PVSAT", Categorical(get_cpt(CPTs, "PVSAT", _s_.FIO2, _s_.VENTALV), check_args = false))
+function bayesian_network_PVSAT_474(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.PVSAT = visit(ctx, _s_, 474, "PVSAT", Categorical(get_cpt(CPTs, "PVSAT", _s_.FIO2, _s_.VENTALV), check_args = false))
     _s_.SAO2 = score(ctx, _s_, 495, "SAO2", Categorical(get_cpt(CPTs, "SAO2", _s_.PVSAT, _s_.SHUNT), check_args = false))
 end
 
-function bayesian_network_SAO2_495(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.SAO2 = revisit(ctx, _s_, 495, "SAO2", Categorical(get_cpt(CPTs, "SAO2", _s_.PVSAT, _s_.SHUNT), check_args = false))
+function bayesian_network_SAO2_495(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.SAO2 = visit(ctx, _s_, 495, "SAO2", Categorical(get_cpt(CPTs, "SAO2", _s_.PVSAT, _s_.SHUNT), check_args = false))
     _s_.ANAPHYLAXIS = read_trace(ctx, _s_, 516, "ANAPHYLAXIS")
     _s_.TPR = read_trace(ctx, _s_, 535, "TPR")
     _s_.INSUFFANESTH = read_trace(ctx, _s_, 555, "INSUFFANESTH")
     _s_.CATECHOL = score(ctx, _s_, 574, "CATECHOL", Categorical(get_cpt(CPTs, "CATECHOL", _s_.ARTCO2, _s_.INSUFFANESTH, _s_.SAO2, _s_.TPR), check_args = false))
 end
 
-function bayesian_network_SHUNT_288(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.SHUNT = revisit(ctx, _s_, 288, "SHUNT", Categorical(get_cpt(CPTs, "SHUNT", _s_.INTUBATION, _s_.PULMEMBOLUS), check_args = false))
+function bayesian_network_SHUNT_288(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.SHUNT = visit(ctx, _s_, 288, "SHUNT", Categorical(get_cpt(CPTs, "SHUNT", _s_.INTUBATION, _s_.PULMEMBOLUS), check_args = false))
     _s_.FIO2 = read_trace(ctx, _s_, 309, "FIO2")
     _s_.KINKEDTUBE = read_trace(ctx, _s_, 328, "KINKEDTUBE")
     _s_.PRESS = read_trace(ctx, _s_, 347, "PRESS")
@@ -370,13 +370,13 @@ function bayesian_network_SHUNT_288(ctx::AbstractFactorRevisitContext, CPTs::CPT
     _s_.SAO2 = score(ctx, _s_, 495, "SAO2", Categorical(get_cpt(CPTs, "SAO2", _s_.PVSAT, _s_.SHUNT), check_args = false))
 end
 
-function bayesian_network_STROKEVOLUME_837(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.STROKEVOLUME = revisit(ctx, _s_, 837, "STROKEVOLUME", Categorical(get_cpt(CPTs, "STROKEVOLUME", _s_.HYPOVOLEMIA, _s_.LVFAILURE), check_args = false))
+function bayesian_network_STROKEVOLUME_837(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.STROKEVOLUME = visit(ctx, _s_, 837, "STROKEVOLUME", Categorical(get_cpt(CPTs, "STROKEVOLUME", _s_.HYPOVOLEMIA, _s_.LVFAILURE), check_args = false))
     _s_.CO = score(ctx, _s_, 858, "CO", Categorical(get_cpt(CPTs, "CO", _s_.HR, _s_.STROKEVOLUME), check_args = false))
 end
 
-function bayesian_network_TPR_535(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.TPR = revisit(ctx, _s_, 535, "TPR", Categorical(get_cpt(CPTs, "TPR", _s_.ANAPHYLAXIS), check_args = false))
+function bayesian_network_TPR_535(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.TPR = visit(ctx, _s_, 535, "TPR", Categorical(get_cpt(CPTs, "TPR", _s_.ANAPHYLAXIS), check_args = false))
     _s_.INSUFFANESTH = read_trace(ctx, _s_, 555, "INSUFFANESTH")
     _s_.CATECHOL = score(ctx, _s_, 574, "CATECHOL", Categorical(get_cpt(CPTs, "CATECHOL", _s_.ARTCO2, _s_.INSUFFANESTH, _s_.SAO2, _s_.TPR), check_args = false))
     _s_.HR = read_trace(ctx, _s_, 597, "HR")
@@ -396,29 +396,29 @@ function bayesian_network_TPR_535(ctx::AbstractFactorRevisitContext, CPTs::CPTsD
     _s_.BP = score(ctx, _s_, 879, "BP", Categorical(get_cpt(CPTs, "BP", _s_.CO, _s_.TPR), check_args = false))
 end
 
-function bayesian_network_VENTALV_412(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.VENTALV = revisit(ctx, _s_, 412, "VENTALV", Categorical(get_cpt(CPTs, "VENTALV", _s_.INTUBATION, _s_.VENTLUNG), check_args = false))
+function bayesian_network_VENTALV_412(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.VENTALV = visit(ctx, _s_, 412, "VENTALV", Categorical(get_cpt(CPTs, "VENTALV", _s_.INTUBATION, _s_.VENTLUNG), check_args = false))
     _s_.ARTCO2 = score(ctx, _s_, 433, "ARTCO2", Categorical(get_cpt(CPTs, "ARTCO2", _s_.VENTALV), check_args = false))
     _s_.EXPCO2 = read_trace(ctx, _s_, 453, "EXPCO2")
     _s_.PVSAT = score(ctx, _s_, 474, "PVSAT", Categorical(get_cpt(CPTs, "PVSAT", _s_.FIO2, _s_.VENTALV), check_args = false))
 end
 
-function bayesian_network_VENTLUNG_369(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.VENTLUNG = revisit(ctx, _s_, 369, "VENTLUNG", Categorical(get_cpt(CPTs, "VENTLUNG", _s_.INTUBATION, _s_.KINKEDTUBE, _s_.VENTTUBE), check_args = false))
+function bayesian_network_VENTLUNG_369(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.VENTLUNG = visit(ctx, _s_, 369, "VENTLUNG", Categorical(get_cpt(CPTs, "VENTLUNG", _s_.INTUBATION, _s_.KINKEDTUBE, _s_.VENTTUBE), check_args = false))
     _s_.MINVOL = score(ctx, _s_, 391, "MINVOL", Categorical(get_cpt(CPTs, "MINVOL", _s_.INTUBATION, _s_.VENTLUNG), check_args = false))
     _s_.VENTALV = score(ctx, _s_, 412, "VENTALV", Categorical(get_cpt(CPTs, "VENTALV", _s_.INTUBATION, _s_.VENTLUNG), check_args = false))
     _s_.ARTCO2 = read_trace(ctx, _s_, 433, "ARTCO2")
     _s_.EXPCO2 = score(ctx, _s_, 453, "EXPCO2", Categorical(get_cpt(CPTs, "EXPCO2", _s_.ARTCO2, _s_.VENTLUNG), check_args = false))
 end
 
-function bayesian_network_VENTMACH_170(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.VENTMACH = revisit(ctx, _s_, 170, "VENTMACH", Categorical(get_cpt(CPTs, "VENTMACH", _s_.MINVOLSET), check_args = false))
+function bayesian_network_VENTMACH_170(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.VENTMACH = visit(ctx, _s_, 170, "VENTMACH", Categorical(get_cpt(CPTs, "VENTMACH", _s_.MINVOLSET), check_args = false))
     _s_.DISCONNECT = read_trace(ctx, _s_, 190, "DISCONNECT")
     _s_.VENTTUBE = score(ctx, _s_, 209, "VENTTUBE", Categorical(get_cpt(CPTs, "VENTTUBE", _s_.DISCONNECT, _s_.VENTMACH), check_args = false))
 end
 
-function bayesian_network_VENTTUBE_209(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State)
-    _s_.VENTTUBE = revisit(ctx, _s_, 209, "VENTTUBE", Categorical(get_cpt(CPTs, "VENTTUBE", _s_.DISCONNECT, _s_.VENTMACH), check_args = false))
+function bayesian_network_VENTTUBE_209(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State)
+    _s_.VENTTUBE = visit(ctx, _s_, 209, "VENTTUBE", Categorical(get_cpt(CPTs, "VENTTUBE", _s_.DISCONNECT, _s_.VENTMACH), check_args = false))
     _s_.INTUBATION = read_trace(ctx, _s_, 230, "INTUBATION")
     _s_.PULMEMBOLUS = read_trace(ctx, _s_, 249, "PULMEMBOLUS")
     _s_.PAP = read_trace(ctx, _s_, 268, "PAP")
@@ -429,7 +429,7 @@ function bayesian_network_VENTTUBE_209(ctx::AbstractFactorRevisitContext, CPTs::
     _s_.VENTLUNG = score(ctx, _s_, 369, "VENTLUNG", Categorical(get_cpt(CPTs, "VENTLUNG", _s_.INTUBATION, _s_.KINKEDTUBE, _s_.VENTTUBE), check_args = false))
 end
 
-function bayesian_network_factor(ctx::AbstractFactorRevisitContext, CPTs::CPTsDict, _s_::State, _addr_::String)
+function bayesian_network_factor(ctx::AbstractFactorVisitContext, CPTs::CPTsDict, _s_::State, _addr_::String)
     if _s_.node_id == 516
         return bayesian_network_ANAPHYLAXIS_516(ctx, CPTs, _s_)
     end
@@ -552,7 +552,7 @@ function model(ctx::AbstractSampleRecordStateContext, _s_::State)
     return bayesian_network(ctx, CPTs, _s_)
 end
 
-function factor(ctx::AbstractFactorRevisitContext, _s_::State, _addr_::String)
+function factor(ctx::AbstractFactorVisitContext, _s_::State, _addr_::String)
     return bayesian_network_factor(ctx, CPTs, _s_, _addr_)
 end
 
