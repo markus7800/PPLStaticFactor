@@ -1,7 +1,0 @@
-model,n_particles,time
-dirichlet_process,100,5.396175
-gmm_fixed_numclust,100,2.3026416
-gmm_variable_numclust,100,2.7338207999999997
-hmm,100,1.0231917
-lda_fixed_numtopic,100,9.4242542
-lda_variable_numtopic,100,9.528758400000001
