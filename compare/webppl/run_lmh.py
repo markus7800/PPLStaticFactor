@@ -13,7 +13,6 @@ filenames = [
     ("gmm_fixed_numclust.wppl", 5e3, ("rec", "iter")),
     ("gmm_variable_numclust.wppl", 5e3, ("rec", "iter")),
     ("hmm.wppl", 1e4, ("rec",)),
-    ("hurricane.wppl", 1e5, ("rec",)),
     ("lda_fixed_numtopic.wppl", 1e3, ("rec",)),
     ("lda_variable_numtopic.wppl", 1e3, ("rec",)),
     ("linear_regression.wppl", 1e4, ("rec", "iter")),
