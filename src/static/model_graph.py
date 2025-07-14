@@ -32,7 +32,7 @@ def get_graph(program_ir: PPL_IR):
                 # check if we have already processed node
                 if dep not in marked:
                     if isinstance(dep, SampleNode):
-                        # if node is random variable, we do not continue recursion and add edge to graph
+                        # if node is random variable, we only push the address expression into the queue and add edge to graph
                         edges.append((dep, r))
                         queue.append((dep, dep.get_address_expr()))
                         if DEBUG_GRAPH: print("| | | edge ", dep, "->", r)
@@ -44,10 +44,11 @@ def get_graph(program_ir: PPL_IR):
 
                     marked.add(dep)
             
-            # get all control dependencies, this are loop / if nodes
+            # get all control dependencies
+            # we can move this loop outside (in contrast to Algorithm 1),
+            # since for the factor dependencies we want to include the control dependencies of r
             for dep in program_ir.get_control_deps_for_node(node, expr):
                 if DEBUG_GRAPH: print("| | bp", dep)
-                # get data dependencies of condition / loop variable (control subnode) of control node
                 if dep not in marked:
                     if DEBUG_GRAPH: print("| | | add ", dep.get_test_expr())
                     queue.append((dep, dep.get_test_expr()))

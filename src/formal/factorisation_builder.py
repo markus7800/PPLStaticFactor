@@ -46,6 +46,11 @@ class FactorFunctionWriter():
         self.context = context
         self.return_after_score = self.context == "resume"
         
+        # if self.context == "visit":
+        #     print(root_node)
+        #     for dep in deps:
+        #         print("  ", dep)
+        
         is_on_path = is_on_direct_path_between_nodes if direct_paths else is_on_path_between_nodes
         path_nodes = {
             cfgnode for cfgnode in model.nodes

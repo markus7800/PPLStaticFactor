@@ -6,15 +6,6 @@ from formal.formal_cfg import get_IR_for_formal
 from formal.factorisation_builder import FactorisationBuilder
 import time
 
-
-# filename = "aircraft.jl"
-# ir = get_IR_for_formal("evaluation/benchmark/" + filename)
-# pw = FactorisationBuilder(filename, ir, True)
-# pw.write_program()
-# with open("evaluation/benchmark/generated/" + filename, "w") as f:
-#     f.write(pw.out)
-# exit()
-
 filenames = [
     "aircraft.jl",
     "bayesian_network.jl",

@@ -9,6 +9,7 @@ print_results*
 # compare/gen/results*
 evaluation/benchmark/test*
 evaluation/benchmark/generated/test*
+evaluation/test
 run_n.py
 combine_n.py
 *.tar.gz
