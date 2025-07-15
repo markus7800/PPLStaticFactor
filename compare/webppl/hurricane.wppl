@@ -2,15 +2,25 @@
 
 var model_rec = function() {
     var first_city = flip(0.5)
+    query.add("F", first_city)
     if (first_city) {
         var prep_0 = flip(0.5)
+        query.add("P0", prep_0)
         var damage_0 = flip(prep_0 ? 0.20: 0.80)
+        query.add("D0", damage_0)
         var prep_1 = flip(damage_0 ? 0.75 : 0.50)
+        query.add("P1", prep_1)
         var damage_1 = flip(prep_1 ? 0.20 : 0.80)
+        query.add("D1", damage_1)
     } else {
         var prep_1 = flip(0.5)
+        query.add("P1", prep_1)
         var damage_1 = flip(prep_1 ? 0.20 : 0.80)
+        query.add("D1", damage_1)
         var prep_0 = flip(damage_1 ? 0.75 : 0.50)
+        query.add("P0", prep_0)
         var damage_0 = flip(prep_0 ? 0.20 : 0.80)
+        query.add("D=", damage_0)
     }
+    return query
 }
