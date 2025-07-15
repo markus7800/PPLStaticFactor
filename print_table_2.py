@@ -37,7 +37,7 @@ table_rows = []
 for model, model_name in models.items():
     ours_rel = df_ours.loc[model].rel_static
     gen_rel = df_gen.loc[model].rel
-    webppl_rel = webppl_rel = df_webppl.loc[model].rel if model not in ("hurricane",) else 1e100
+    webppl_rel = df_webppl.loc[model].rel
     # print(model_name, ours_rel, gen_rel, webppl_rel)
 
     ours_str = f"{ours_rel:.2f}" if not speed_up else f"{1/ours_rel:.2f}"
@@ -51,12 +51,9 @@ for model, model_name in models.items():
         if not (gen_rel > webppl_rel or gen_rel > ours_rel):
             gen_str = "\\textbf{" + gen_str + "}"
 
-    if model in ("hurricane",):
-        webppl_str = "-"
-    else:
-        webppl_str = f"{webppl_rel:.2f}" if not speed_up else f"{1/webppl_rel:.2f}"
-        if not (webppl_rel > gen_rel or webppl_rel > ours_rel):
-            webppl_str = "\\textbf{" + webppl_str + "}"
+    webppl_str = f"{webppl_rel:.2f}" if not speed_up else f"{1/webppl_rel:.2f}"
+    if not (webppl_rel > gen_rel or webppl_rel > ours_rel):
+        webppl_str = "\\textbf{" + webppl_str + "}"
 
     table_rows.append(f"{model_name} & {ours_str} & {gen_str} & {webppl_str}")
 
