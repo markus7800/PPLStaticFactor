@@ -17,7 +17,7 @@ models = {
     "gmm_fixed_numclust": "GMM (fixed \\#clusters)",
     # "gmm_variable_numclust": "GMM (variable \\#clusters)",
     "hmm": "HMM",
-    "hmm_unrolled": "HMM (unrolled)",
+    "hmm_unrolled": "HMM (no loop)",
     "hurricane": "Hurricane",
     "lda_fixed_numtopic": "LDA (fixed \\#topics)",
     # "lda_variable_numtopic": "LDA (variable \\#topics)",
