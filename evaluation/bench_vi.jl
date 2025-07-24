@@ -26,7 +26,11 @@ function runbench(seed::Int, N::Int, L::Int, learning_rate::Float64)
     println("gradient variance factorised: ", factored_avg_var, " in ", factored_time,  "s (", standard_avg_var/factored_avg_var, ")")
 
 
-    f = open("evaluation/vi_results.csv", "a")
+    if MODEL_DIRECTORY == "models"
+        f = open("evaluation/models/vi_results.csv", "a")
+    else
+        f = open("evaluation/vi_results.csv", "a")
+    end
     println(f, modelname, ",", N, ",", L, ",", standard_avg_var, ",", standard_time, ",", factored_avg_var, ",", factored_time, ",", standard_avg_var/factored_avg_var)
 
 end

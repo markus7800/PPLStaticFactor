@@ -41,7 +41,7 @@ function get_data_annealed_model(modelname::String)
         end
         return lda_t, N_DATA
     else
-        error("Unsupported model $modelname")
+        return nothing, 0
     end
 end
 

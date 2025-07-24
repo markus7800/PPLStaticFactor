@@ -89,7 +89,11 @@ function runbench(N::Int, n_iter::Int, proposers::Dict{String, Distribution}, ve
     verbose && println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
     
     if verbose
-        f = open("evaluation/lmh_results.csv", "a")
+        if MODEL_DIRECTORY == "models"
+            f = open("evaluation/models/lmh_results.csv", "a")
+        else
+            f = open("evaluation/lmh_results.csv", "a")
+        end
         print(f, modelname, ",", N*n_iter, ",", acceptance_rate, ",", standard_time*10^6, ",", factored_time*10^6, ",", factored_time/standard_time)
         if isnan(finite_time)
             print(f, ",NA,NA")
@@ -107,7 +111,11 @@ function runbench(N::Int, n_iter::Int, proposers::Dict{String, Distribution}, ve
 end
 
 include("N_iters.jl")
-N_iter = name_to_N[modelname]
+if MODEL_DIRECTORY == "models"
+    N_iter = haskey(name_to_N, modelname) ? name_to_N[modelname] : 10_000
+else
+    N_iter = name_to_N[modelname]
+end
 
 
 test_correctness(N_seeds, N_iter, proposers)

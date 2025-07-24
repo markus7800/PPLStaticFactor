@@ -1,7 +1,9 @@
-include(ARGS[1] * "/generated/" * ARGS[2])
+MODEL_DIRECTORY = ARGS[1]
+FILENAME = ARGS[2]
+include(MODEL_DIRECTORY * "/generated/" * FILENAME)
 if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm", "lda_fixed_numtopic", "bayesian_network")
-    include("finite/"  * ARGS[2])
+    include("finite/"  * FILENAME)
 end
 if modelname in ("gmm_fixed_numclust", "lda_fixed_numtopic")
-    include("custom/"  * ARGS[2])
+    include("custom/"  * FILENAME)
 end

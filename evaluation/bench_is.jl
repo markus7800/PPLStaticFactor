@@ -43,7 +43,11 @@ function runbench(N::Int, n_particles::Int, verbose::Bool)
     verbose && println(@sprintf("Time %.3f ms", time*10^3))
     
     if verbose
-        f = open("evaluation/is_results.csv", "a")
+        if MODEL_DIRECTORY == "models"
+            f = open("evaluation/models/is_results.csv", "a")
+        else
+            f = open("evaluation/is_results.csv", "a")
+        end
         println(f, modelname, ",", n_particles, ",", time*10^3)
     end
 end

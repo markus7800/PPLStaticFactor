@@ -29,11 +29,15 @@ function test_correctness(N::Int, n_particles::Int)
 end
 
 function runbench(N::Int, n_particles::Int, verbose::Bool)
-    Random.seed!(0)
-    res = @timed for _ in 1:N
-        smc_standard(n_particles, RESAMPLING, false)
+    if isnothing(model_t)
+        standard_time = 0.
+    else
+        Random.seed!(0)
+        res = @timed for _ in 1:N
+            smc_standard(n_particles, RESAMPLING, false)
+        end
+        standard_time = res.time/N
     end
-    standard_time = res.time/N
 
     Random.seed!(0)
     res = @timed for _ in 1:N
@@ -45,14 +49,21 @@ function runbench(N::Int, n_particles::Int, verbose::Bool)
     verbose && println(@sprintf("Factored time %.3f ms (%.2f)", factored_time*10^3, factored_time / standard_time))
     
     if verbose
-        f = open("evaluation/smc_results.csv", "a")
+        if MODEL_DIRECTORY == "models"
+            f = open("evaluation/models/smc_results.csv", "a")
+        else
+            f = open("evaluation/smc_results.csv", "a")
+        end
         println(f, modelname, ",", N_DATA, ", ", n_particles, ",", standard_time*10^3, ",", factored_time*10^3, ",", factored_time/standard_time)
     end
 end
 
 n_particles = 100
 
-test_correctness(N_seeds, n_particles)
-
+if !isnothing(model_t)
+    test_correctness(N_seeds, n_particles)
+else
+    @warn "Data annealed model not implemented for $modelname. Only running smc_factorised."
+end
 runbench(N_seeds, n_particles, false)
 runbench(N_seeds, n_particles, true)
