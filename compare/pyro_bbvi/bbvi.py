@@ -8,7 +8,6 @@ from pyro.util import warn_if_nan
 import torch
 import pyro.poutine as poutine
 from pyro.infer.util import zero_grads
-from torchviz import make_dot
 from typing import Optional
 
 def maybe_clone(g):
