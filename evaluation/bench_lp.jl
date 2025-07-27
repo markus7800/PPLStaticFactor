@@ -65,45 +65,49 @@ function runbench(N::Int, verbose::Bool)
     @assert (updated_lps_1 ≈ updated_lps_2)
 
     finite_time = NaN
-    if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm", "lda_fixed_numtopic", "bayesian_network")
-        Random.seed!(0)
-        updated_lps_3 = Vector{Float64}(undef, N)
-        res = @timed for i in 1:N
-            trace = traces[i]
-            lp = lps[i]
+    if MODEL_DIRECTORY == "benchmark"
+        if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm", "lda_fixed_numtopic", "bayesian_network")
+            Random.seed!(0)
+            updated_lps_3 = Vector{Float64}(undef, N)
+            res = @timed for i in 1:N
+                trace = traces[i]
+                lp = lps[i]
 
-            addr = addresses[i]
+                addr = addresses[i]
 
-            ctx = ManualResampleContext(trace, addr)
-            finite_factor(ctx)
+                ctx = ManualResampleContext(trace, addr)
+                finite_factor(ctx)
 
-            updated_lps_3[i] = lp + ctx.logprob
+                updated_lps_3[i] = lp + ctx.logprob
+            end
+            finite_time = res.time/N
+
+            verbose && println(@sprintf("Finite time %.3f μs (%.2f)", finite_time*10^6, finite_time / standard_time))
+            @assert (updated_lps_1 ≈ updated_lps_3)
         end
-        finite_time = res.time/N
-
-        verbose && println(@sprintf("Finite time %.3f μs (%.2f)", finite_time*10^6, finite_time / standard_time))
-        @assert (updated_lps_1 ≈ updated_lps_3)
     end
 
     custom_time = NaN
-    if modelname in ("gmm_fixed_numclust", "lda_fixed_numtopic")
-        Random.seed!(0)
-        updated_lps_4 = Vector{Float64}(undef, N)
-        res = @timed for i in 1:N
-            trace = traces[i]
-            lp = lps[i]
+    if MODEL_DIRECTORY == "benchmark"
+        if modelname in ("gmm_fixed_numclust", "lda_fixed_numtopic")
+            Random.seed!(0)
+            updated_lps_4 = Vector{Float64}(undef, N)
+            res = @timed for i in 1:N
+                trace = traces[i]
+                lp = lps[i]
 
-            addr = addresses[i]
+                addr = addresses[i]
 
-            ctx = ManualResampleContext(trace, addr)
-            custom_factor(ctx)
+                ctx = ManualResampleContext(trace, addr)
+                custom_factor(ctx)
 
-            updated_lps_4[i] = lp + ctx.logprob
+                updated_lps_4[i] = lp + ctx.logprob
+            end
+            custom_time = res.time/N
+
+            verbose && println(@sprintf("Custom time %.3f μs (%.2f)", custom_time*10^6, custom_time / standard_time))
+            @assert (updated_lps_1 ≈ updated_lps_4)
         end
-        custom_time = res.time/N
-
-        verbose && println(@sprintf("Custom time %.3f μs (%.2f)", custom_time*10^6, custom_time / standard_time))
-        @assert (updated_lps_1 ≈ updated_lps_4)
     end
 
     if verbose

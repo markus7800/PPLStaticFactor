@@ -26,21 +26,23 @@ function test_correctness(N::Int, n_iter::Int, proposers::Dict{String, Distribut
     end
 
 
-    if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm", "lda_fixed_numtopic", "bayesian_network")
-        Random.seed!(0)
-        for i in 1:N
-            gt_acceptance_rate, gt_traces, gt_log_αs = gt_result[i]
-            acceptance_rate = lmh_finite(n_iter, model, proposers, Val(true), Val(finite_factor), gt_traces, gt_log_αs)
-            @assert acceptance_rate == gt_acceptance_rate # this is a redundant check because we check traces anyways
+    if MODEL_DIRECTORY == "benchmark"
+        if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm", "lda_fixed_numtopic", "bayesian_network")
+            Random.seed!(0)
+            for i in 1:N
+                gt_acceptance_rate, gt_traces, gt_log_αs = gt_result[i]
+                acceptance_rate = lmh_finite(n_iter, model, proposers, Val(true), Val(finite_factor), gt_traces, gt_log_αs)
+                @assert acceptance_rate == gt_acceptance_rate # this is a redundant check because we check traces anyways
+            end
         end
-    end
 
-    if modelname in ("gmm_fixed_numclust", "lda_fixed_numtopic")
-        Random.seed!(0)
-        for i in 1:N
-            gt_acceptance_rate, gt_traces, gt_log_αs = gt_result[i]
-            acceptance_rate = lmh_finite(n_iter, model, proposers, Val(true), Val(custom_factor), gt_traces, gt_log_αs)
-            @assert acceptance_rate == gt_acceptance_rate # this is a redundant check because we check traces anyways
+        if modelname in ("gmm_fixed_numclust", "lda_fixed_numtopic")
+            Random.seed!(0)
+            for i in 1:N
+                gt_acceptance_rate, gt_traces, gt_log_αs = gt_result[i]
+                acceptance_rate = lmh_finite(n_iter, model, proposers, Val(true), Val(custom_factor), gt_traces, gt_log_αs)
+                @assert acceptance_rate == gt_acceptance_rate # this is a redundant check because we check traces anyways
+            end
         end
     end
 
@@ -69,21 +71,26 @@ function runbench(N::Int, n_iter::Int, proposers::Dict{String, Distribution}, ve
 
 
     finite_time = NaN
-    if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm", "lda_fixed_numtopic", "bayesian_network")
-        res = @timed for _ in 1:N
-            lmh_finite(n_iter, model, proposers, Val(false), Val(finite_factor), Dict{String, SampleType}[], Float64[])
+
+    if MODEL_DIRECTORY == "benchmark"
+        if modelname in ("linear_regression", "gmm_fixed_numclust", "hmm", "lda_fixed_numtopic", "bayesian_network")
+            res = @timed for _ in 1:N
+                lmh_finite(n_iter, model, proposers, Val(false), Val(finite_factor), Dict{String, SampleType}[], Float64[])
+            end
+            finite_time = res.time/(N*n_iter)
+            verbose && println(@sprintf("Finite time %.3f μs (%.2f)", finite_time*10^6, finite_time / standard_time))
         end
-        finite_time = res.time/(N*n_iter)
-        verbose && println(@sprintf("Finite time %.3f μs (%.2f)", finite_time*10^6, finite_time / standard_time))
     end
 
     custom_time = NaN
-    if modelname in ("gmm_fixed_numclust", "lda_fixed_numtopic")
-        res = @timed for _ in 1:N
-            lmh_finite(n_iter, model, proposers, Val(false), Val(custom_factor), Dict{String, SampleType}[], Float64[])
+    if MODEL_DIRECTORY == "benchmark"
+        if modelname in ("gmm_fixed_numclust", "lda_fixed_numtopic")
+            res = @timed for _ in 1:N
+                lmh_finite(n_iter, model, proposers, Val(false), Val(custom_factor), Dict{String, SampleType}[], Float64[])
+            end
+            custom_time = res.time/(N*n_iter)
+            verbose && println(@sprintf("Custom time %.3f μs (%.2f)", custom_time*10^6, custom_time / standard_time))
         end
-        custom_time = res.time/(N*n_iter)
-        verbose && println(@sprintf("Custom time %.3f μs (%.2f)", custom_time*10^6, custom_time / standard_time))
     end
 
     verbose && println(@sprintf("Acceptance rate: %.2f%%", acceptance_rate*100))
