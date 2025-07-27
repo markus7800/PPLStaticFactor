@@ -15,6 +15,9 @@ from formal.factorisation_builder import FactorisationBuilder
 ir = get_IR_for_formal("evaluation/models/" + filename)
 pw = FactorisationBuilder(filename, ir, True, True)
 pw.write_program()
+
+from pathlib import Path
+Path("evaluation/models/generated/").mkdir(parents=True, exist_ok=True)
 with open("evaluation/models/generated/" + filename, "w") as f:
     f.write(pw.out)
 

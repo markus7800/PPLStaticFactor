@@ -34,6 +34,10 @@ build_resume = set([
     "lda_variable_numtopic.jl"
 ])
 
+from pathlib import Path
+Path("evaluation/benchmark/generated/").mkdir(parents=True, exist_ok=True)
+Path("evaluation/unrolled/generated/").mkdir(parents=True, exist_ok=True)
+
 t0 = time.time()
 for i, filename in enumerate(filenames):
     print(i+1, filename)
