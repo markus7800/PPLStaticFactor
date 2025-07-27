@@ -142,7 +142,7 @@ The results reported in the paper can be found in  `evaluation/paper_vi_results.
 
 This script runs the `bench_vi.jl` file which measures the gradient variance for the factored and non-factored versions of the VI algorithm.
 
-For comparison run (we set `N` = `1`):
+For comparison run (we set `N` = `1`. Note that this may take a long time to complete, ~6-8 hours, and you may lower `N_ITER` or `L` in the script for faster completion):
 ```
 python3 compare/pyro_bbvi/run_vi.py N   
 ```
