@@ -12,3 +12,4 @@ evaluation/test
 run_n.py
 combine_n.py
 *.tar.gz
+*.tar

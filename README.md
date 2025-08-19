@@ -82,6 +82,24 @@ If the build was successful, run the docker image:
 docker run -it --name pplstaticfactor --rm pplstaticfactor
 ```
 
+Alternatively, you can load the docker image provided at [Zenodo](https://doi.org/10.5281/zenodo.16900540) with
+```
+docker load -i pplstaticfactor-amd64.tar
+docker load -i pplstaticfactor-arm64.tar
+```
+depending on your system, which was saved with (Docker version 28.3.0)
+```
+docker buildx build --platform linux/amd64 -t pplstaticfactor-amd64 .
+docker image save pplstaticfactor-amd64 > pplstaticfactor-amd64.tar
+docker buildx build --platform linux/arm64 -t pplstaticfactor-arm64 .
+docker image save pplstaticfactor-arm64 > pplstaticfactor-arm64.tar
+```
+Run those images with
+```
+docker run -it --name pplstaticfactor-amd64 --rm pplstaticfactor-amd64
+docker run -it --name pplstaticfactor-arm64 --rm pplstaticfactor-arm64
+```
+
 ### Environment Reference for Custom Installation
 - `Python 3.10.12` with `requirements.txt`
   - `sexpdata==1.0.2`
