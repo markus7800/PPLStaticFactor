@@ -6,7 +6,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("filename", help="name of your program in evaluations/models/ without path but with file extension")
 parser.add_argument("algorithm", help="benchmark to run (lp|is|lmh|smc|vi)")
-parser.add_argument("repetitions", help="number of experemint runs")
+parser.add_argument("repetitions", help="number of experiment runs")
 args = parser.parse_args()
 
 filename = args.filename

@@ -51,6 +51,7 @@ Overview:
 │           ├── model_graph.py              # computes dependencies between sample statements as graph
 │           └── rd_bp.py                    # functionality to compute reaching definitions and branch parents
 │
+├── sanity_check.py                         # script to check if artifact installation was successful
 ├── generate_factorisation.py               # script to generate sub-programs for each factor for every benchmark model
 ├── run_lmh_benchmark.py                    # script to run bench_lmh.jl for every benchmark model
 ├── run_smc_benchmark.py                    # script to run bench_smc.jl for every benchmark model
@@ -59,7 +60,7 @@ Overview:
 └── run_benchmark_for_model.py.             # script to run benchmarks for your model
 ```
 
-## Setup
+## Installation
 
 No special hardware is needed for installation.
 
@@ -68,23 +69,17 @@ Recommendations:
 - OS: unix-based operating system
 - Installation with Docker
 
-### Docker Installation
+### Docker (Recommended)
 
 Install [docker](https://www.docker.com).
 
-Build the pplstaticfactor image (this may take several minutes):
-```
-docker build -t pplstaticfactor .
-```
 
-If the build was successful, run the docker image:
-```
-docker run -it --name pplstaticfactor --rm pplstaticfactor
-```
-
-Alternatively, you can load the docker image provided at [Zenodo](https://doi.org/10.5281/zenodo.16900540) with
+You can download and load the docker image provided at [Zenodo](https://doi.org/10.5281/zenodo.16900540) with
 ```
 docker load -i pplstaticfactor-amd64.tar
+``` 
+or
+```
 docker load -i pplstaticfactor-arm64.tar
 ```
 depending on your system, which was saved with (Docker version 28.3.0)
@@ -97,8 +92,23 @@ docker image save pplstaticfactor-arm64 > pplstaticfactor-arm64.tar
 Run those images with
 ```
 docker run -it --name pplstaticfactor-amd64 --rm pplstaticfactor-amd64
+```
+or
+```
 docker run -it --name pplstaticfactor-arm64 --rm pplstaticfactor-arm64
 ```
+
+
+Alternatively, build the pplstaticfactor image from scratch (this may take several minutes):
+```
+docker build -t pplstaticfactor .
+```
+
+If the build was successful, run the docker image:
+```
+docker run -it --name pplstaticfactor --rm pplstaticfactor
+```
+
 
 ### Environment Reference for Custom Installation
 - `Python 3.10.12` with `requirements.txt`
@@ -115,17 +125,40 @@ docker run -it --name pplstaticfactor-arm64 --rm pplstaticfactor-arm64
 - `node.js 23.10`
   - `webppl@0.9.15`
 
+### Sanity Check
 
-## Replication of Paper
+To test if your installation was successful, run `python3 sanity_check.py` and compare output against `sanity_check_output.txt`.
 
-Generate the sub-programs:
+
+
+## Evaluation Instructions
+
+### 1. Factorisation of sub-programs
+
+(Re-) Generate the sub-programs:
 ```
 python3 generate_factorisation.py
 ```
+Produces factorised versions of probabilistic programs stored in `evaluation/benchmark` and writes them to `evaluation/benchmark/generated`. (Also factorises the unrolled version of HMM `evaluation/unrolled/hmm.jl` to `evaluation/unrolled/generated/hmm.jl`).
 
-### LMH: Single-site Metroplis-Hastings
+*Expected output*: Same programs as currently stored in `evaluation/benchmark/generated`.  
+If you like to verify, run
+```
+mv evaluation/benchmark/generated evaluation/benchmark/generated_existing
+python3 generate_factorisation.py 
+diff -r evaluation/benchmark/generated evaluation/benchmark/generated_existing
+```
+This should only complain about missing .gitkeep file, indicating no difference between existing and newly generated Julia files.  
+To clean up, run
+```
+touch evaluation/benchmark/generated/.gitkeep
+rm -rf evaluation/benchmark/generated_existing
+```
 
-Run benchmarks `N` times (we set `N` = `10`):
+
+### 2. LMH: Single-site Metroplis-Hastings
+
+Run LMH benchmarks `N` times (we set `N` = `10`):
 ```
 python3 run_lmh_benchmark.py N
 ```
@@ -134,7 +167,9 @@ The results reported in the paper can be found in  `evaluation/paper_lmh_results
 
 This script runs the `bench_lmh.jl` file which measures the runtime for the factored and non-factored versions of the LMH algorithm and asserts that the samples are the same for all LMH implementations.
 
-For comparison run (we set `N` = `10`):
+*Expected output*: Absolute runtime measurements may differ on your hardware, but the relative speed-up reported in colums `rel_static`, `rel_finite` and `rel_custom` should be similar. 
+
+To compare our approach against existing methods, run (we set `N` = `10`):
 ```
 python3 compare/gen/run_lmh.py N   
 ```
@@ -143,15 +178,17 @@ and
 python3 compare/webppl/run_lmh.py N
 ```
 The results are written to `compare/gen/lmh_results.csv` and `compare/webppl/lmh_results.csv` and aggregated in `compare/gen/lmh_results_aggregated.csv` and `compare/webppl/lmh_results_aggregated.csv`, respectively.  
-The results reported in the paper can be found in  `compare/gen/paper_lmh_results.csv` and `compare/webppl/paper_lmh_results.csv` (measured on a M2 Pro CPU).
+The results reported in the paper can be found in  `compare/gen/paper_lmh_results.csv` and `compare/webppl/paper_lmh_results.csv` (measured on a M2 Pro CPU).  
+
+*Expected output*: Again, the relative speed-ups reported in the `rel` column should be similar on your hardware.
 
 `python3 print_table_1.py` will generate Table 1 of the manuscript from the `paper_lmh_results.csv` files.
 
 `python3 print_table_2.py` will generate Table 2 of the manuscript from the `paper_lmh_results.csv` files.
 
-### BBVI: Black-box Variational Inference
+### 3. BBVI: Black-box Variational Inference
 
-Run benchmarks `N` times (we set `N` = `10`):
+Run BBVI benchmarks `N` times (we set `N` = `10`):
 ```
 python3 run_vi_benchmark.py N
 ```
@@ -160,18 +197,23 @@ The results reported in the paper can be found in  `evaluation/paper_vi_results.
 
 This script runs the `bench_vi.jl` file which measures the gradient variance for the factored and non-factored versions of the VI algorithm.
 
-For comparison run (we set `N` = `1`. Note that this may take a long time to complete, ~6-8 hours, and you may lower `N_ITER` or `L` in the script for faster completion):
+*Expected output*: Runtime may differ, but the gradient variance reported in the `none` and `static` columns, as well as the relative improvement in `rel_static` should be similar to the reported results.
+
+
+To compare our approach against existing methods,  run (we set `N` = `1`. Note that this may take a long time to complete, ~6-8 hours, and you may lower `N_ITER` or `L` in the script for faster completion):
 ```
 python3 compare/pyro_bbvi/run_vi.py N   
 ```
 The results are written to `compare/pyro_bbvi/vi_results.csv` and aggregated in `compare/pyro_bbvi/vi_results_aggregated.csv`.  
 The results reported in the paper can be found in  `compare/pyro_bbvi/paper_vi_results.csv` (measured on a M2 Pro CPU).
 
+*Expected output*: Again, the gradient variance and relative improvement (columns `none`, `graph`, `rel_graph`) should be similar to the paper results.
+
 `python3 print_table_3.py` will generate Table 3 of the manuscript from the `paper_vi_results.csv` files.
 
-### SMC: Sequential Monte Carlo
+### 4. SMC: Sequential Monte Carlo
 
-Run benchmarks `N` times (we set `N` = `10`):
+Run SMC benchmarks `N` times (we set `N` = `10`):
 ```
 python3 run_smc_benchmark.py N
 ```
@@ -180,16 +222,47 @@ The results reported in the paper can be found in  `evaluation/paper_smc_results
 
 This script runs the `bench_smc.jl` file which measures the runtime for the naive and iterative versions of the SMC algorithm.
 
-For comparison run (we set `N` = `10`):
+To compare our approach against existing methods, run (we set `N` = `10`):
 ```
 python3 compare/webppl/run_smc.py N   
 ```
 The results are written to `compare/webppl/smc_results.csv` and aggregated in `compare/webppl/smc_results_aggregated.csv`.  
 The results reported in the paper can be found in  `compare/webppl/paper_smc_results.csv` (measured on a M2 Pro CPU).
 
+
 `python3 print_table_4.py` will generate Table 3 of the manuscript from the `paper_smc_results.csv` files.
 
-## Implementing your own Models
+
+## Reproducability Guidelines
+
+This artifact can be used to reproduce the empirical evaluation of Section 5.
+
+### Section 5.1.
+
+For the interested reader, we briefly list where the sub-program generation described in Section 5 is implemented.
+- `src/formal/formal_cfg.py`: implements a function which translates a Julia program (of restricted grammar like described in Section 2 and see below) to the control-flow-graph (CFG) representation (generalised in `src/static/cfg.py`) of Section 3.1 and 4.1.
+- `src/static/model_graph.py`: implements a function which constructs a dependency graph based on Algorithm 1 (factorisation). 
+- `src/formal/factorisation_builder.py`: uses this dependency graph to generate sub-programs
+
+### Section 5.2.
+
+The claims in this section are based on the data presented in Table 1 and Table 2.  
+Table 1 and Table 2 can be reproduced by following the instructions outlined in [2. LMH: Single-site Metroplis-Hastings](#2.-LMH:-Single-site-Metroplis-Hastings).
+
+
+### Section 5.3.
+
+The claims in this section are based on the data presented in Table 3.  
+Table 3 can be reproduced by following the instructions outlined in [3. BBVI: Black-box Variational Inference](#3.-BBVI:-Black-box-Variational-Inference).
+
+
+### Section 5.4.
+
+The claims in this section are based on the data presented in Table 4.  
+Table 4 can be reproduced by following the instructions outlined in [4. SMC: Sequential Monte Carlo](#4.-SMC:-Sequential-Monte-Carlo).
+
+
+## Reusability Guidelines: Implementing your own Models
 
 To test our approach on your model, you may implement it in a single file in `evaluation/models`.
 
@@ -204,7 +277,7 @@ proposers = Dict{String, Distribution}(...)
     S
 end
 ```
-In general, we allow arbitrary **pure** Julia expressions `E` in statements.
+In general, we allow arbitrary **pure** (side-effect free) Julia expressions `E` in statements.
 
 Further, you may define **pure** Julia helper functions outside of this model block to be used in expressions.  
 Also, container types like arrays may only be used in an **immutable** fashion.  
@@ -272,6 +345,7 @@ usage: generate_factorisation_for_model.py [-h] filename
 positional arguments:
   filename    name of your program in evaluations/models/ without path but with file extension
 ```
+E.g. `python3 generate_factorisation_for_model.py test.jl` for `evaluation/models/test.jl`
 
 Run a benchmark with
 ```
@@ -280,9 +354,10 @@ usage: run_benchmark_for_model.py [-h] filename algorithm repetitions
 positional arguments:
   filename     name of your program in evaluations/models/ without path but with file extension
   algorithm    benchmark to run (lp|is|lmh|smc|vi)
-  repetitions  number of experemint runs
+  repetitions  number of experiment runs
 ```
+E.g. `python3 run_benchmark_for_model.py test.jl lmh 3`.
 
-You can configure the number of iterations for `is` and `lmh` in `evaluation/N_iters.jl`.
+You can configure the number of iterations for `is` and `lmh` in `evaluation/N_iters.jl` based on `modelname`.
 
-Note that in order to compare the factorised SMC implementation to a naive implementation, you have to implement a data-annealed version of your model in `evaluation/smc.jl`.
+Note that in order to compare the factorised SMC implementation to a naive implementation, you have to implement a data-annealed version of your model in `evaluation/smc.jl` (This makes only sense if your model can make use of incrementally adding observed data points during SMC inference. For examples see `evaluation/smc.jl`).
