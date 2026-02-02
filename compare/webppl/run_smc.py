@@ -49,61 +49,62 @@ def parse_time(s: str):
         raise ValueError()
 
 
-with open("compare/webppl/smc_results.csv", "w") as f:
-    f.write("model,smc_standard,smc_cps,cps_rel,is_time\n")
+if __name__ == "__main__":
+    with open("compare/webppl/smc_results.csv", "w") as f:
+        f.write("model,smc_standard,smc_cps,cps_rel,is_time\n")
 
-N_repetitions = int(sys.argv[1])
-N_seeds = 10
+    N_repetitions = int(sys.argv[1])
+    N_seeds = 10
 
-for _ in range(N_repetitions):
-    for filename in filenames:
-        print(bcolors.HEADER + filename + bcolors.ENDC)
-        
-        with open("compare/webppl/" + filename, "r") as src_f:
-            src = src_f.read()
-        with open("compare/webppl/tmp.wppl", "w") as tmp_f:
-            tmp_f.write(src + f"\nvar N_seeds = {N_seeds}\n" + infer_1_str)
+    for _ in range(N_repetitions):
+        for filename in filenames:
+            print(bcolors.HEADER + filename + bcolors.ENDC)
             
-        cmd = ["webppl", "--random-seed=0", "compare/webppl/tmp.wppl"]
-        res = subprocess.run(cmd, capture_output=True)
-        out = res.stdout.decode()
-        # print(out)
-        # print(res.stderr.decode())
-        
-        match = re.search(r"IS : (\d+.\d+(s|ms))", out)
-        assert match is not None
-        is_time = parse_time(match.group(1)) / N_seeds
-        
-        match = re.search(r"SMC: (\d+.\d+(s|ms))", out)
-        assert match is not None
-        smc_time = parse_time(match.group(1)) / N_seeds
-        
-        
-        with open("compare/webppl/smc/" + filename[:-5] + ".js", "r") as src_f:
-            src = src_f.read()
+            with open("compare/webppl/" + filename, "r") as src_f:
+                src = src_f.read()
+            with open("compare/webppl/tmp.wppl", "w") as tmp_f:
+                tmp_f.write(src + f"\nvar N_seeds = {N_seeds}\n" + infer_1_str)
+                
+            cmd = ["webppl", "--random-seed=0", "compare/webppl/tmp.wppl"]
+            res = subprocess.run(cmd, capture_output=True)
+            out = res.stdout.decode()
+            # print(out)
+            # print(res.stderr.decode())
             
-        with open("compare/webppl/smc/tmp.js", "w") as tmp_f:
-            tmp_f.write(src + f"\nvar N_seeds = {N_seeds}\n" + infer_2_str)
+            match = re.search(r"IS : (\d+.\d+(s|ms))", out)
+            assert match is not None
+            is_time = parse_time(match.group(1)) / N_seeds
             
-        cmd = ["node", "compare/webppl/smc/tmp.js"]
-        res = subprocess.run(cmd, capture_output=True)
-        out = res.stdout.decode()
-        # print(out)
-        
-        match = re.search(r"SMC: (\d+.\d+(s|ms))", out)
-        assert match is not None
-        smc_standard_time = parse_time(match.group(1)) / N_seeds
-        
-        print(smc_standard_time, "vs", smc_time, f"{smc_time/smc_standard_time}")
+            match = re.search(r"SMC: (\d+.\d+(s|ms))", out)
+            assert match is not None
+            smc_time = parse_time(match.group(1)) / N_seeds
+            
+            
+            with open("compare/webppl/smc/" + filename[:-5] + ".js", "r") as src_f:
+                src = src_f.read()
+                
+            with open("compare/webppl/smc/tmp.js", "w") as tmp_f:
+                tmp_f.write(src + f"\nvar N_seeds = {N_seeds}\n" + infer_2_str)
+                
+            cmd = ["node", "compare/webppl/smc/tmp.js"]
+            res = subprocess.run(cmd, capture_output=True)
+            out = res.stdout.decode()
+            # print(out)
+            
+            match = re.search(r"SMC: (\d+.\d+(s|ms))", out)
+            assert match is not None
+            smc_standard_time = parse_time(match.group(1)) / N_seeds
+            
+            print(smc_standard_time, "vs", smc_time, f"{smc_time/smc_standard_time}")
 
-        with open("compare/webppl/smc_results.csv", "a") as f:
-            modelname = filename[:-5]
-            f.write(f"{modelname},{smc_standard_time},{smc_time},{smc_time/smc_standard_time},{is_time}\n")
+            with open("compare/webppl/smc_results.csv", "a") as f:
+                modelname = filename[:-5]
+                f.write(f"{modelname},{smc_standard_time},{smc_time},{smc_time/smc_standard_time},{is_time}\n")
+            
+            print()
         
-        print()
-    
-import pandas as pd
-df = pd.read_csv("compare/webppl/smc_results.csv")
-avg_df = df.groupby("model").median()
-avg_df = avg_df.reset_index()
-avg_df.to_csv("compare/webppl/smc_results_aggregated.csv", index=False, sep=",", na_rep="NA")
+    import pandas as pd
+    df = pd.read_csv("compare/webppl/smc_results.csv")
+    avg_df = df.groupby("model").median()
+    avg_df = avg_df.reset_index()
+    avg_df.to_csv("compare/webppl/smc_results_aggregated.csv", index=False, sep=",", na_rep="NA")

@@ -1,0 +1,66 @@
+python3 sanity_check.py
+Check build IR...
+Check OK.
+
+Check generate factorisation...
+Check OK.
+
+Check build IR (unrolled)...
+Check OK.
+
+Check generate factorisation (unrolled)...
+Check OK.
+
+Check LMH...
+Test correctness: OK.
+Standard time 36.487 μs
+Factored time 25.630 μs (0.70)
+Finite time 2.667 μs (0.07)
+Acceptance rate: 74.02%
+Check OK.
+
+Check BBVI...
+seed = 0
+gradient variance standard: 2117.0763806506784 in 6.976749s
+gradient variance factorised: 1280.267005133957 in 49.971002792s (1.6536209807493747)
+Check OK.
+
+Check SMC...
+Test correctness: OK.
+Standard time 28.705 ms
+Factored time 7.215 ms (0.25)
+Check OK.
+
+Check Gen LMH...
+Gen time: 82.860 μs
+Acceptance rate: 73.98%
+Gen combinator time: 61.923 μs
+Acceptance rate: 73.98%
+Check OK.
+
+Check Pyro BBVI...
+100%|███████████████████████████████████████████████████████████████| 10/10 [00:02<00:00,  4.19it/s]
+avg_var_standard=3.454e+03 in 2.395s
+100%|███████████████████████████████████████████████████████████████| 10/10 [00:15<00:00,  1.51s/it]
+avg_var_graph=2.510e+00 in 15.122s
+reduction tensor(1375.7839)
+
+Check OK.
+
+Check WebPPL BBVI...
+N: 10000
+N_seeds: 10
+MH rec : 2.004s
+C3 rec : 514.644ms
+undefined
+
+Check OK.
+
+Check WebPPL SMC...
+IS : 49.124ms
+SMC: 80.483ms
+undefined
+
+SMC: 631.778ms
+
+Check OK.

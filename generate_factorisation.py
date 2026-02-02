@@ -56,7 +56,7 @@ filenames = [
 for i, filename in enumerate(filenames):
     print(i+1, filename)
     ir = get_IR_for_formal("evaluation/unrolled/" + filename, unroll_loops=True)
-    pw = FactorisationBuilder(filename, ir, True, True)
+    pw = FactorisationBuilder(filename, ir, True, filename in build_resume)
     pw.write_program()
     with open("evaluation/unrolled/generated/" + filename, "w") as f:
         f.write(pw.out)

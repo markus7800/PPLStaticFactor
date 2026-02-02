@@ -78,68 +78,68 @@ def parse_time(s: str):
     else:
         raise ValueError()
 
+if __name__ == "__main__":
+    with open("compare/webppl/lmh_results.csv", "w") as f:
+        f.write("model,N,base,c3,rel\n")
 
-with open("compare/webppl/lmh_results.csv", "w") as f:
-    f.write("model,N,base,c3,rel\n")
+    N_repetitions = int(sys.argv[1])
+    N_SEEDS = 10
 
-N_repetitions = int(sys.argv[1])
-N_SEEDS = 10
-
-for _ in range(N_repetitions):
-    for filename, N, variants in filenames:
-        print(bcolors.HEADER + filename + bcolors.ENDC)
-        
-        with open("compare/webppl/" + filename, "r") as src_f:
-            src = src_f.read()
-        src += f"\nvar N = {N}\nvar N_seeds = {N_SEEDS}\n"
-        if "rec" in variants:
-            src += rec_lmh_str
-        if "iter" in variants:
-            src += iter_lmh_str
-        with open("compare/webppl/tmp.wppl", "w") as tmp_f:
-            tmp_f.write(src)
+    for _ in range(N_repetitions):
+        for filename, N, variants in filenames:
+            print(bcolors.HEADER + filename + bcolors.ENDC)
             
-        cmd = ["webppl", "--random-seed=0", "compare/webppl/tmp.wppl"]
-        res = subprocess.run(cmd, capture_output=True)
-        out = res.stdout.decode()
-        err = res.stderr.decode()
-        # print(out)
-        if err != "":
-            print(err)
+            with open("compare/webppl/" + filename, "r") as src_f:
+                src = src_f.read()
+            src += f"\nvar N = {N}\nvar N_seeds = {N_SEEDS}\n"
+            if "rec" in variants:
+                src += rec_lmh_str
+            if "iter" in variants:
+                src += iter_lmh_str
+            with open("compare/webppl/tmp.wppl", "w") as tmp_f:
+                tmp_f.write(src)
+                
+            cmd = ["webppl", "--random-seed=0", "compare/webppl/tmp.wppl"]
+            res = subprocess.run(cmd, capture_output=True)
+            out = res.stdout.decode()
+            err = res.stderr.decode()
+            # print(out)
+            if err != "":
+                print(err)
 
 
-        match = re.search(r"N: (\d+)", out)
-        assert match is not None
-        n = int(match.group(1))
+            match = re.search(r"N: (\d+)", out)
+            assert match is not None
+            n = int(match.group(1))
+            
+            match = re.search(r"N_seeds: (\d+)", out)
+            assert match is not None
+            n_seeds = int(match.group(1))
+
+            match = re.search(r"C3 rec : (\d+.\d+(s|ms))", out)
+            assert match is not None
+            c3_time = parse_time(match.group(1)) / (n_seeds*n) * 1000
+
+
+            match = re.search(r"MH rec : (\d+.\d+(s|ms))", out)
+            assert match is not None
+            mh_time = parse_time(match.group(1))
+            match = re.search(r"MH iter: (\d+.\d+(s|ms))", out)
+            if match:
+                # use iterative implemenation if faster as comparison
+                mh_time = min(mh_time, parse_time(match.group(1)))
+            mh_time = mh_time / (n_seeds*n) * 1000
+
+
+            print(f"{n=}, {n_seeds=}, {c3_time=}, {mh_time=}")
+
+            with open("compare/webppl/lmh_results.csv", "a") as f:
+                modelname = filename[:-5]
+                f.write(f"{modelname},{n_seeds*n},{mh_time},{c3_time},{c3_time/mh_time}\n")
+            print()
         
-        match = re.search(r"N_seeds: (\d+)", out)
-        assert match is not None
-        n_seeds = int(match.group(1))
-
-        match = re.search(r"C3 rec : (\d+.\d+(s|ms))", out)
-        assert match is not None
-        c3_time = parse_time(match.group(1)) / (n_seeds*n) * 1000
-
-
-        match = re.search(r"MH rec : (\d+.\d+(s|ms))", out)
-        assert match is not None
-        mh_time = parse_time(match.group(1))
-        match = re.search(r"MH iter: (\d+.\d+(s|ms))", out)
-        if match:
-            # use iterative implemenation if faster as comparison
-            mh_time = min(mh_time, parse_time(match.group(1)))
-        mh_time = mh_time / (n_seeds*n) * 1000
-
-
-        print(f"{n=}, {n_seeds=}, {c3_time=}, {mh_time=}")
-
-        with open("compare/webppl/lmh_results.csv", "a") as f:
-            modelname = filename[:-5]
-            f.write(f"{modelname},{n_seeds*n},{mh_time},{c3_time},{c3_time/mh_time}\n")
-        print()
-    
-import pandas as pd
-df = pd.read_csv("compare/webppl/lmh_results.csv")
-avg_df = df.groupby("model").median()
-avg_df = avg_df.reset_index()
-avg_df.to_csv("compare/webppl/lmh_results_aggregated.csv", index=False, sep=",", na_rep="NA")
+    import pandas as pd
+    df = pd.read_csv("compare/webppl/lmh_results.csv")
+    avg_df = df.groupby("model").median()
+    avg_df = avg_df.reset_index()
+    avg_df.to_csv("compare/webppl/lmh_results_aggregated.csv", index=False, sep=",", na_rep="NA")
