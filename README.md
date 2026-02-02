@@ -157,7 +157,7 @@ rm -rf evaluation/benchmark/generated_existing
 
 
 ### 2. LMH: Single-site Metroplis-Hastings
-
+<a name="lmh"></a>
 Run LMH benchmarks `N` times (we set `N` = `10`):
 ```
 python3 run_lmh_benchmark.py N
@@ -187,6 +187,7 @@ The results reported in the paper can be found in  `compare/gen/paper_lmh_result
 `python3 print_table_2.py` will generate Table 2 of the manuscript from the `paper_lmh_results.csv` files.
 
 ### 3. BBVI: Black-box Variational Inference
+<a name="bbvi"></a>
 
 Run BBVI benchmarks `N` times (we set `N` = `10`):
 ```
@@ -212,6 +213,7 @@ The results reported in the paper can be found in  `compare/pyro_bbvi/paper_vi_r
 `python3 print_table_3.py` will generate Table 3 of the manuscript from the `paper_vi_results.csv` files.
 
 ### 4. SMC: Sequential Monte Carlo
+<a name="smc"></a>
 
 Run SMC benchmarks `N` times (we set `N` = `10`):
 ```
@@ -247,19 +249,19 @@ For the interested reader, we briefly list where the sub-program generation desc
 ### Section 5.2.
 
 The claims in this section are based on the data presented in Table 1 and Table 2.  
-Table 1 and Table 2 can be reproduced by following the instructions outlined in [2. LMH: Single-site Metroplis-Hastings](#2.-LMH:-Single-site-Metroplis-Hastings).
+Table 1 and Table 2 can be reproduced by following the instructions outlined in [2. LMH: Single-site Metroplis-Hastings](#lmh).
 
 
 ### Section 5.3.
 
 The claims in this section are based on the data presented in Table 3.  
-Table 3 can be reproduced by following the instructions outlined in [3. BBVI: Black-box Variational Inference](#3.-BBVI:-Black-box-Variational-Inference).
+Table 3 can be reproduced by following the instructions outlined in [3. BBVI: Black-box Variational Inference](#bbvi).
 
 
 ### Section 5.4.
 
 The claims in this section are based on the data presented in Table 4.  
-Table 4 can be reproduced by following the instructions outlined in [4. SMC: Sequential Monte Carlo](#4.-SMC:-Sequential-Monte-Carlo).
+Table 4 can be reproduced by following the instructions outlined in [4. SMC: Sequential Monte Carlo](#smc).
 
 
 ## Reusability Guidelines: Implementing your own Models
