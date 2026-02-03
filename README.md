@@ -60,13 +60,13 @@ Overview:
 └── run_benchmark_for_model.py.             # script to run benchmarks for your model
 ```
 
-## Installation
+## Installation (Kick-the-tires instructions)
 
 No special hardware is needed for installation.
 
 Recommendations:
 - Hardware: >= 3.5 GHZ dual core CPU, >= 8 GB RAM, and >= 10 GB storage
-- OS: unix-based operating system
+- OS: tested on macOS (Sequoia 15.2, M2 Pro), Linux 64bit (Fedora 43, 5950x), Windows 11 64bit (5950x)
 - Installation with Docker
 
 ### Docker (Recommended)
@@ -129,7 +129,9 @@ docker run -it --name pplstaticfactor --rm pplstaticfactor
 
 To test if your installation was successful, run `python3 sanity_check.py` and compare output against `sanity_check_output.txt`.
 
+Time measurements will differ, but you should not see any errors.
 
+**This concludes the instructions for the kick-the-tires phase.**
 
 ## Evaluation Instructions
 
@@ -266,7 +268,9 @@ Table 4 can be reproduced by following the instructions outlined in [4. SMC: Seq
 
 ## Reusability Guidelines: Implementing your own Models
 
-To test our approach on your model, you may implement it in a single file in `evaluation/models`.
+The artifact may be reused to test the static factorisation approach on new models, i.e. to generate sub-programs and to run the benchmarks for the new model.
+
+To do so, you may implement a new model in a single file in `evaluation/models`.
 
 The static analysis only accepts programs written in Julia that follow the formal syntax described in the manuscript with some minor adaptions, which we summarise in the following.
 
@@ -340,14 +344,14 @@ sample(ctx, E, f(E1,...En), observed=C)
 
 ### Running Benchmarks for your Model
 
-Generate the subprograms with
+Generate the sub-programs with
 ```
 usage: generate_factorisation_for_model.py [-h] filename
 
 positional arguments:
   filename    name of your program in evaluations/models/ without path but with file extension
 ```
-E.g. `python3 generate_factorisation_for_model.py test.jl` for `evaluation/models/test.jl`
+E.g. `python3 generate_factorisation_for_model.py test.jl` generates `evaluation/models/generated/test.jl` for `evaluation/models/test.jl`.
 
 Run a benchmark with
 ```
@@ -362,4 +366,7 @@ E.g. `python3 run_benchmark_for_model.py test.jl lmh 3`.
 
 You can configure the number of iterations for `is` and `lmh` in `evaluation/N_iters.jl` based on `modelname`.
 
-Note that in order to compare the factorised SMC implementation to a naive implementation, you have to implement a data-annealed version of your model in `evaluation/smc.jl` (This makes only sense if your model can make use of incrementally adding observed data points during SMC inference. For examples see `evaluation/smc.jl`).
+The `lmh` option runs the benchmark described in [2. LMH: Single-site Metroplis-Hastings](#lmh), the `vi` option runs the benchmark described in [3. BBVI: Black-box Variational Inference](#bbvi) and the `smc` option runs the benchmark described in [4. SMC: Sequential Monte Carlo](#smc).  
+The `lp` option benchmarks just the density function of the model and the `is` option benchmarks importance sampling.
+
+Note that in order to compare the factorised SMC implementation to a naive implementation, you have to implement a data-annealed version of your model in `evaluation/smc.jl` (This only makes sense if your model can make use of incrementally adding observed data points during SMC inference. For examples see `evaluation/smc.jl`).
