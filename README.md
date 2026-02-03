@@ -122,7 +122,7 @@ docker run -it --name pplstaticfactor --rm pplstaticfactor
   - `Distributions = "0.25.112"`
   - `JuliaSyntax = "0.4.10"`
   - `Gen = "0.4.7"`
-- `node.js 23.10`
+- `node.js 24.13`
   - `webppl@0.9.15`
 
 ### Sanity Check
@@ -169,7 +169,9 @@ The results reported in the paper can be found in  `evaluation/paper_lmh_results
 
 This script runs the `bench_lmh.jl` file which measures the runtime for the factored and non-factored versions of the LMH algorithm and asserts that the samples are the same for all LMH implementations.
 
-*Expected output*: Absolute runtime measurements may differ on your hardware, but the relative speed-up reported in colums `rel_static`, `rel_finite` and `rel_custom` should be similar. 
+*Expected output*: Absolute runtime measurements may differ on your hardware, but the relative speed-up reported in columns `rel_static`, `rel_finite` and `rel_custom` should be similar. 
+
+*Estimated runtime*: 30min (on system comparable to M2 Pro)
 
 To compare our approach against existing methods, run (we set `N` = `10`):
 ```
@@ -183,6 +185,8 @@ The results are written to `compare/gen/lmh_results.csv` and `compare/webppl/lmh
 The results reported in the paper can be found in  `compare/gen/paper_lmh_results.csv` and `compare/webppl/paper_lmh_results.csv` (measured on a M2 Pro CPU).  
 
 *Expected output*: Again, the relative speed-ups reported in the `rel` column should be similar on your hardware.
+
+*Estimated runtime*: 1h and 30min, respectively (on system comparable to M2 Pro)
 
 `python3 print_table_1.py` will generate Table 1 of the manuscript from the `paper_lmh_results.csv` files.
 
@@ -202,8 +206,9 @@ This script runs the `bench_vi.jl` file which measures the gradient variance for
 
 *Expected output*: Runtime may differ, but the gradient variance reported in the `none` and `static` columns, as well as the relative improvement in `rel_static` should be similar to the reported results.
 
+*Estimated runtime*: 1h30min (on system comparable to M2 Pro)
 
-To compare our approach against existing methods,  run (we set `N` = `1`. Note that this may take a long time to complete, ~6-8 hours, and you may lower `N_ITER` or `L` in the script for faster completion):
+To compare our approach against existing methods, run (we set `N` = `1`. :
 ```
 python3 compare/pyro_bbvi/run_vi.py N   
 ```
@@ -211,6 +216,8 @@ The results are written to `compare/pyro_bbvi/vi_results.csv` and aggregated in 
 The results reported in the paper can be found in  `compare/pyro_bbvi/paper_vi_results.csv` (measured on a M2 Pro CPU).
 
 *Expected output*: Again, the gradient variance and relative improvement (columns `none`, `graph`, `rel_graph`) should be similar to the paper results.
+
+*Estimated runtime*: This may take a long time to complete, ~6-8 hours on system comparable to M2 Pro. You may lower `N_ITER` or `L` in the script for faster completion)
 
 `python3 print_table_3.py` will generate Table 3 of the manuscript from the `paper_vi_results.csv` files.
 
@@ -226,6 +233,10 @@ The results reported in the paper can be found in  `evaluation/paper_smc_results
 
 This script runs the `bench_smc.jl` file which measures the runtime for the naive and iterative versions of the SMC algorithm.
 
+*Expected output*: Absolute runtime measurements may differ on your hardware, but the relative speed-up reported in column `rel_static` should be similar.
+
+*Estimated runtime*: 30 min (on system comparable to M2 Pro)
+
 To compare our approach against existing methods, run (we set `N` = `10`):
 ```
 python3 compare/webppl/run_smc.py N   
@@ -233,6 +244,9 @@ python3 compare/webppl/run_smc.py N
 The results are written to `compare/webppl/smc_results.csv` and aggregated in `compare/webppl/smc_results_aggregated.csv`.  
 The results reported in the paper can be found in  `compare/webppl/paper_smc_results.csv` (measured on a M2 Pro CPU).
 
+*Expected output*: Absolute runtime measurements may differ on your hardware, but the relative speed-up reported in column `cps_rel` should be similar.
+
+*Estimated runtime*: 5min (on system comparable to M2 Pro)
 
 `python3 print_table_4.py` will generate Table 3 of the manuscript from the `paper_smc_results.csv` files.
 
