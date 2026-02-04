@@ -87,8 +87,8 @@ docker load -i pplstaticfactor-arm64.tar
 depending on your system, which was saved with (Docker version 28.3.0)
 ```
 docker buildx build --platform linux/amd64 -t pplstaticfactor-amd64 .
-docker image save pplstaticfactor-amd64 > pplstaticfactor-amd64.tar
 docker buildx build --platform linux/arm64 -t pplstaticfactor-arm64 .
+docker image save pplstaticfactor-amd64 > pplstaticfactor-amd64.tar
 docker image save pplstaticfactor-arm64 > pplstaticfactor-arm64.tar
 ```
 Run those images with
