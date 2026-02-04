@@ -52,6 +52,7 @@ Overview:
 │           └── rd_bp.py                    # functionality to compute reaching definitions and branch parents
 │
 ├── sanity_check.py                         # script to check if artifact installation was successful
+├── sanity_check_output.txt                 # log of output of sanity_check.py
 ├── generate_factorisation.py               # script to generate sub-programs for each factor for every benchmark model
 ├── run_lmh_benchmark.py                    # script to run bench_lmh.jl for every benchmark model
 ├── run_smc_benchmark.py                    # script to run bench_smc.jl for every benchmark model
@@ -74,7 +75,7 @@ Recommendations:
 Install [docker](https://www.docker.com).
 
 
-You can download and load the docker image provided at [Zenodo](https://doi.org/10.5281/zenodo.16900540) with
+You can download and load the docker image provided at [Zenodo](https://doi.org/10.5281/zenodo.16900539) with
 ```
 docker load -i pplstaticfactor-amd64.tar
 ``` 
@@ -158,8 +159,10 @@ rm -rf evaluation/benchmark/generated_existing
 ```
 
 
-### 2. LMH: Single-site Metroplis-Hastings
 <a name="lmh"></a>
+
+### 2. LMH: Single-site Metroplis-Hastings
+
 Run LMH benchmarks `N` times (we set `N` = `10`):
 ```
 python3 run_lmh_benchmark.py N
@@ -192,8 +195,9 @@ The results reported in the paper can be found in  `compare/gen/paper_lmh_result
 
 `python3 print_table_2.py` will generate Table 2 of the manuscript from the `paper_lmh_results.csv` files.
 
-### 3. BBVI: Black-box Variational Inference
 <a name="bbvi"></a>
+
+### 3. BBVI: Black-box Variational Inference
 
 Run BBVI benchmarks `N` times (we set `N` = `10`):
 ```
@@ -208,7 +212,7 @@ This script runs the `bench_vi.jl` file which measures the gradient variance for
 
 *Estimated runtime*: 1h30min (on system comparable to M2 Pro)
 
-To compare our approach against existing methods, run (we set `N` = `1`. :
+To compare our approach against existing methods, run (we set `N` = `1`) :
 ```
 python3 compare/pyro_bbvi/run_vi.py N   
 ```
@@ -217,12 +221,13 @@ The results reported in the paper can be found in  `compare/pyro_bbvi/paper_vi_r
 
 *Expected output*: Again, the gradient variance and relative improvement (columns `none`, `graph`, `rel_graph`) should be similar to the paper results.
 
-*Estimated runtime*: This may take a long time to complete, ~6-8 hours on system comparable to M2 Pro. You may lower `N_ITER` or `L` in the script for faster completion)
+*Estimated runtime*: This may take a long time to complete, ~6-8 hours on system comparable to M2 Pro. You may lower `N_ITER` or `L` in the script for faster completion.
 
 `python3 print_table_3.py` will generate Table 3 of the manuscript from the `paper_vi_results.csv` files.
 
-### 4. SMC: Sequential Monte Carlo
 <a name="smc"></a>
+
+### 4. SMC: Sequential Monte Carlo
 
 Run SMC benchmarks `N` times (we set `N` = `10`):
 ```
@@ -258,7 +263,7 @@ This artifact can be used to reproduce the empirical evaluation of Section 5.
 ### Section 5.1.
 
 For the interested reader, we briefly list where the sub-program generation described in Section 5 is implemented.
-- `src/formal/formal_cfg.py`: implements a function which translates a Julia program (of restricted grammar like described in Section 2 and see below) to the control-flow-graph (CFG) representation (generalised in `src/static/cfg.py`) of Section 3.1 and 4.1.
+- `src/formal/formal_cfg.py`: implements a function which translates a Julia program (of restricted grammar like described in Section 2 and see below) to the control-flow-graph (CFG) representation (`src/static/cfg.py`) of Section 3.1 and 4.1.
 - `src/static/model_graph.py`: implements a function which constructs a dependency graph based on Algorithm 1 (factorisation). 
 - `src/formal/factorisation_builder.py`: uses this dependency graph to generate sub-programs
 
@@ -282,7 +287,7 @@ Table 4 can be reproduced by following the instructions outlined in [4. SMC: Seq
 
 ## Reusability Guidelines: Implementing your own Models
 
-The artifact may be reused to test the static factorisation approach on new models, i.e. to generate sub-programs and to run the benchmarks for the new model.
+The artifact may be reused to test the static factorisation approach on new models, i.e., to generate sub-programs and to run the benchmarks for the new models.
 
 To do so, you may implement a new model in a single file in `evaluation/models`.
 
