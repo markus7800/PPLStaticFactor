@@ -51,6 +51,7 @@ Overview:
 │           ├── model_graph.py              # computes dependencies between sample statements as graph
 │           └── rd_bp.py                    # functionality to compute reaching definitions and branch parents
 │
+├── run_all.sh                              # script to run all benchmarks
 ├── sanity_check.py                         # script to check if artifact installation was successful
 ├── sanity_check_output.txt                 # log of output of sanity_check.py
 ├── generate_factorisation.py               # script to generate sub-programs for each factor for every benchmark model
@@ -136,6 +137,11 @@ Time measurements will differ, but you should not see any errors.
 
 ## Evaluation Instructions
 
+For convenience, you may execute `bash run_all.sh` to run all experiments needed for reproducing the empirical evaluation.  
+This will take ~12 hours to complete on systems comparable to an M2 Pro.  
+In the next sections, we describe each of the experiments in detail.
+
+
 ### 1. Factorisation of sub-programs
 
 (Re-) Generate the sub-programs:
@@ -178,7 +184,7 @@ This script runs the `bench_lmh.jl` file which measures the runtime for the fact
 
 To compare our approach against existing methods, run (we set `N` = `10`):
 ```
-python3 compare/gen/run_lmh.py N   
+python3 compare/gen/run_lmh.py N
 ```
 and
 ```
@@ -214,13 +220,14 @@ This script runs the `bench_vi.jl` file which measures the gradient variance for
 
 To compare our approach against existing methods, run (we set `N` = `1`) :
 ```
-python3 compare/pyro_bbvi/run_vi.py N   
+python3 compare/pyro_bbvi/run_vi.py N
 ```
 The results are written to `compare/pyro_bbvi/vi_results.csv` and aggregated in `compare/pyro_bbvi/vi_results_aggregated.csv`.  
 The results reported in the paper can be found in  `compare/pyro_bbvi/paper_vi_results.csv` (measured on a M2 Pro CPU).
 
 *Expected output*: Again, the gradient variance and relative improvement (columns `none`, `graph`, `rel_graph`) should be similar to the paper results.
 
+<a name="bbvi-runtime"></a>
 *Estimated runtime*: This may take a long time to complete, ~6-8 hours on system comparable to M2 Pro. You may lower `N_ITER` or `L` in the script for faster completion.
 
 `python3 print_table_3.py` will generate Table 3 of the manuscript from the `paper_vi_results.csv` files.
@@ -244,7 +251,7 @@ This script runs the `bench_smc.jl` file which measures the runtime for the naiv
 
 To compare our approach against existing methods, run (we set `N` = `10`):
 ```
-python3 compare/webppl/run_smc.py N   
+python3 compare/webppl/run_smc.py N
 ```
 The results are written to `compare/webppl/smc_results.csv` and aggregated in `compare/webppl/smc_results_aggregated.csv`.  
 The results reported in the paper can be found in  `compare/webppl/paper_smc_results.csv` (measured on a M2 Pro CPU).
